@@ -1,0 +1,342 @@
+.landing {
+  --paper: #f6efe4;
+  --paper-shadow: #ede1cc;
+  --hairline: #ddd0ba;
+}
+
+.landing section {
+  padding: 5rem 6vw;
+}
+
+@media (max-width: 640px) {
+  .landing section {
+    padding: 3rem 5vw;
+  }
+}
+
+/* ---------- Hero ---------- */
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 3rem;
+  align-items: center;
+  padding-top: 3rem;
+  position: relative;
+}
+
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hero-eyebrow {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin: 0 0 1rem;
+}
+
+.hero-title {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 700;
+  line-height: 1.05;
+  margin: 0 0 1rem;
+  color: var(--color-accent);
+}
+
+.hero-tagline-ar {
+  direction: rtl;
+  font-size: 1.1rem;
+  color: var(--color-primary);
+  margin: 0 0 1.5rem;
+}
+
+.tasting-note {
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+  padding: 1.5rem;
+  position: relative;
+  max-width: 32rem;
+  box-shadow: 3px 3px 0 var(--paper-shadow);
+}
+
+.tasting-note-label {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.tasting-note p {
+  font-size: 1.15rem;
+  line-height: 1.5;
+  margin: 0;
+  font-style: italic;
+}
+
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  color: var(--color-background);
+  background: var(--color-primary);
+  padding: 0.9rem 1.75rem;
+  border-radius: 2px;
+  text-decoration: none;
+  transition: transform 0.15s ease;
+}
+
+.hero-cta:hover {
+  transform: translateY(-2px);
+}
+
+.hero-image-wrap {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--color-accent);
+}
+
+.hero-image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  mix-blend-mode: multiply;
+  filter: sepia(0.25) contrast(1.05);
+}
+
+.hero-image-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--color-primary) 55%, transparent),
+    color-mix(in srgb, var(--color-accent) 65%, transparent)
+  );
+  mix-blend-mode: multiply;
+}
+
+.hero-stamp {
+  position: absolute;
+  top: -1.5rem;
+  right: -1.5rem;
+  background: var(--color-primary);
+  border-radius: 50%;
+  z-index: 2;
+}
+
+@media (max-width: 900px) {
+  .hero-stamp {
+    top: -1rem;
+    right: 1rem;
+  }
+}
+
+/* ---------- Featured categories ---------- */
+
+.section-heading {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin: 0 0 2rem;
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.category-card {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 4;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--color-accent);
+  text-decoration: none;
+  color: var(--color-background);
+}
+
+.category-card img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.75;
+  transition: transform 0.3s ease;
+}
+
+.category-card:hover img {
+  transform: scale(1.05);
+}
+
+.category-card-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 1.25rem;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.55));
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.category-card-stamp {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+}
+
+/* ---------- Banners ---------- */
+
+.banner-strip {
+  display: flex;
+  gap: 1.25rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 0.5rem;
+}
+
+.banner-card {
+  scroll-snap-align: start;
+  flex: 0 0 auto;
+  width: min(80vw, 420px);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: var(--paper);
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.banner-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.banner-card-text {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 1rem;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
+  color: #fff;
+}
+
+.banner-card-text strong {
+  font-family: var(--font-heading);
+  display: block;
+  font-size: 1.05rem;
+}
+
+/* ---------- About ---------- */
+
+.about-section {
+  background: var(--paper);
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.about-inner {
+  max-width: 42rem;
+}
+
+.about-inner p {
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+/* ---------- Testimonials ---------- */
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 2rem;
+}
+
+.testimonial-card {
+  position: relative;
+  padding-top: 1rem;
+}
+
+.testimonial-stamp {
+  margin-bottom: 0.75rem;
+}
+
+.testimonial-card blockquote {
+  margin: 0 0 1rem;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  font-style: italic;
+}
+
+.testimonial-quote-ar {
+  direction: rtl;
+  font-style: normal;
+}
+
+.testimonial-author {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+}
+
+.testimonial-author-title {
+  font-size: 0.8rem;
+  opacity: 0.65;
+  display: block;
+}
+
+/* ---------- Footer ---------- */
+
+.landing-footer {
+  border-top: 1px solid var(--hairline);
+  font-size: 0.85rem;
+  opacity: 0.75;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* ---------- Accessibility ---------- */
+
+.landing a:focus-visible,
+.landing button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing * {
+    transition: none !important;
+  }
+}

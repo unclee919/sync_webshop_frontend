@@ -1,0 +1,92 @@
+.dashboard-page {
+  padding: 3rem 6vw 5rem;
+  max-width: 48rem;
+}
+
+.dashboard-lookup {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 2.5rem;
+}
+
+.dashboard-lookup input {
+  flex: 1;
+  min-width: 14rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid #ddd0ba;
+  border-radius: 3px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+}
+
+.dashboard-lookup input:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.dashboard-lookup button {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  color: var(--color-background, #fff);
+  background: var(--color-primary);
+  border: none;
+  border-radius: 2px;
+  padding: 0 1.5rem;
+  cursor: pointer;
+}
+
+.order-card {
+  border: 1px solid #ddd0ba;
+  border-radius: 4px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.order-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.order-card-name {
+  font-family: var(--font-heading);
+  font-weight: 700;
+}
+
+.order-card-date {
+  font-size: 0.8rem;
+  opacity: 0.6;
+}
+
+.order-status-pill {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.6rem;
+  border-radius: 10px;
+  background: #f6efe4;
+  color: var(--color-primary);
+}
+
+.order-card-items {
+  font-size: 0.85rem;
+  opacity: 0.75;
+  margin: 0.5rem 0;
+}
+
+.order-card-total {
+  font-weight: 700;
+  text-align: right;
+}
+
+.dashboard-empty {
+  opacity: 0.65;
+  padding: 2rem 0;
+}
