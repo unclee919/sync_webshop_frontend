@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { getCatalog, getCategories } from '../api/client'
 import { useLanguage } from '../context/LanguageContext'
 import { useCart } from '../context/CartContext'
 import { useContent } from '../context/ContentContext'
+import SEOHead from '../components/SEOHead'
 import './Products.css'
 
 const PAGE_SIZE = 20
@@ -21,24 +22,42 @@ export default function ProductList() {
   const [categories, setCategories] = useState([])
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
+  
+  // Price filter state
+  const [priceRange, setPriceRange] = useState({ min_price: 0, max_price: 1000 })
+  const [minPrice, setMinPrice] = useState(null)
+  const [maxPrice, setMaxPrice] = useState(null)
+  const [priceFilterApplied, setPriceFilterApplied] = useState(false)
 
   useEffect(() => {
     let isMounted = true
-    console.log("ProductList: Fetching data for", { category, search, page })
     setLoading(true)
     setError(null)
     
     async function fetchCatalog() {
       try {
-        console.log("ProductList: Calling getCatalog...")
-        const catalogData = await getCatalog({ itemGroup: category, search, page, pageSize: PAGE_SIZE })
-        console.log("ProductList: getCatalog success", catalogData)
+        const catalogData = await getCatalog({ 
+          itemGroup: category, 
+          search, 
+          page, 
+          pageSize: PAGE_SIZE,
+          minPrice: priceFilterApplied ? minPrice : undefined,
+          maxPrice: priceFilterApplied ? maxPrice : undefined
+        })
         if (isMounted) {
           setCatalog(catalogData)
+          // Set price range from API response
+          if (catalogData.price_range) {
+            setPriceRange(catalogData.price_range)
+            // Initialize slider values only if not already set by user
+            if (!priceFilterApplied) {
+              setMinPrice(catalogData.price_range.min_price)
+              setMaxPrice(catalogData.price_range.max_price)
+            }
+          }
           setLoading(false)
         }
       } catch (err) {
-        console.error("ProductList: getCatalog error", err)
         if (isMounted) {
           setError(err.message)
           setLoading(false)
@@ -48,9 +67,7 @@ export default function ProductList() {
 
     async function fetchCategories() {
       try {
-        console.log("ProductList: Calling getCategories...")
         const categoriesData = await getCategories()
-        console.log("ProductList: getCategories success", categoriesData)
         if (isMounted) {
           setCategories(categoriesData || [])
         }
@@ -70,7 +87,7 @@ export default function ProductList() {
       isMounted = false
       clearTimeout(fallback)
     }
-  }, [category, search, page])
+  }, [category, search, page, priceFilterApplied, minPrice, maxPrice])
 
   function goToPage(p) {
     const next = new URLSearchParams(searchParams)
@@ -87,16 +104,38 @@ export default function ProductList() {
     }
     next.set('page', 1)
     setSearchParams(next)
+    // Reset price filter when changing category
+    setPriceFilterApplied(false)
+  }
+
+  function handlePriceFilter() {
+    setPriceFilterApplied(true)
+    const next = new URLSearchParams(searchParams)
+    next.set('page', 1)
+    setSearchParams(next)
+  }
+
+  function handleResetPriceFilter() {
+    setPriceFilterApplied(false)
+    setMinPrice(priceRange.min_price)
+    setMaxPrice(priceRange.max_price)
+    const next = new URLSearchParams(searchParams)
+    next.set('page', 1)
+    setSearchParams(next)
   }
 
   const totalPages = catalog ? Math.max(1, Math.ceil(catalog.total_count / PAGE_SIZE)) : 1
   const showSidebar = content?.show_category_sidebar
+  const sidebarWidth = content?.sidebar_width || 220
 
   return (
     <div className={`products-page container ${isRtl ? 'rtl' : 'ltr'}`}>
+      <SEOHead 
+        title={category || (lang === 'ar' ? 'جميع المنتجات' : 'All Products')}
+      />
       <div className="products-layout">
         {showSidebar && (
-          <aside className="products-sidebar">
+          <aside className="products-sidebar" style={{ flex: `0 0 ${sidebarWidth}px` }}>
             <div className="sidebar-widget">
               <h3 className="widget-title">{lang === 'ar' ? 'الفئات' : 'Categories'}</h3>
               <ul className="category-list">
@@ -115,11 +154,63 @@ export default function ProductList() {
               </ul>
             </div>
 
-            {content?.show_price_filter && (
+            {content?.show_price_filter && priceRange.max_price > 0 && (
               <div className="sidebar-widget">
                 <h3 className="widget-title">{lang === 'ar' ? 'تصفية حسب السعر' : 'Filter by Price'}</h3>
-                <div className="price-filter-placeholder">
-                  {lang === 'ar' ? 'قريباً...' : 'Coming soon...'}
+                <div className="price-filter">
+                  <div className="price-range-inputs">
+                    <div className="price-input-group">
+                      <label>{lang === 'ar' ? 'من' : 'Min'}</label>
+                      <input
+                        type="number"
+                        min={priceRange.min_price}
+                        max={priceRange.max_price}
+                        value={minPrice ?? priceRange.min_price}
+                        onChange={(e) => setMinPrice(Number(e.target.value))}
+                        className="price-input"
+                      />
+                    </div>
+                    <span className="price-separator">—</span>
+                    <div className="price-input-group">
+                      <label>{lang === 'ar' ? 'إلى' : 'Max'}</label>
+                      <input
+                        type="number"
+                        min={priceRange.min_price}
+                        max={priceRange.max_price}
+                        value={maxPrice ?? priceRange.max_price}
+                        onChange={(e) => setMaxPrice(Number(e.target.value))}
+                        className="price-input"
+                      />
+                    </div>
+                  </div>
+                  <div className="price-range-slider">
+                    <input
+                      type="range"
+                      min={priceRange.min_price}
+                      max={priceRange.max_price}
+                      value={minPrice ?? priceRange.min_price}
+                      onChange={(e) => setMinPrice(Number(e.target.value))}
+                      className="range-slider range-slider-min"
+                    />
+                    <input
+                      type="range"
+                      min={priceRange.min_price}
+                      max={priceRange.max_price}
+                      value={maxPrice ?? priceRange.max_price}
+                      onChange={(e) => setMaxPrice(Number(e.target.value))}
+                      className="range-slider range-slider-max"
+                    />
+                  </div>
+                  <div className="price-filter-actions">
+                    <button className="price-filter-btn" onClick={handlePriceFilter}>
+                      {lang === 'ar' ? 'تطبيق' : 'Apply'}
+                    </button>
+                    {priceFilterApplied && (
+                      <button className="price-reset-btn" onClick={handleResetPriceFilter}>
+                        {lang === 'ar' ? 'إعادة تعيين' : 'Reset'}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             )}

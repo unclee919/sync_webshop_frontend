@@ -6,11 +6,11 @@
 
 .products-layout {
   display: flex;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .products-sidebar {
-  flex: 0 0 280px;
+  flex: 0 0 220px;
 }
 
 .products-main {
@@ -20,17 +20,17 @@
 .sidebar-widget {
   background: #fff;
   border: 1px solid #ececec;
-  border-radius: 15px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  padding: 1.2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .widget-title {
-  font-size: 1.25rem;
+  font-size: 1.05rem;
   font-weight: 700;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
   border-bottom: 1px solid #ececec;
   position: relative;
   color: var(--color-heading, #253D4E);
@@ -38,7 +38,7 @@
 
 .widget-title::after {
   content: "";
-  width: 50px;
+  width: 40px;
   height: 2px;
   background-color: var(--color-secondary, #84B082);
   position: absolute;
@@ -58,7 +58,7 @@
 }
 
 .category-list li {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
 }
 
 .category-list button {
@@ -66,9 +66,9 @@
   text-align: left;
   background: none;
   border: 1px solid #F2F3F4;
-  padding: 0.75rem 1rem;
+  padding: 0.55rem 0.75rem;
   border-radius: 5px;
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   color: #7E7E7E;
   transition: all 0.3s ease;
 }
@@ -82,6 +82,142 @@
   background-color: #F2F3F4;
   color: var(--color-primary, #21504C);
   border-color: var(--color-secondary, #84B082);
+}
+
+/* Price Filter */
+.price-filter {
+  padding-top: 0.5rem;
+}
+
+.price-range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.price-input-group {
+  flex: 1;
+}
+
+.price-input-group label {
+  display: block;
+  font-size: 0.7rem;
+  color: #999;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+}
+
+.price-input {
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.price-input:focus {
+  outline: none;
+  border-color: var(--color-secondary, #84B082);
+}
+
+.price-separator {
+  color: #ccc;
+  font-size: 1rem;
+  margin-top: 1rem;
+}
+
+.price-range-slider {
+  position: relative;
+  height: 30px;
+  margin-bottom: 0.75rem;
+}
+
+.range-slider {
+  position: absolute;
+  width: 100%;
+  height: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+}
+
+.range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-secondary, #84B082);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  cursor: pointer;
+  pointer-events: all;
+}
+
+.range-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-secondary, #84B082);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  cursor: pointer;
+  pointer-events: all;
+}
+
+.range-slider-min::-webkit-slider-runnable-track {
+  height: 4px;
+  background: #e0e0e0;
+  border-radius: 2px;
+}
+
+.range-slider-max::-webkit-slider-runnable-track {
+  height: 4px;
+  background: transparent;
+  border-radius: 2px;
+}
+
+.price-filter-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.price-filter-btn {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--color-secondary, #84B082);
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.price-filter-btn:hover {
+  background-color: var(--color-primary, #21504C);
+}
+
+.price-reset-btn {
+  padding: 0.5rem 0.75rem;
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  color: #888;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.price-reset-btn:hover {
+  border-color: #c00;
+  color: #c00;
 }
 
 .products-header {
@@ -347,7 +483,7 @@
   }
   
   .products-sidebar {
-    flex: none;
+    flex: none !important;
     width: 100%;
   }
 

@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { getItem } from '../api/client'
 import { useCart } from '../context/CartContext'
 import { useLanguage } from '../context/LanguageContext'
+import SEOHead from '../components/SEOHead'
 import './Products.css'
 
 export default function ProductDetail() {
@@ -51,8 +52,19 @@ export default function ProductDetail() {
     setTimeout(() => setAdded(false), 2000)
   }
 
+  // Build SEO description from item details
+  const seoDescription = item.price 
+    ? `${item.item_name} - ${item.price} ${item.currency}` 
+    : item.item_name
+
   return (
     <div className={`product-detail-page container ${isRtl ? 'rtl' : 'ltr'}`}>
+      <SEOHead 
+        title={item.item_name}
+        description={seoDescription}
+        image={item.image}
+        type="product"
+      />
       <nav className="breadcrumb">
         <Link to="/">{lang === 'ar' ? 'الرئيسية' : 'Home'}</Link> / 
         <Link to="/products">{lang === 'ar' ? 'المنتجات' : 'Products'}</Link> / 

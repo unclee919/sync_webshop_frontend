@@ -31,9 +31,9 @@ export function getTheme() {
 export function getContent() {
   return callMethod('sync_webshop.api.content.get_content')
 }
-export function getCatalog({ itemGroup, search, page = 1, pageSize = 20 } = {}) {
+export function getCatalog({ itemGroup, search, page = 1, pageSize = 20, minPrice, maxPrice } = {}) {
   return callMethod('sync_webshop.api.catalog.get_catalog', {
-    params: { item_group: itemGroup, search, page, page_size: pageSize },
+    params: { item_group: itemGroup, search, page, page_size: pageSize, min_price: minPrice, max_price: maxPrice },
   })
 }
 export function getCategories() {
