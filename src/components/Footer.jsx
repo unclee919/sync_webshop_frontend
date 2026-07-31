@@ -7,21 +7,19 @@ export default function Footer() {
   const { lang, isRtl } = useLanguage()
   const { content } = useContent()
 
-  if (!content) return null
-
   return (
     <footer className={`site-footer ${isRtl ? 'rtl' : 'ltr'}`}>
       <div className="container">
         <div className="footer-top">
           <div className="footer-col about-col">
-            <h3 className="footer-title">{content.site_name}</h3>
+            <h3 className="footer-title">{content?.site_name || 'Sync Webshop'}</h3>
             <p className="footer-tagline">
-              {lang === 'ar' ? (content.tagline_ar || content.tagline_en) : content.tagline_en}
+              {lang === 'ar' ? (content?.tagline_ar || content?.tagline_en) : content?.tagline_en}
             </p>
             <div className="contact-info">
-              {content.phone_number && <p>📞 {content.phone_number}</p>}
-              {content.email_address && <p>✉️ {content.email_address}</p>}
-              {lang === 'ar' ? content.contact_address_ar : content.contact_address_en}
+              {content?.phone_number && <p>📞 {content.phone_number}</p>}
+              {content?.email_address && <p>✉️ {content.email_address}</p>}
+              {content && (lang === 'ar' ? content.contact_address_ar : content.contact_address_en)}
             </div>
           </div>
 
@@ -38,7 +36,7 @@ export default function Footer() {
           <div className="footer-col social-col">
             <h3 className="footer-title">{lang === 'ar' ? 'تابعنا' : 'Follow Us'}</h3>
             <div className="social-links">
-              {content.social_links && content.social_links.map((link, i) => (
+              {content?.social_links && content.social_links.map((link, i) => (
                 <a key={i} href={link.link_url} target="_blank" rel="noopener noreferrer" className="social-link">
                   {link.platform}
                 </a>
@@ -48,7 +46,7 @@ export default function Footer() {
         </div>
 
         <div className="footer-bottom">
-          <p>© {new Date().getFullYear()} {content.site_name}. {lang === 'ar' ? 'جميع الحقوق محفوظة.' : 'All rights reserved.'}</p>
+          <p>© {new Date().getFullYear()} {content?.site_name || 'Sync Webshop'}. {lang === 'ar' ? 'جميع الحقوق محفوظة.' : 'All rights reserved.'}</p>
         </div>
       </div>
     </footer>

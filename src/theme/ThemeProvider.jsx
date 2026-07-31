@@ -19,14 +19,12 @@ function applyThemeToDocument(theme) {
   const fonts = theme.fonts || {}
   const spacing = theme.spacing || {}
 
-  // General Colors
   root.setProperty('--color-primary', colors.primary || '#253D4E')
   root.setProperty('--color-secondary', colors.secondary || '#84B082')
   root.setProperty('--color-accent', colors.accent || '#FDC040')
   root.setProperty('--color-danger', colors.danger || '#F74B81')
   root.setProperty('--color-background', colors.background || '#ffffff')
 
-  // Section Colors
   root.setProperty('--top-bar-bg', colors.top_bar_bg || '#ffffff')
   root.setProperty('--top-bar-text', colors.top_bar_text || '#253D4E')
   root.setProperty('--header-bg', colors.header_bg || '#ffffff')
@@ -36,51 +34,34 @@ function applyThemeToDocument(theme) {
   root.setProperty('--footer-bg', colors.footer_bg || '#253D4E')
   root.setProperty('--footer-text', colors.footer_text || '#ffffff')
 
-  // Spacing & Effects
   root.setProperty('--border-radius-md', spacing.border_radius || '15px')
   root.setProperty('--container-max-width', spacing.container_width || '1200px')
 
-  // Fonts
   root.setProperty('--font-heading', FONT_STACKS[fonts.heading] || FONT_STACKS.Cairo)
   root.setProperty('--font-body', FONT_STACKS[fonts.body] || FONT_STACKS.Cairo)
 
   document.documentElement.dataset.layout = (theme.layout_style || 'Oasis').toLowerCase()
-  
-  const favicon = document.getElementById('favicon')
-  if (favicon && theme.favicon) favicon.href = theme.favicon
 }
 
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(null)
-  const [error, setError] = useState(null)
 
   useEffect(() => {
     getTheme()
       .then((data) => {
-        applyThemeToDocument(data)
-        setTheme(data)
+        if (data) {
+          applyThemeToDocument(data)
+          setTheme(data)
+        }
       })
-      .catch((err) => {
-        console.error('Theme fetch error:', err)
-        setError(err.message)
-      })
+      .catch((err) => console.error('Theme fetch error:', err))
   }, [])
 
-  if (error) {
-    return (
-      <div style={{ padding: '2rem', fontFamily: 'sans-serif', direction: 'rtl' }}>
-        تعذر تحميل إعدادات المتجر ({error}). يرجى التحقق من VITE_API_BASE_URL والتأكد من إدراج هذا النطاق في إعدادات Webshop API على خادم ERPNext.
-      </div>
-    )
-  }
-
-  if (!theme) return null
-
-  return <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>
+  // Don't block rendering if theme is not loaded yet
+  return <ThemeContext.Provider value={theme || { colors: {}, fonts: {} }}>{children}</ThemeContext.Provider>
 }
 
 export function useTheme() {
   const ctx = useContext(ThemeContext)
-  if (!ctx) throw new Error('useTheme must be used inside ThemeProvider')
   return ctx
 }

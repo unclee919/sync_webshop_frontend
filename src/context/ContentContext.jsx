@@ -6,7 +6,6 @@ const ContentContext = createContext(null)
 export function ContentProvider({ children }) {
   const [content, setContent] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
 
   useEffect(() => {
     getContent()
@@ -15,17 +14,16 @@ export function ContentProvider({ children }) {
         setLoading(false)
       })
       .catch((err) => {
-        setError(err.message)
+        console.error('Content fetch error:', err)
         setLoading(false)
       })
   }, [])
 
-  const value = { content, loading, error }
+  const value = { content, loading }
   return <ContentContext.Provider value={value}>{children}</ContentContext.Provider>
 }
 
 export function useContent() {
   const ctx = useContext(ContentContext)
-  if (!ctx) throw new Error('useContent must be used inside ContentProvider')
   return ctx
 }

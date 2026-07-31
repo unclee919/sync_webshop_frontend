@@ -44,7 +44,6 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  // Scroll listener for compact state
   useEffect(() => {
     function handleScroll() {
       if (window.scrollY > 50) {
@@ -71,12 +70,10 @@ export default function Header() {
     navigate(`/products/${encodeURIComponent(itemCode)}`)
   }
 
-  if (!content) return null
-
   return (
     <div className={`site-header-wrapper ${isRtl ? 'rtl' : 'ltr'} ${isCompact ? 'compact' : ''}`}>
       {/* Top Bar */}
-      {content.show_top_bar && !isCompact && (
+      {content?.show_top_bar && !isCompact && (
         <div className="top-bar">
           <div className="container top-bar-inner">
             <div className="top-bar-left">
@@ -100,10 +97,10 @@ export default function Header() {
       <header className="main-header">
         <div className="container header-inner">
           <Link to="/" className="logo">
-            {theme.logo ? (
-              <img src={theme.logo} alt={content.site_name} />
+            {theme?.logo ? (
+              <img src={theme.logo} alt={content?.site_name} />
             ) : (
-              <span className="site-name">{content.site_name}</span>
+              <span className="site-name">{content?.site_name || 'Sync Webshop'}</span>
             )}
           </Link>
 
@@ -162,7 +159,7 @@ export default function Header() {
           </div>
           <div className="nav-links">
             <Link to="/">{lang === 'ar' ? 'الصفحة الرئيسية' : 'Home'}</Link>
-            {content.nav_links && content.nav_links.map((link, i) => (
+            {content?.nav_links && content.nav_links.map((link, i) => (
               <Link key={i} to={link.link_url}>
                 {lang === 'ar' ? (link.label_ar || link.label_en) : link.label_en}
               </Link>
