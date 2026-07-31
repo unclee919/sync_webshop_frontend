@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { useContent } from '../context/ContentContext'
@@ -6,6 +7,7 @@ import './Landing.css'
 export default function Landing() {
   const { lang, isRtl } = useLanguage()
   const { content, loading } = useContent()
+  const [currentSlide, setCurrentSlide] = useState(0)
 
   if (loading) return <div className="loading-state container">Loading...</div>
   if (!content) return null
@@ -15,28 +17,68 @@ export default function Landing() {
   const categories = c.featured_categories || []
   const trustBadges = c.trust_badges || []
 
+  const handlePrevSlide = () => {
+    setCurrentSlide((prev) => (prev === 0 ? banners.length - 1 : prev - 1))
+  }
+
+  const handleNextSlide = () => {
+    setCurrentSlide((prev) => (prev === banners.length - 1 ? 0 : prev + 1))
+  }
+
+  const handleDotClick = (index) => {
+    setCurrentSlide(index)
+  }
+
   return (
     <div className={`landing ${isRtl ? 'rtl' : 'ltr'}`}>
       {/* Hero Section / Slider */}
       {banners.length > 0 && (
         <section className="hero-slider">
-          <div className="slider-container">
-            {banners.map((b, i) => (
-              <div key={i} className="slide">
-                <img src={b.image} alt={b.title} />
-                <div className="slide-content">
-                  <div className="container">
-                    <h2>{b.title}</h2>
-                    <p>{b.subtitle}</p>
-                    {b.link_url && (
-                      <Link to={b.link_url} className="btn-primary">
-                        {lang === 'ar' ? 'تسوق الآن' : 'Shop Now'}
-                      </Link>
-                    )}
+          <div className="slider-wrapper">
+            <div className="slider-container" style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
+              {banners.map((b, i) => (
+                <div key={i} className="slide">
+                  <img src={b.image} alt={b.title} />
+                  <div className="slide-content">
+                    <div className="container">
+                      <h2>{b.title}</h2>
+                      <p>{b.subtitle}</p>
+                      {b.link_url && (
+                        <Link to={b.link_url} className="btn-primary">
+                          {lang === 'ar' ? 'تسوق الآن' : 'Shop Now'}
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </div>
+              ))}
+            </div>
+
+            {/* Navigation Arrows */}
+            {banners.length > 1 && (
+              <>
+                <button className="slider-arrow slider-arrow-prev" onClick={handlePrevSlide} aria-label="Previous slide">
+                  ‹
+                </button>
+                <button className="slider-arrow slider-arrow-next" onClick={handleNextSlide} aria-label="Next slide">
+                  ›
+                </button>
+              </>
+            )}
+
+            {/* Dots Navigation */}
+            {banners.length > 1 && (
+              <div className="slider-dots">
+                {banners.map((_, i) => (
+                  <button
+                    key={i}
+                    className={`slider-dot ${i === currentSlide ? 'active' : ''}`}
+                    onClick={() => handleDotClick(i)}
+                    aria-label={`Go to slide ${i + 1}`}
+                  />
+                ))}
               </div>
-            ))}
+            )}
           </div>
         </section>
       )}
