@@ -13,32 +13,36 @@ const FONT_STACKS = {
 }
 
 function applyThemeToDocument(theme) {
+  if (!theme) return
   const root = document.documentElement.style
+  const colors = theme.colors || {}
+  const fonts = theme.fonts || {}
+  const spacing = theme.spacing || {}
 
   // General Colors
-  root.setProperty('--color-primary', theme.colors.primary || '#253D4E')
-  root.setProperty('--color-secondary', theme.colors.secondary || '#84B082')
-  root.setProperty('--color-accent', theme.colors.accent || '#FDC040')
-  root.setProperty('--color-danger', theme.colors.danger || '#F74B81')
-  root.setProperty('--color-background', theme.colors.background || '#ffffff')
+  root.setProperty('--color-primary', colors.primary || '#253D4E')
+  root.setProperty('--color-secondary', colors.secondary || '#84B082')
+  root.setProperty('--color-accent', colors.accent || '#FDC040')
+  root.setProperty('--color-danger', colors.danger || '#F74B81')
+  root.setProperty('--color-background', colors.background || '#ffffff')
 
   // Section Colors
-  root.setProperty('--top-bar-bg', theme.colors.top_bar_bg || '#ffffff')
-  root.setProperty('--top-bar-text', theme.colors.top_bar_text || '#253D4E')
-  root.setProperty('--header-bg', theme.colors.header_bg || '#ffffff')
-  root.setProperty('--header-text', theme.colors.header_text || '#253D4E')
-  root.setProperty('--nav-bg', theme.colors.nav_bg || '#84B082')
-  root.setProperty('--nav-text', theme.colors.nav_text || '#ffffff')
-  root.setProperty('--footer-bg', theme.colors.footer_bg || '#253D4E')
-  root.setProperty('--footer-text', theme.colors.footer_text || '#ffffff')
+  root.setProperty('--top-bar-bg', colors.top_bar_bg || '#ffffff')
+  root.setProperty('--top-bar-text', colors.top_bar_text || '#253D4E')
+  root.setProperty('--header-bg', colors.header_bg || '#ffffff')
+  root.setProperty('--header-text', colors.header_text || '#253D4E')
+  root.setProperty('--nav-bg', colors.nav_bg || '#84B082')
+  root.setProperty('--nav-text', colors.nav_text || '#ffffff')
+  root.setProperty('--footer-bg', colors.footer_bg || '#253D4E')
+  root.setProperty('--footer-text', colors.footer_text || '#ffffff')
 
   // Spacing & Effects
-  root.setProperty('--border-radius-md', theme.spacing?.border_radius || '15px')
-  root.setProperty('--container-max-width', theme.spacing?.container_width || '1200px')
+  root.setProperty('--border-radius-md', spacing.border_radius || '15px')
+  root.setProperty('--container-max-width', spacing.container_width || '1200px')
 
   // Fonts
-  root.setProperty('--font-heading', FONT_STACKS[theme.fonts.heading] || FONT_STACKS.Cairo)
-  root.setProperty('--font-body', FONT_STACKS[theme.fonts.body] || FONT_STACKS.Cairo)
+  root.setProperty('--font-heading', FONT_STACKS[fonts.heading] || FONT_STACKS.Cairo)
+  root.setProperty('--font-body', FONT_STACKS[fonts.body] || FONT_STACKS.Cairo)
 
   document.documentElement.dataset.layout = (theme.layout_style || 'Oasis').toLowerCase()
   
@@ -56,7 +60,10 @@ export function ThemeProvider({ children }) {
         applyThemeToDocument(data)
         setTheme(data)
       })
-      .catch((err) => setError(err.message))
+      .catch((err) => {
+        console.error('Theme fetch error:', err)
+        setError(err.message)
+      })
   }, [])
 
   if (error) {
