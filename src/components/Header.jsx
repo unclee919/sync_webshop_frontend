@@ -15,6 +15,7 @@ export default function Header() {
   const [search, setSearch] = useState('')
   const [suggestions, setSuggestions] = useState([])
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [isCompact, setIsCompact] = useState(false)
   const navigate = useNavigate()
   const suggestionRef = useRef(null)
 
@@ -43,6 +44,19 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
+  // Scroll listener for compact state
+  useEffect(() => {
+    function handleScroll() {
+      if (window.scrollY > 50) {
+        setIsCompact(true)
+      } else {
+        setIsCompact(false)
+      }
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   const handleSearch = (e) => {
     e.preventDefault()
     if (search.trim()) {
@@ -60,9 +74,9 @@ export default function Header() {
   if (!content) return null
 
   return (
-    <div className={`site-header-wrapper ${isRtl ? 'rtl' : 'ltr'}`}>
+    <div className={`site-header-wrapper ${isRtl ? 'rtl' : 'ltr'} ${isCompact ? 'compact' : ''}`}>
       {/* Top Bar */}
-      {content.show_top_bar && (
+      {content.show_top_bar && !isCompact && (
         <div className="top-bar">
           <div className="container top-bar-inner">
             <div className="top-bar-left">
