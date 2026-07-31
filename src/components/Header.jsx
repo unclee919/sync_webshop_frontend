@@ -64,10 +64,14 @@ export default function Header() {
     }
   }
 
-  const handleSuggestionClick = (itemCode) => {
+  const handleSuggestionClick = (suggestion) => {
     setSearch('')
     setShowSuggestions(false)
-    navigate(`/products/${encodeURIComponent(itemCode)}`)
+    if (suggestion.type === 'category') {
+      navigate(`/products?category=${encodeURIComponent(suggestion.id)}`)
+    } else {
+      navigate(`/products/${encodeURIComponent(suggestion.id)}`)
+    }
   }
 
   const headerMaxWidth = theme?.dimensions?.header_max_width ? `${theme.dimensions.header_max_width}px` : '1200px';
@@ -123,14 +127,29 @@ export default function Header() {
             
             {showSuggestions && suggestions.length > 0 && (
               <div className="search-suggestions">
-                {suggestions.map((item) => (
+                {suggestions.map((s, idx) => (
                   <div 
-                    key={item.item_code} 
-                    className="suggestion-item"
-                    onClick={() => handleSuggestionClick(item.item_code)}
+                    key={idx} 
+                    className={`suggestion-item ${s.type}-suggestion`}
+                    onClick={() => handleSuggestionClick(s)}
                   >
-                    {item.image && <img src={item.image} alt="" className="suggestion-img" />}
-                    <span className="suggestion-name">{item.item_name}</span>
+                    <div className="suggestion-icon-box">
+                      {s.image ? (
+                        <img src={s.image} alt="" className="suggestion-img" />
+                      ) : (
+                        <span className="suggestion-icon-placeholder">
+                          {s.type === 'category' ? '📁' : '📦'}
+                        </span>
+                      )}
+                    </div>
+                    <div className="suggestion-info">
+                      <span className="suggestion-name">{s.name}</span>
+                      <span className="suggestion-type">
+                        {s.type === 'category' 
+                          ? (lang === 'ar' ? 'فئة' : 'Category') 
+                          : (lang === 'ar' ? 'منتج' : 'Product')}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
