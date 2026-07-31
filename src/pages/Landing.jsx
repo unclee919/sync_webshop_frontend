@@ -30,15 +30,19 @@ export default function Landing() {
     setCurrentSlide(index)
   }
 
+  const theme = content?.theme || {}
+  const heroHeight = theme?.dimensions?.hero_height ? `${theme.dimensions.hero_height}px` : '450px';
+  const heroWidth = theme?.dimensions?.hero_width ? `${theme.dimensions.hero_width}px` : '100%';
+
   return (
     <div className={`landing ${isRtl ? 'rtl' : 'ltr'}`}>
       {/* Hero Section / Slider */}
       {banners.length > 0 && (
         <section className="hero-slider">
-          <div className="slider-wrapper">
+          <div className="slider-wrapper" style={{ height: heroHeight, maxWidth: heroWidth }}>
             <div className="slider-container" style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
               {banners.map((b, i) => (
-                <div key={i} className="slide">
+                <div key={i} className="slide" style={{ height: heroHeight }}>
                   <img src={b.image} alt={b.title} />
                   <div className="slide-content">
                     <div className="container">

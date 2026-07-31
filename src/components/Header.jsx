@@ -70,12 +70,14 @@ export default function Header() {
     navigate(`/products/${encodeURIComponent(itemCode)}`)
   }
 
+  const headerMaxWidth = theme?.dimensions?.header_max_width ? `${theme.dimensions.header_max_width}px` : '1200px';
+
   return (
-    <div className={`site-header-wrapper ${isRtl ? 'rtl' : 'ltr'} ${isCompact ? 'compact' : ''}`}>
+    <div className={`site-header-wrapper ${isRtl ? 'rtl' : 'ltr'} ${isCompact ? 'compact' : ''}`} style={{ '--header-max-width': headerMaxWidth }}>
       {/* Top Bar */}
       {content?.show_top_bar && !isCompact && (
         <div className="top-bar">
-          <div className="container top-bar-inner">
+          <div className="container top-bar-inner" style={{ maxWidth: headerMaxWidth }}>
             <div className="top-bar-left">
               {content.phone_number && <span>📞 {content.phone_number}</span>}
               {content.email_address && <span>✉️ {content.email_address}</span>}
@@ -95,7 +97,7 @@ export default function Header() {
 
       {/* Main Header */}
       <header className="main-header">
-        <div className="container header-inner">
+        <div className="container header-inner" style={{ maxWidth: headerMaxWidth }}>
           <Link to="/" className="logo">
             {theme?.logo ? (
               <img src={theme.logo} alt={content?.site_name} />
@@ -151,7 +153,7 @@ export default function Header() {
 
       {/* Navigation Bar */}
       <nav className="nav-bar">
-        <div className="container nav-inner">
+        <div className="container nav-inner" style={{ maxWidth: headerMaxWidth }}>
           <div className="all-categories">
             <Link to="/products">
               {lang === 'ar' ? 'تصفح جميع الفئات' : 'Browse All Categories'}
