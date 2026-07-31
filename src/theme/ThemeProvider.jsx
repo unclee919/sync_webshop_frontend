@@ -37,6 +37,11 @@ function applyThemeToDocument(theme) {
   root.setProperty('--border-radius-md', String(spacing.border_radius || '15px'))
   root.setProperty('--container-max-width', String(spacing.container_width || '1200px'))
 
+  const dimensions = theme.dimensions || {}
+  root.setProperty('--header-max-width', `${dimensions.header_max_width || 1200}px`)
+  root.setProperty('--hero-height', `${dimensions.hero_height || 450}px`)
+  root.setProperty('--hero-width', `${dimensions.hero_width || 1200}px`)
+
   root.setProperty('--font-heading', String(FONT_STACKS[fonts.heading] || FONT_STACKS.Cairo))
   root.setProperty('--font-body', String(FONT_STACKS[fonts.body] || FONT_STACKS.Cairo))
 

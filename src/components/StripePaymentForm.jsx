@@ -53,6 +53,16 @@ export default function StripePaymentForm({ onPaymentSuccess, amount, currency, 
           ? 'سيتم معالجة الدفع بأمان عبر Stripe' 
           : 'Payment will be processed securely via Stripe'}
       </p>
+      <button 
+        type="button" 
+        className="place-order-btn" 
+        disabled={processing || !stripe}
+        onClick={handleSubmit}
+      >
+        {processing 
+          ? (lang === 'ar' ? 'جاري المعالجة...' : 'Processing...') 
+          : (lang === 'ar' ? 'ادفع الآن' : 'Pay Now')}
+      </button>
     </div>
   )
 }

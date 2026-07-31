@@ -16,6 +16,7 @@ export default function Landing() {
   const banners = c.banners || []
   const categories = c.featured_categories || []
   const trustBadges = c.trust_badges || []
+  const landingSections = c.landing_sections || []
 
   const handlePrevSlide = () => {
     setCurrentSlide((prev) => (prev === 0 ? banners.length - 1 : prev - 1))
@@ -105,6 +106,39 @@ export default function Landing() {
           </div>
         </section>
       )}
+
+      {/* Dynamic Landing Sections */}
+      {landingSections.map((section, idx) => (
+        <section key={idx} className="landing-section">
+          <div className="container">
+            <h2 className="section-title">
+              {lang === 'ar' ? (section.title_ar || section.title_en) : section.title_en}
+            </h2>
+            {(section.subtitle_en || section.subtitle_ar) && (
+              <p className="section-subtitle">
+                {lang === 'ar' ? (section.subtitle_ar || section.subtitle_en) : section.subtitle_en}
+              </p>
+            )}
+            <div className="landing-items-grid">
+              {section.items.map((item) => (
+                <div key={item.item_code} className="product-card">
+                  <Link to={`/products/${encodeURIComponent(item.item_code)}`}>
+                    <div className="product-image">
+                      {item.image && <img src={item.image} alt={item.item_name} />}
+                    </div>
+                    <div className="product-info">
+                      <h3 className="product-name">{item.item_name}</h3>
+                      <div className="product-price">
+                        {item.price.toFixed(2)} {item.currency}
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      ))}
 
       {/* Trust Badges */}
       {trustBadges.length > 0 && (
