@@ -62,7 +62,14 @@ export default function ProductList() {
     fetchCatalog()
     fetchCategories()
 
-    return () => { isMounted = false }
+    const fallback = setTimeout(() => {
+      if (isMounted) setLoading(false)
+    }, 5000)
+
+    return () => { 
+      isMounted = false
+      clearTimeout(fallback)
+    }
   }, [category, search, page])
 
   function goToPage(p) {
