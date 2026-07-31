@@ -1,11 +1,29 @@
-import { createContext, useContext } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
+import { getContent } from '../api/client'
 
-const ContentContext = createContext({ content: {}, loading: false })
+const ContentContext = createContext(null)
 
 export function ContentProvider({ children }) {
-  return <ContentContext.Provider value={{ content: { site_name: 'Sync Webshop' }, loading: false }}>{children}</ContentContext.Provider>
+  const [content, setContent] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    getContent()
+      .then((data) => {
+        setContent(data)
+        setLoading(false)
+      })
+      .catch((err) => {
+        console.error('Content fetch error:', err)
+        setLoading(false)
+      })
+  }, [])
+
+  const value = { content, loading }
+  return <ContentContext.Provider value={value}>{children}</ContentContext.Provider>
 }
 
 export function useContent() {
-  return useContext(ContentContext)
+  const ctx = useContext(ContentContext)
+  return ctx
 }
