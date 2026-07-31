@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getItem } from '../api/client'
 import { useCart } from '../context/CartContext'
-import RoastStamp from '../components/RoastStamp'
+import { useLanguage } from '../context/LanguageContext'
 import './Products.css'
 
 export default function ProductDetail() {
   const { itemCode } = useParams()
+  const { lang, isRtl } = useLanguage()
   const [item, setItem] = useState(null)
   const [error, setError] = useState(null)
   const [qty, setQty] = useState(1)
@@ -21,7 +22,7 @@ export default function ProductDetail() {
 
   if (error) {
     return (
-      <div className="product-detail-page">
+      <div className={`product-detail-page container ${isRtl ? 'rtl' : 'ltr'}`}>
         <p className="products-error">Couldn't load this item: {error}</p>
       </div>
     )
@@ -29,7 +30,7 @@ export default function ProductDetail() {
 
   if (!item) {
     return (
-      <div className="product-detail-page">
+      <div className={`product-detail-page container ${isRtl ? 'rtl' : 'ltr'}`}>
         <p className="products-empty">Loading...</p>
       </div>
     )
@@ -42,83 +43,69 @@ export default function ProductDetail() {
         item_name: item.item_name,
         price: item.price,
         currency: item.currency,
+        image: item.image
       },
       qty
     )
     setAdded(true)
+    setTimeout(() => setAdded(false), 2000)
   }
 
   return (
-    <div className="product-detail-page">
-      <Link to="/products" className="product-detail-back">
-        ← Back to products
-      </Link>
+    <div className={`product-detail-page container ${isRtl ? 'rtl' : 'ltr'}`}>
+      <nav className="breadcrumb">
+        <Link to="/">{lang === 'ar' ? 'الرئيسية' : 'Home'}</Link> / 
+        <Link to="/products">{lang === 'ar' ? 'المنتجات' : 'Products'}</Link> / 
+        <span>{item.item_name}</span>
+      </nav>
 
       <div className="product-detail">
         <div className="product-detail-media">
           {item.image ? (
-            <img src={item.image} alt="" />
+            <img src={item.image} alt={item.item_name} />
           ) : (
-            <span className="product-card-image-empty">No image</span>
+            <div className="no-image-large">{lang === 'ar' ? 'لا توجد صورة' : 'No image'}</div>
           )}
-          <RoastStamp label="fresh" size={56} className="product-detail-stamp" />
         </div>
 
-        <div>
+        <div className="product-detail-info">
           <span className="product-detail-group">{item.item_group}</span>
-          <h1 className="product-detail-name" dir="auto">
-            {item.item_name}
-          </h1>
+          <h1 className="product-detail-name">{item.item_name}</h1>
+          
+          <div className="product-detail-price-row">
+            {item.price != null ? (
+              <div className="price-display">
+                <span className="current-price">{item.price} {item.currency}</span>
+                {item.stock_uom && <span className="uom"> / {item.stock_uom}</span>}
+              </div>
+            ) : (
+              <span className="price-empty">{lang === 'ar' ? 'السعر عند الطلب' : 'Price on request'}</span>
+            )}
+          </div>
 
-          {item.price != null ? (
-            <p className="product-detail-price">
-              {item.price} {item.currency}
-              {item.stock_uom && (
-                <span style={{ fontSize: '0.9rem', opacity: 0.6 }}> / {item.stock_uom}</span>
-              )}
-            </p>
-          ) : (
-            <p className="product-detail-price-empty">Price on request</p>
-          )}
-
-          {item.description && (
+          <div className="product-detail-description-wrapper">
+            <h3>{lang === 'ar' ? 'الوصف' : 'Description'}</h3>
             <div
               className="product-detail-description"
-              dir="auto"
               dangerouslySetInnerHTML={{ __html: item.description }}
             />
-          )}
+          </div>
 
           <div className="product-detail-actions">
             <div className="qty-stepper">
-              <button
-                type="button"
-                onClick={() => setQty((q) => Math.max(1, q - 1))}
-                aria-label="Decrease quantity"
-              >
-                −
-              </button>
-              <input
-                type="number"
-                min={1}
-                value={qty}
-                onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))}
+              <button onClick={() => setQty(q => Math.max(1, q - 1))}>−</button>
+              <input 
+                type="number" 
+                value={qty} 
+                onChange={e => setQty(Math.max(1, parseInt(e.target.value) || 1))} 
               />
-              <button
-                type="button"
-                onClick={() => setQty((q) => q + 1)}
-                aria-label="Increase quantity"
-              >
-                +
-              </button>
+              <button onClick={() => setQty(q => q + 1)}>+</button>
             </div>
-
-            <button
-              type="button"
-              className={`add-to-cart-btn${added ? ' added' : ''}`}
+            <button 
+              className={`add-to-cart-large ${added ? 'added' : ''}`}
               onClick={handleAdd}
             >
-              {added ? 'Added ✓' : 'Add to cart'}
+              {added ? (lang === 'ar' ? 'تمت الإضافة ✓' : 'Added ✓') : (lang === 'ar' ? 'أضف إلى السلة' : 'Add to Cart')}
             </button>
           </div>
         </div>

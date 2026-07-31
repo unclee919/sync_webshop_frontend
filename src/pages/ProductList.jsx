@@ -1,36 +1,36 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { getCatalog } from '../api/client'
+import { useLanguage } from '../context/LanguageContext'
+import { useCart } from '../context/CartContext'
 import './Products.css'
 
 const PAGE_SIZE = 20
 
 export default function ProductList() {
+  const { lang, isRtl } = useLanguage()
+  const { addItem } = useCart()
   const [searchParams, setSearchParams] = useSearchParams()
   const category = searchParams.get('category') || undefined
   const page = Number(searchParams.get('page') || 1)
-
-  const [searchInput, setSearchInput] = useState(searchParams.get('search') || '')
+  const search = searchParams.get('search') || undefined
+  
   const [catalog, setCatalog] = useState(null)
   const [error, setError] = useState(null)
-
-  const search = searchParams.get('search') || undefined
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    setCatalog(null)
+    setLoading(true)
     getCatalog({ itemGroup: category, search, page, pageSize: PAGE_SIZE })
-      .then(setCatalog)
-      .catch((err) => setError(err.message))
+      .then((data) => {
+        setCatalog(data)
+        setLoading(false)
+      })
+      .catch((err) => {
+        setError(err.message)
+        setLoading(false)
+      })
   }, [category, search, page])
-
-  function handleSearchSubmit(e) {
-    e.preventDefault()
-    const next = new URLSearchParams(searchParams)
-    if (searchInput) next.set('search', searchInput)
-    else next.delete('search')
-    next.delete('page')
-    setSearchParams(next)
-  }
 
   function goToPage(p) {
     const next = new URLSearchParams(searchParams)
@@ -40,7 +40,7 @@ export default function ProductList() {
 
   if (error) {
     return (
-      <div className="products-page">
+      <div className="products-page container">
         <p className="products-error">Couldn't load products: {error}</p>
       </div>
     )
@@ -49,73 +49,73 @@ export default function ProductList() {
   const totalPages = catalog ? Math.max(1, Math.ceil(catalog.total_count / PAGE_SIZE)) : 1
 
   return (
-    <div className="products-page">
+    <div className={`products-page container ${isRtl ? 'rtl' : 'ltr'}`}>
       <div className="products-header">
         <h1 className="products-title">
-          {category ? category : 'All products'}
+          {category ? category : (lang === 'ar' ? 'جميع المنتجات' : 'All Products')}
         </h1>
         {catalog && (
-          <span className="products-count">{catalog.total_count} items</span>
+          <span className="products-count">
+            {catalog.total_count} {lang === 'ar' ? 'عناصر' : 'items'}
+          </span>
         )}
       </div>
 
-      <form className="products-search" onSubmit={handleSearchSubmit}>
-        <input
-          type="search"
-          placeholder="Search products..."
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          dir="auto"
-        />
-      </form>
+      {loading && <div className="loading-state">Loading...</div>}
 
-      {!catalog && <p className="products-empty">Loading...</p>}
-
-      {catalog && catalog.items.length === 0 && (
-        <p className="products-empty">No products found.</p>
+      {!loading && catalog && catalog.items.length === 0 && (
+        <p className="products-empty">{lang === 'ar' ? 'لم يتم العثور على منتجات.' : 'No products found.'}</p>
       )}
 
-      {catalog && catalog.items.length > 0 && (
+      {!loading && catalog && catalog.items.length > 0 && (
         <>
           <div className="products-grid">
             {catalog.items.map((item) => (
-              <Link
-                key={item.item_code}
-                to={`/products/${encodeURIComponent(item.item_code)}`}
-                className="product-card"
-              >
-                <div className="product-card-image">
-                  {item.image ? (
-                    <img src={item.image} alt="" />
-                  ) : (
-                    <span className="product-card-image-empty">No image</span>
-                  )}
-                </div>
-                <span className="product-card-group">{item.item_group}</span>
-                <p className="product-card-name" dir="auto">
-                  {item.item_name}
-                </p>
-                {item.price != null ? (
-                  <span className="product-card-price">
-                    {item.price} {item.currency}
-                  </span>
-                ) : (
-                  <span className="product-card-price-empty">Price on request</span>
-                )}
-              </Link>
+              <div key={item.item_code} className="product-card">
+                <Link to={`/products/${encodeURIComponent(item.item_code)}`} className="product-card-link">
+                  <div className="product-card-image">
+                    {item.image ? (
+                      <img src={item.image} alt={item.item_name} />
+                    ) : (
+                      <div className="no-image">{lang === 'ar' ? 'لا توجد صورة' : 'No image'}</div>
+                    )}
+                  </div>
+                  <div className="product-card-info">
+                    <span className="product-card-group">{item.item_group}</span>
+                    <h3 className="product-card-name">{item.item_name}</h3>
+                    <div className="product-card-price-row">
+                      {item.price != null ? (
+                        <span className="product-card-price">
+                          {item.price} {item.currency}
+                        </span>
+                      ) : (
+                        <span className="product-card-price-empty">
+                          {lang === 'ar' ? 'السعر عند الطلب' : 'Price on request'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+                <button 
+                  className="add-to-cart-btn"
+                  onClick={() => addItem(item)}
+                >
+                  {lang === 'ar' ? 'أضف إلى السلة' : 'Add to Cart'}
+                </button>
+              </div>
             ))}
           </div>
 
           {totalPages > 1 && (
             <div className="products-pagination">
               <button disabled={page <= 1} onClick={() => goToPage(page - 1)}>
-                ← Prev
+                {isRtl ? '← السابق' : '← Prev'}
               </button>
-              <span>
-                Page {page} of {totalPages}
+              <span className="page-info">
+                {lang === 'ar' ? `صفحة ${page} من ${totalPages}` : `Page ${page} of ${totalPages}`}
               </span>
               <button disabled={page >= totalPages} onClick={() => goToPage(page + 1)}>
-                Next →
+                {isRtl ? 'التالي →' : 'Next →'}
               </button>
             </div>
           )}

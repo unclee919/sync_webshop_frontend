@@ -14,15 +14,29 @@ const FONT_STACKS = {
 
 function applyThemeToDocument(theme) {
   const root = document.documentElement.style
+  
+  // General Colors
   root.setProperty('--color-primary', theme.colors.primary)
   root.setProperty('--color-secondary', theme.colors.secondary)
   root.setProperty('--color-accent', theme.colors.accent)
   root.setProperty('--color-background', theme.colors.background)
+  
+  // Section Colors
+  root.setProperty('--top-bar-bg', theme.colors.top_bar_bg || '#f8f9fa')
+  root.setProperty('--top-bar-text', theme.colors.top_bar_text || '#333333')
+  root.setProperty('--header-bg', theme.colors.header_bg || '#ffffff')
+  root.setProperty('--header-text', theme.colors.header_text || '#333333')
+  root.setProperty('--nav-bg', theme.colors.nav_bg || '#ffffff')
+  root.setProperty('--nav-text', theme.colors.nav_text || '#333333')
+  root.setProperty('--footer-bg', theme.colors.footer_bg || '#333333')
+  root.setProperty('--footer-text', theme.colors.footer_text || '#ffffff')
+  
+  // Fonts
   root.setProperty('--font-heading', FONT_STACKS[theme.fonts.heading] || FONT_STACKS.Inter)
   root.setProperty('--font-body', FONT_STACKS[theme.fonts.body] || FONT_STACKS.Inter)
-
+  
   document.documentElement.dataset.layout = (theme.layout_style || 'Classic').toLowerCase()
-
+  
   const favicon = document.getElementById('favicon')
   if (favicon && theme.favicon) favicon.href = theme.favicon
 }
@@ -41,8 +55,6 @@ export function ThemeProvider({ children }) {
   }, [])
 
   if (error) {
-    // A broken theme fetch should not render an unstyled, broken-looking
-    // site - show a plain, honest message instead of guessing at defaults.
     return (
       <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
         Couldn't load store settings ({error}). Check VITE_API_BASE_URL and
@@ -52,8 +64,7 @@ export function ThemeProvider({ children }) {
     )
   }
 
-  if (!theme) return null // could add a themed loading skeleton later
-
+  if (!theme) return null
   return <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>
 }
 

@@ -2,13 +2,16 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { createOrder } from '../api/client'
 import { useCart } from '../context/CartContext'
+import { useLanguage } from '../context/LanguageContext'
 import './Cart.css'
 
 export default function Checkout() {
   const { items, clear, total } = useCart()
+  const { lang, isRtl } = useLanguage()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
+  const [address, setAddress] = useState('')
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
@@ -21,8 +24,9 @@ export default function Checkout() {
     setError(null)
     try {
       const order = await createOrder({
-        customer: { name, email, phone },
+        customer: { name, email, phone, address },
         items: items.map((i) => ({ item_code: i.item_code, qty: i.qty })),
+        submit: true
       })
       setResult(order)
       clear()
@@ -35,15 +39,21 @@ export default function Checkout() {
 
   if (result) {
     return (
-      <div className="checkout-page">
-        <div className="checkout-success">
-          <h1>Order placed</h1>
+      <div className={`checkout-page container ${isRtl ? 'rtl' : 'ltr'}`}>
+        <div className="checkout-success-card">
+          <div className="success-icon">✓</div>
+          <h1>{lang === 'ar' ? 'تم تقديم الطلب بنجاح' : 'Order Placed Successfully'}</h1>
           <p>
-            Order <strong>{result.sales_order}</strong> - {result.grand_total} {result.currency}
+            {lang === 'ar' ? 'رقم الطلب:' : 'Order Number:'} <strong>{result.sales_order}</strong>
           </p>
           <p>
-            <Link to="/products">Continue shopping →</Link>
+            {lang === 'ar' ? 'الإجمالي:' : 'Total:'} <strong>{result.grand_total} {result.currency}</strong>
           </p>
+          <div className="success-actions">
+            <Link to="/products" className="btn-primary">
+              {lang === 'ar' ? 'مواصلة التسوق' : 'Continue Shopping'}
+            </Link>
+          </div>
         </div>
       </div>
     )
@@ -51,74 +61,68 @@ export default function Checkout() {
 
   if (!items.length) {
     return (
-      <div className="checkout-page">
-        <h1 className="page-title">Checkout</h1>
-        <p className="cart-empty">
-          Your cart is empty. <Link to="/products">Browse products →</Link>
-        </p>
+      <div className={`checkout-page container ${isRtl ? 'rtl' : 'ltr'}`}>
+        <h1 className="page-title">{lang === 'ar' ? 'الدفع' : 'Checkout'}</h1>
+        <p className="cart-empty">{lang === 'ar' ? 'سلة التسوق فارغة.' : 'Your cart is empty.'}</p>
+        <Link to="/products" className="btn-primary">{lang === 'ar' ? 'تصفح المنتجات' : 'Browse Products'}</Link>
       </div>
     )
   }
 
   return (
-    <div className="checkout-page">
-      <h1 className="page-title">Checkout</h1>
-
+    <div className={`checkout-page container ${isRtl ? 'rtl' : 'ltr'}`}>
+      <h1 className="page-title">{lang === 'ar' ? 'الدفع' : 'Checkout'}</h1>
+      
       <div className="checkout-grid">
-        <form className="checkout-form" onSubmit={handleSubmit}>
-          <div className="checkout-field">
-            <label htmlFor="name">Full name</label>
-            <input
-              id="name"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-          <div className="checkout-field">
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div className="checkout-field">
-            <label htmlFor="phone">Phone</label>
-            <input
-              id="phone"
-              required
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-            />
-          </div>
-
-          {error && <p className="checkout-error">{error}</p>}
-
-          <button type="submit" className="cart-cta" disabled={submitting}>
-            {submitting ? 'Placing order...' : 'Place order'}
-          </button>
-        </form>
-
-        <div className="checkout-order-summary">
-          <h2>Order summary</h2>
-          {items.map((item) => (
-            <div className="checkout-order-row" key={item.item_code}>
-              <span dir="auto">
-                {item.item_name} × {item.qty}
-              </span>
-              <span>
-                {item.price != null ? (item.price * item.qty).toFixed(2) : '—'}
-              </span>
+        <div className="checkout-form-container">
+          <h2 className="section-title-small">{lang === 'ar' ? 'معلومات الشحن' : 'Shipping Information'}</h2>
+          <form className="checkout-form" onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>{lang === 'ar' ? 'الاسم الكامل' : 'Full Name'}</label>
+              <input required value={name} onChange={e => setName(e.target.value)} />
             </div>
-          ))}
-          <div className="checkout-order-total">
-            <span>Total</span>
-            <span>
-              {total.toFixed(2)} {currency}
-            </span>
+            <div className="form-row">
+              <div className="form-group">
+                <label>{lang === 'ar' ? 'البريد الإلكتروني' : 'Email'}</label>
+                <input type="email" required value={email} onChange={e => setEmail(e.target.value)} />
+              </div>
+              <div className="form-group">
+                <label>{lang === 'ar' ? 'رقم الهاتف' : 'Phone'}</label>
+                <input required value={phone} onChange={e => setPhone(e.target.value)} />
+              </div>
+            </div>
+            <div className="form-group">
+              <label>{lang === 'ar' ? 'العنوان بالتفصيل' : 'Detailed Address'}</label>
+              <textarea required value={address} onChange={e => setAddress(e.target.value)} rows="3"></textarea>
+            </div>
+            
+            {error && <div className="error-message">{error}</div>}
+            
+            <button type="submit" className="place-order-btn" disabled={submitting}>
+              {submitting ? (lang === 'ar' ? 'جاري المعالجة...' : 'Processing...') : (lang === 'ar' ? 'تأكيد الطلب' : 'Confirm Order')}
+            </button>
+          </form>
+        </div>
+
+        <div className="checkout-summary-container">
+          <h2 className="section-title-small">{lang === 'ar' ? 'ملخص الطلب' : 'Order Summary'}</h2>
+          <div className="checkout-items">
+            {items.map(item => (
+              <div key={item.item_code} className="checkout-item">
+                <div className="item-img-mini">
+                  {item.image && <img src={item.image} alt="" />}
+                  <span className="item-qty-badge">{item.qty}</span>
+                </div>
+                <div className="item-name-mini">{item.item_name}</div>
+                <div className="item-price-mini">{(item.price * item.qty).toFixed(2)} {item.currency}</div>
+              </div>
+            ))}
+          </div>
+          <div className="summary-footer">
+            <div className="summary-row">
+              <span>{lang === 'ar' ? 'المجموع' : 'Total'}</span>
+              <span className="total-price">{total.toFixed(2)} {currency}</span>
+            </div>
           </div>
         </div>
       </div>

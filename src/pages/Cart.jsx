@@ -1,17 +1,22 @@
 import { Link } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
+import { useLanguage } from '../context/LanguageContext'
 import './Cart.css'
 
 export default function Cart() {
   const { items, setQty, removeItem, total } = useCart()
+  const { lang, isRtl } = useLanguage()
 
   if (!items.length) {
     return (
-      <div className="cart-page">
-        <h1 className="page-title">Cart</h1>
-        <p className="cart-empty">
-          Your cart is empty. <Link to="/products">Browse products →</Link>
-        </p>
+      <div className={`cart-page container ${isRtl ? 'rtl' : 'ltr'}`}>
+        <h1 className="page-title">{lang === 'ar' ? 'سلة التسوق' : 'Shopping Cart'}</h1>
+        <div className="cart-empty-state">
+          <p>{lang === 'ar' ? 'سلة التسوق الخاصة بك فارغة.' : 'Your cart is empty.'}</p>
+          <Link to="/products" className="btn-primary">
+            {lang === 'ar' ? 'تصفح المنتجات ←' : 'Browse products →'}
+          </Link>
+        </div>
       </div>
     )
   }
@@ -19,71 +24,80 @@ export default function Cart() {
   const currency = items[0]?.currency || ''
 
   return (
-    <div className="cart-page">
-      <h1 className="page-title">Cart</h1>
-
-      <div className="cart-list">
-        {items.map((item) => (
-          <div className="cart-row" key={item.item_code}>
-            <div>
-              <p className="cart-row-name" dir="auto">
-                {item.item_name}
-              </p>
-              {item.price != null && (
-                <p className="cart-row-price">
-                  {item.price} {item.currency} each
-                </p>
-              )}
-            </div>
-
-            <div className="cart-row-qty">
-              <button
-                type="button"
-                onClick={() => setQty(item.item_code, item.qty - 1)}
-                aria-label="Decrease quantity"
-              >
-                −
-              </button>
-              <input
-                type="number"
-                min={1}
-                value={item.qty}
-                onChange={(e) => setQty(item.item_code, Number(e.target.value) || 1)}
-              />
-              <button
-                type="button"
-                onClick={() => setQty(item.item_code, item.qty + 1)}
-                aria-label="Increase quantity"
-              >
-                +
-              </button>
-            </div>
-
-            <button
-              type="button"
-              className="cart-row-remove"
-              onClick={() => removeItem(item.item_code)}
-            >
-              Remove
-            </button>
-
-            <span className="cart-row-line-total">
-              {item.price != null ? `${(item.price * item.qty).toFixed(2)} ${item.currency}` : '—'}
-            </span>
+    <div className={`cart-page container ${isRtl ? 'rtl' : 'ltr'}`}>
+      <h1 className="page-title">{lang === 'ar' ? 'سلة التسوق' : 'Shopping Cart'}</h1>
+      
+      <div className="cart-container">
+        <div className="cart-main">
+          <div className="cart-header">
+            <span className="col-product">{lang === 'ar' ? 'المنتج' : 'Product'}</span>
+            <span className="col-price">{lang === 'ar' ? 'السعر' : 'Price'}</span>
+            <span className="col-qty">{lang === 'ar' ? 'الكمية' : 'Quantity'}</span>
+            <span className="col-total">{lang === 'ar' ? 'المجموع' : 'Total'}</span>
           </div>
-        ))}
-      </div>
 
-      <div className="cart-summary">
-        <span>Total</span>
-        <span>
-          {total.toFixed(2)} {currency}
-        </span>
-      </div>
+          <div className="cart-items">
+            {items.map((item) => (
+              <div className="cart-item" key={item.item_code}>
+                <div className="col-product item-info">
+                  <div className="item-image">
+                    {item.image && <img src={item.image} alt={item.item_name} />}
+                  </div>
+                  <div className="item-details">
+                    <Link to={`/products/${encodeURIComponent(item.item_code)}`} className="item-name">
+                      {item.item_name}
+                    </Link>
+                    <button className="remove-btn" onClick={() => removeItem(item.item_code)}>
+                      {lang === 'ar' ? 'إزالة' : 'Remove'}
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="col-price">
+                  {item.price} {item.currency}
+                </div>
 
-      <Link to="/checkout" className="cart-cta">
-        Go to checkout →
-      </Link>
+                <div className="col-qty">
+                  <div className="qty-stepper small">
+                    <button onClick={() => setQty(item.item_code, item.qty - 1)}>−</button>
+                    <input 
+                      type="number" 
+                      value={item.qty} 
+                      onChange={e => setQty(item.item_code, parseInt(e.target.value) || 1)} 
+                    />
+                    <button onClick={() => setQty(item.item_code, item.qty + 1)}>+</button>
+                  </div>
+                </div>
+
+                <div className="col-total">
+                  {(item.price * item.qty).toFixed(2)} {item.currency}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="cart-sidebar">
+          <div className="summary-card">
+            <h2 className="summary-title">{lang === 'ar' ? 'ملخص الطلب' : 'Order Summary'}</h2>
+            <div className="summary-row">
+              <span>{lang === 'ar' ? 'المجموع الفرعي' : 'Subtotal'}</span>
+              <span>{total.toFixed(2)} {currency}</span>
+            </div>
+            <div className="summary-row">
+              <span>{lang === 'ar' ? 'الشحن' : 'Shipping'}</span>
+              <span>{lang === 'ar' ? 'محسوب عند الدفع' : 'Calculated at checkout'}</span>
+            </div>
+            <div className="summary-total">
+              <span>{lang === 'ar' ? 'الإجمالي' : 'Total'}</span>
+              <span>{total.toFixed(2)} {currency}</span>
+            </div>
+            <Link to="/checkout" className="checkout-btn">
+              {lang === 'ar' ? 'إتمام الشراء' : 'Proceed to Checkout'}
+            </Link>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
