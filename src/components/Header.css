@@ -54,7 +54,7 @@
 
 /* Main Header */
 .main-header {
-  padding: 15px 0;
+  padding: var(--header-padding-vertical) 0;
   background-color: var(--header-bg);
   transition: var(--transition-base);
 }
@@ -70,12 +70,14 @@
   gap: 2rem;
   max-width: var(--header-max-width);
   margin: 0 auto;
+  min-height: 50px;
 }
 
 .logo img {
-  height: 45px;
-  width: auto;
+  height: var(--logo-height);
+  width: var(--logo-width);
   transition: var(--transition-base);
+  object-fit: contain;
 }
 
 .site-header-wrapper.compact .logo img {
@@ -91,7 +93,7 @@
 /* Search */
 .search-container {
   flex: 1;
-  max-width: 600px;
+  max-width: var(--search-bar-max-width);
   position: relative;
 }
 
@@ -106,7 +108,8 @@
 .search-form input {
   flex: 1;
   border: none;
-  padding: 12px 20px;
+  padding: 0 20px;
+  height: var(--search-bar-height);
   font-size: 0.95rem;
   outline: none;
 }
@@ -244,7 +247,10 @@
 /* Nav Bar */
 .nav-bar {
   background-color: var(--nav-bg);
-  padding: 12px 0;
+  padding: 0;
+  height: var(--nav-bar-height);
+  display: flex;
+  align-items: center;
   color: var(--nav-text);
 }
 
