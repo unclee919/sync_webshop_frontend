@@ -83,7 +83,8 @@ button {
 }
 
 /* Oasis Specific Component Refinements */
-[data-layout="oasis"] .product-card {
+[data-layout="oasis"] .product-card,
+[data-layout="bold"] .product-card {
   border: 1px solid #ececec;
   border-radius: var(--border-radius-md);
   overflow: hidden;
@@ -91,13 +92,15 @@ button {
   background: #fff;
 }
 
-[data-layout="oasis"] .product-card:hover {
+[data-layout="oasis"] .product-card:hover,
+[data-layout="bold"] .product-card:hover {
   box-shadow: var(--shadow-md);
   border-color: var(--color-secondary);
   transform: translateY(-5px);
 }
 
-[data-layout="oasis"] .btn-primary {
+[data-layout="oasis"] .btn-primary,
+[data-layout="bold"] .btn-primary {
   background-color: var(--color-secondary);
   color: #fff;
   border-radius: var(--border-radius-sm);
@@ -105,11 +108,13 @@ button {
   font-weight: 600;
 }
 
-[data-layout="oasis"] .btn-primary:hover {
+[data-layout="oasis"] .btn-primary:hover,
+[data-layout="bold"] .btn-primary:hover {
   background-color: var(--color-primary);
 }
 
-[data-layout="oasis"] .badge-sale {
+[data-layout="oasis"] .badge-sale,
+[data-layout="bold"] .badge-sale {
   background-color: var(--color-danger);
   color: #fff;
   padding: 5px 10px;
@@ -118,17 +123,20 @@ button {
 }
 
 /* Header & Nav */
-[data-layout="oasis"] .main-header {
+[data-layout="oasis"] .main-header,
+[data-layout="bold"] .main-header {
   padding: 20px 0;
   border-bottom: 1px solid #f0f0f0;
 }
 
-[data-layout="oasis"] .nav-bar {
+[data-layout="oasis"] .nav-bar,
+[data-layout="bold"] .nav-bar {
   background-color: var(--nav-bg);
   padding: 10px 0;
 }
 
-[data-layout="oasis"] .nav-links a {
+[data-layout="oasis"] .nav-links a,
+[data-layout="bold"] .nav-links a {
   color: var(--nav-text);
   font-weight: 600;
   padding: 5px 15px;
@@ -138,7 +146,8 @@ button {
   color: var(--color-accent);
 }
 
-[data-layout="oasis"] .search-form {
+[data-layout="oasis"] .search-form,
+[data-layout="bold"] .search-form {
   border: 2px solid var(--color-secondary);
   border-radius: var(--border-radius-sm);
   display: flex;
@@ -151,8 +160,21 @@ button {
   flex-grow: 1;
 }
 
-[data-layout="oasis"] .search-form button {
+[data-layout="oasis"] .search-form button,
+[data-layout="bold"] .search-form button {
   background: var(--color-secondary);
   color: #fff;
   padding: 10px 20px;
+}
+
+[data-layout="oasis"] .all-categories a,
+[data-layout="bold"] .all-categories a {
+  background-color: var(--color-accent);
+  color: var(--color-primary);
+  padding: 10px 20px;
+  border-radius: var(--border-radius-sm);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
