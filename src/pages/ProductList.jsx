@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { getCatalog, getCategories } from '../api/client'
 import { useLanguage } from '../context/LanguageContext'
@@ -46,10 +46,8 @@ export default function ProductList() {
         })
         if (isMounted) {
           setCatalog(catalogData)
-          // Set price range from API response
           if (catalogData.price_range) {
             setPriceRange(catalogData.price_range)
-            // Initialize slider values only if not already set by user
             if (!priceFilterApplied) {
               setMinPrice(catalogData.price_range.min_price)
               setMaxPrice(catalogData.price_range.max_price)
@@ -79,14 +77,7 @@ export default function ProductList() {
     fetchCatalog()
     fetchCategories()
 
-    const fallback = setTimeout(() => {
-      if (isMounted) setLoading(false)
-    }, 5000)
-
-    return () => { 
-      isMounted = false
-      clearTimeout(fallback)
-    }
+    return () => { isMounted = false }
   }, [category, search, page, priceFilterApplied, minPrice, maxPrice])
 
   function goToPage(p) {
@@ -104,7 +95,6 @@ export default function ProductList() {
     }
     next.set('page', 1)
     setSearchParams(next)
-    // Reset price filter when changing category
     setPriceFilterApplied(false)
   }
 
@@ -125,14 +115,27 @@ export default function ProductList() {
   }
 
   const totalPages = catalog ? Math.max(1, Math.ceil(catalog.total_count / PAGE_SIZE)) : 1
-  const showSidebar = content?.show_category_sidebar
-  const sidebarWidth = content?.sidebar_width || 220
+  const showSidebar = content?.show_category_sidebar ?? true
+  const sidebarWidth = content?.sidebar_width || 250
 
   return (
     <div className={`products-page container ${isRtl ? 'rtl' : 'ltr'}`}>
       <SEOHead 
         title={category || (lang === 'ar' ? 'جميع المنتجات' : 'All Products')}
       />
+      
+      <div className="breadcrumb">
+        <Link to="/">{lang === 'ar' ? 'الرئيسية' : 'Home'}</Link>
+        <span>/</span>
+        <span>{lang === 'ar' ? 'المنتجات' : 'Products'}</span>
+        {category && (
+          <>
+            <span>/</span>
+            <span>{category}</span>
+          </>
+        )}
+      </div>
+
       <div className="products-layout">
         {showSidebar && (
           <aside className="products-sidebar" style={{ flex: `0 0 ${sidebarWidth}px` }}>
@@ -154,7 +157,7 @@ export default function ProductList() {
               </ul>
             </div>
 
-            {content?.show_price_filter && priceRange.max_price > 0 && (
+            {(content?.show_price_filter ?? true) && priceRange.max_price > 0 && (
               <div className="sidebar-widget">
                 <h3 className="widget-title">{lang === 'ar' ? 'تصفية حسب السعر' : 'Filter by Price'}</h3>
                 <div className="price-filter">
@@ -163,8 +166,6 @@ export default function ProductList() {
                       <label>{lang === 'ar' ? 'من' : 'Min'}</label>
                       <input
                         type="number"
-                        min={priceRange.min_price}
-                        max={priceRange.max_price}
                         value={minPrice ?? priceRange.min_price}
                         onChange={(e) => setMinPrice(Number(e.target.value))}
                         className="price-input"
@@ -175,31 +176,11 @@ export default function ProductList() {
                       <label>{lang === 'ar' ? 'إلى' : 'Max'}</label>
                       <input
                         type="number"
-                        min={priceRange.min_price}
-                        max={priceRange.max_price}
                         value={maxPrice ?? priceRange.max_price}
                         onChange={(e) => setMaxPrice(Number(e.target.value))}
                         className="price-input"
                       />
                     </div>
-                  </div>
-                  <div className="price-range-slider">
-                    <input
-                      type="range"
-                      min={priceRange.min_price}
-                      max={priceRange.max_price}
-                      value={minPrice ?? priceRange.min_price}
-                      onChange={(e) => setMinPrice(Number(e.target.value))}
-                      className="range-slider range-slider-min"
-                    />
-                    <input
-                      type="range"
-                      min={priceRange.min_price}
-                      max={priceRange.max_price}
-                      value={maxPrice ?? priceRange.max_price}
-                      onChange={(e) => setMaxPrice(Number(e.target.value))}
-                      className="range-slider range-slider-max"
-                    />
                   </div>
                   <div className="price-filter-actions">
                     <button className="price-filter-btn" onClick={handlePriceFilter}>
@@ -207,7 +188,7 @@ export default function ProductList() {
                     </button>
                     {priceFilterApplied && (
                       <button className="price-reset-btn" onClick={handleResetPriceFilter}>
-                        {lang === 'ar' ? 'إعادة تعيين' : 'Reset'}
+                        {lang === 'ar' ? 'إعادة' : 'Reset'}
                       </button>
                     )}
                   </div>
@@ -224,73 +205,85 @@ export default function ProductList() {
             </h1>
             {catalog && (
               <span className="products-count">
-                {catalog.total_count} {lang === 'ar' ? 'عناصر' : 'items'}
+                {lang === 'ar' ? `تم العثور على ${catalog.total_count} منتج` : `Found ${catalog.total_count} products`}
               </span>
             )}
           </div>
 
-          {error && (
-            <div className="products-error-box" style={{ padding: '1rem', background: '#fee', color: '#c00', borderRadius: '8px', marginBottom: '1rem' }}>
-              <p className="products-error">Couldn't load products: {error}</p>
-              <button onClick={() => window.location.reload()}>Retry</button>
+          {loading ? (
+            <div className="loading-state">{lang === 'ar' ? 'جاري التحميل...' : 'Loading...'}</div>
+          ) : error ? (
+            <div className="error-box">
+              <p>{error}</p>
+              <button onClick={() => window.location.reload()}>{lang === 'ar' ? 'إعادة المحاولة' : 'Retry'}</button>
             </div>
-          )}
-
-          {loading && <div className="loading-state">Loading...</div>}
-
-          {!loading && !error && catalog && catalog.items.length === 0 && (
-            <p className="products-empty">{lang === 'ar' ? 'لم يتم العثور على منتجات.' : 'No products found.'}</p>
-          )}
-
-          {!loading && !error && catalog && catalog.items.length > 0 && (
+          ) : catalog?.items.length === 0 ? (
+            <div className="empty-state">
+              <p>{lang === 'ar' ? 'لا توجد منتجات في هذه الفئة.' : 'No products found in this category.'}</p>
+            </div>
+          ) : (
             <>
               <div className="products-grid">
                 {catalog.items.map((item) => (
                   <div key={item.item_code} className="product-card">
-                    <Link to={`/products/${encodeURIComponent(item.item_code)}`} className="product-card-link">
-                      <div className="product-card-image">
-                        {item.image ? (
-                          <img src={item.image} alt={item.item_name} />
-                        ) : (
-                          <div className="no-image">{lang === 'ar' ? 'لا توجد صورة' : 'No image'}</div>
-                        )}
-                      </div>
-                      <div className="product-card-info">
-                        <span className="product-card-group">{item.item_group}</span>
-                        <h3 className="product-card-name">{item.item_name}</h3>
-                        <div className="product-card-price-row">
-                          {item.price != null ? (
-                            <span className="product-card-price">
-                              {item.price} {item.currency}
-                            </span>
-                          ) : (
-                            <span className="product-card-price-empty">
-                              {lang === 'ar' ? 'السعر عند الطلب' : 'Price on request'}
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                    <Link to={`/products/${encodeURIComponent(item.item_code)}`} className="product-img-link">
+                      {item.image ? (
+                        <img src={item.image} alt={item.item_name} loading="lazy" />
+                      ) : (
+                        <div className="no-image">{lang === 'ar' ? 'لا توجد صورة' : 'No image'}</div>
+                      )}
                     </Link>
-                    <button 
-                      className="add-to-cart-btn"
-                      onClick={() => addItem(item)}
-                    >
-                      {lang === 'ar' ? 'أضف إلى السلة' : 'Add to Cart'}
-                    </button>
+                    <div className="product-content">
+                      <span className="product-cat">{item.item_group}</span>
+                      <h3 className="product-title">
+                        <Link to={`/products/${encodeURIComponent(item.item_code)}`}>
+                          {item.item_name}
+                        </Link>
+                      </h3>
+                      <div className="product-card-bottom">
+                        <div className="product-price">
+                          <span className="current-price">
+                            {item.price ? `${item.price.toFixed(2)} ${item.currency}` : (lang === 'ar' ? 'عند الطلب' : 'On Request')}
+                          </span>
+                        </div>
+                        <button 
+                          className="add-to-cart-btn"
+                          onClick={() => addItem(item)}
+                        >
+                          {lang === 'ar' ? 'أضف' : 'Add'}
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
 
               {totalPages > 1 && (
-                <div className="products-pagination">
-                  <button disabled={page <= 1} onClick={() => goToPage(page - 1)}>
-                    {isRtl ? '← السابق' : '← Prev'}
+                <div className="pagination">
+                  <button 
+                    className="pagination-btn" 
+                    disabled={page <= 1} 
+                    onClick={() => goToPage(page - 1)}
+                  >
+                    {isRtl ? 'السابق' : 'Prev'}
                   </button>
-                  <span className="page-info">
-                    {lang === 'ar' ? `صفحة ${page} من ${totalPages}` : `Page ${page} of ${totalPages}`}
-                  </span>
-                  <button disabled={page >= totalPages} onClick={() => goToPage(page + 1)}>
-                    {isRtl ? 'التالي →' : 'Next →'}
+                  <div className="pagination-numbers">
+                    {[...Array(totalPages)].map((_, i) => (
+                      <button
+                        key={i + 1}
+                        className={`pagination-number ${page === i + 1 ? 'active' : ''}`}
+                        onClick={() => goToPage(i + 1)}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                  </div>
+                  <button 
+                    className="pagination-btn" 
+                    disabled={page >= totalPages} 
+                    onClick={() => goToPage(page + 1)}
+                  >
+                    {isRtl ? 'التالي' : 'Next'}
                   </button>
                 </div>
               )}

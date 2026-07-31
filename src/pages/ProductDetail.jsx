@@ -23,16 +23,16 @@ export default function ProductDetail() {
 
   if (error) {
     return (
-      <div className={`product-detail-page container ${isRtl ? 'rtl' : 'ltr'}`}>
-        <p className="products-error">Couldn't load this item: {error}</p>
+      <div className={`products-page container ${isRtl ? 'rtl' : 'ltr'}`}>
+        <p className="error-box">Couldn't load this item: {error}</p>
       </div>
     )
   }
 
   if (!item) {
     return (
-      <div className={`product-detail-page container ${isRtl ? 'rtl' : 'ltr'}`}>
-        <p className="products-empty">Loading...</p>
+      <div className={`products-page container ${isRtl ? 'rtl' : 'ltr'}`}>
+        <p className="loading-state">Loading...</p>
       </div>
     )
   }
@@ -52,72 +52,74 @@ export default function ProductDetail() {
     setTimeout(() => setAdded(false), 2000)
   }
 
-  // Build SEO description from item details
-  const seoDescription = item.price 
-    ? `${item.item_name} - ${item.price} ${item.currency}` 
-    : item.item_name
-
   return (
-    <div className={`product-detail-page container ${isRtl ? 'rtl' : 'ltr'}`}>
+    <div className={`products-page container ${isRtl ? 'rtl' : 'ltr'}`}>
       <SEOHead 
         title={item.item_name}
-        description={seoDescription}
+        description={item.item_name}
         image={item.image}
         type="product"
       />
-      <nav className="breadcrumb">
-        <Link to="/">{lang === 'ar' ? 'الرئيسية' : 'Home'}</Link> / 
-        <Link to="/products">{lang === 'ar' ? 'المنتجات' : 'Products'}</Link> / 
+      
+      <div className="breadcrumb">
+        <Link to="/">{lang === 'ar' ? 'الرئيسية' : 'Home'}</Link>
+        <span>/</span>
+        <Link to="/products">{lang === 'ar' ? 'المنتجات' : 'Products'}</Link>
+        <span>/</span>
         <span>{item.item_name}</span>
-      </nav>
+      </div>
 
-      <div className="product-detail">
-        <div className="product-detail-media">
+      <div className="product-detail-layout">
+        <div className="product-gallery">
           {item.image ? (
-            <img src={item.image} alt={item.item_name} />
+            <img src={item.image} alt={item.item_name} className="main-image" />
           ) : (
             <div className="no-image-large">{lang === 'ar' ? 'لا توجد صورة' : 'No image'}</div>
           )}
         </div>
 
-        <div className="product-detail-info">
-          <span className="product-detail-group">{item.item_group}</span>
-          <h1 className="product-detail-name">{item.item_name}</h1>
+        <div className="product-info">
+          <span className="product-cat">{item.item_group}</span>
+          <h1>{item.item_name}</h1>
           
-          <div className="product-detail-price-row">
+          <div className="detail-price">
             {item.price != null ? (
-              <div className="price-display">
-                <span className="current-price">{item.price} {item.currency}</span>
-                {item.stock_uom && <span className="uom"> / {item.stock_uom}</span>}
-              </div>
+              <span className="current-price">
+                {item.price.toFixed(2)} {item.currency}
+              </span>
             ) : (
               <span className="price-empty">{lang === 'ar' ? 'السعر عند الطلب' : 'Price on request'}</span>
             )}
           </div>
 
           <div className="product-detail-description-wrapper">
-            <h3>{lang === 'ar' ? 'الوصف' : 'Description'}</h3>
             <div
               className="product-detail-description"
               dangerouslySetInnerHTML={{ __html: item.description }}
             />
           </div>
 
-          <div className="product-detail-actions">
-            <div className="qty-stepper">
-              <button onClick={() => setQty(q => Math.max(1, q - 1))}>−</button>
+          <ul className="product-meta">
+            <li>{lang === 'ar' ? 'رمز المنتج:' : 'Item Code:'} <span>{item.item_code}</span></li>
+            <li>{lang === 'ar' ? 'الفئة:' : 'Category:'} <span>{item.item_group}</span></li>
+            {item.stock_uom && <li>{lang === 'ar' ? 'الوحدة:' : 'Unit:'} <span>{item.stock_uom}</span></li>}
+          </ul>
+
+          <div className="detail-actions">
+            <div className="qty-input">
+              <button className="qty-btn" onClick={() => setQty(q => Math.max(1, q - 1))}>−</button>
               <input 
                 type="number" 
                 value={qty} 
                 onChange={e => setQty(Math.max(1, parseInt(e.target.value) || 1))} 
               />
-              <button onClick={() => setQty(q => q + 1)}>+</button>
+              <button className="qty-btn" onClick={() => setQty(q => q + 1)}>+</button>
             </div>
             <button 
-              className={`add-to-cart-large ${added ? 'added' : ''}`}
+              className={`add-cart-large ${added ? 'added' : ''}`}
               onClick={handleAdd}
             >
-              {added ? (lang === 'ar' ? 'تمت الإضافة ✓' : 'Added ✓') : (lang === 'ar' ? 'أضف إلى السلة' : 'Add to Cart')}
+              {added ? (lang === 'ar' ? 'تمت الإضافة' : 'Added') : (lang === 'ar' ? 'أضف إلى السلة' : 'Add to Cart')}
             </button>
           </div>
         </div>
