@@ -45,13 +45,17 @@ export default function ProductList() {
           maxPrice: priceFilterApplied ? maxPrice : undefined
         })
         if (isMounted) {
-          setCatalog(catalogData)
-          if (catalogData.price_range) {
-            setPriceRange(catalogData.price_range)
-            if (!priceFilterApplied) {
-              setMinPrice(catalogData.price_range.min_price)
-              setMaxPrice(catalogData.price_range.max_price)
+          if (catalogData) {
+            setCatalog(catalogData)
+            if (catalogData.price_range) {
+              setPriceRange(catalogData.price_range)
+              if (!priceFilterApplied) {
+                setMinPrice(catalogData.price_range.min_price)
+                setMaxPrice(catalogData.price_range.max_price)
+              }
             }
+          } else {
+            setCatalog({ items: [], total_count: 0 })
           }
           setLoading(false)
         }
