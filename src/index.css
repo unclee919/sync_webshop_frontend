@@ -24,6 +24,32 @@ body {
   background: var(--color-background);
   color: var(--color-accent);
   font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Oasis Layout Refinements */
+[data-layout="oasis"] .product-card,
+[data-layout="oasis"] .sidebar-widget,
+[data-layout="oasis"] .add-to-cart-btn,
+[data-layout="oasis"] .search-form {
+  border-radius: 15px;
+}
+
+[data-layout="oasis"] .main-header {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+[data-layout="oasis"] .nav-bar {
+  background-color: var(--color-primary);
+}
+
+[data-layout="oasis"] .nav-links a {
+  color: #ffffff;
+}
+
+[data-layout="oasis"] .all-categories a {
+  background-color: var(--color-accent);
+  color: #ffffff;
 }
 
 h1, h2, h3, h4 {
