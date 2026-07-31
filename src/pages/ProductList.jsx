@@ -24,22 +24,21 @@ export default function ProductList() {
 
   useEffect(() => {
     let isMounted = true
+    console.log("ProductList: Fetching data for", { category, search, page })
     setLoading(true)
+    setError(null)
     
-    async function fetchData() {
+    async function fetchCatalog() {
       try {
-        const [catalogData, categoriesData] = await Promise.all([
-          getCatalog({ itemGroup: category, search, page, pageSize: PAGE_SIZE }),
-          getCategories()
-        ])
-        
+        console.log("ProductList: Calling getCatalog...")
+        const catalogData = await getCatalog({ itemGroup: category, search, page, pageSize: PAGE_SIZE })
+        console.log("ProductList: getCatalog success", catalogData)
         if (isMounted) {
           setCatalog(catalogData)
-          setCategories(categoriesData || [])
           setLoading(false)
         }
       } catch (err) {
-        console.error("Fetch error:", err)
+        console.error("ProductList: getCatalog error", err)
         if (isMounted) {
           setError(err.message)
           setLoading(false)
@@ -47,7 +46,22 @@ export default function ProductList() {
       }
     }
 
-    fetchData()
+    async function fetchCategories() {
+      try {
+        console.log("ProductList: Calling getCategories...")
+        const categoriesData = await getCategories()
+        console.log("ProductList: getCategories success", categoriesData)
+        if (isMounted) {
+          setCategories(categoriesData || [])
+        }
+      } catch (err) {
+        console.error("ProductList: getCategories error", err)
+      }
+    }
+
+    fetchCatalog()
+    fetchCategories()
+
     return () => { isMounted = false }
   }, [category, search, page])
 
@@ -84,7 +98,7 @@ export default function ProductList() {
                     {lang === 'ar' ? 'جميع المنتجات' : 'All Products'}
                   </button>
                 </li>
-                {categories.map((cat) => (
+                {categories && categories.map((cat) => (
                   <li key={cat.name} className={category === cat.name ? 'active' : ''}>
                     <button onClick={() => handleCategoryClick(cat.name)}>
                       {cat.label}
@@ -118,7 +132,7 @@ export default function ProductList() {
           </div>
 
           {error && (
-            <div className="products-error-box">
+            <div className="products-error-box" style={{ padding: '1rem', background: '#fee', color: '#c00', borderRadius: '8px', marginBottom: '1rem' }}>
               <p className="products-error">Couldn't load products: {error}</p>
               <button onClick={() => window.location.reload()}>Retry</button>
             </div>
