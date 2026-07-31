@@ -19,28 +19,28 @@ function applyThemeToDocument(theme) {
   const fonts = theme.fonts || {}
   const spacing = theme.spacing || {}
 
-  root.setProperty('--color-primary', colors.primary || '#253D4E')
-  root.setProperty('--color-secondary', colors.secondary || '#84B082')
-  root.setProperty('--color-accent', colors.accent || '#FDC040')
-  root.setProperty('--color-danger', colors.danger || '#F74B81')
-  root.setProperty('--color-background', colors.background || '#ffffff')
+  root.setProperty('--color-primary', String(colors.primary || '#253D4E'))
+  root.setProperty('--color-secondary', String(colors.secondary || '#84B082'))
+  root.setProperty('--color-accent', String(colors.accent || '#FDC040'))
+  root.setProperty('--color-danger', String(colors.danger || '#F74B81'))
+  root.setProperty('--color-background', String(colors.background || '#ffffff'))
 
-  root.setProperty('--top-bar-bg', colors.top_bar_bg || '#ffffff')
-  root.setProperty('--top-bar-text', colors.top_bar_text || '#253D4E')
-  root.setProperty('--header-bg', colors.header_bg || '#ffffff')
-  root.setProperty('--header-text', colors.header_text || '#253D4E')
-  root.setProperty('--nav-bg', colors.nav_bg || '#84B082')
-  root.setProperty('--nav-text', colors.nav_text || '#ffffff')
-  root.setProperty('--footer-bg', colors.footer_bg || '#253D4E')
-  root.setProperty('--footer-text', colors.footer_text || '#ffffff')
+  root.setProperty('--top-bar-bg', String(colors.top_bar_bg || '#ffffff'))
+  root.setProperty('--top-bar-text', String(colors.top_bar_text || '#253D4E'))
+  root.setProperty('--header-bg', String(colors.header_bg || '#ffffff'))
+  root.setProperty('--header-text', String(colors.header_text || '#253D4E'))
+  root.setProperty('--nav-bg', String(colors.nav_bg || '#84B082'))
+  root.setProperty('--nav-text', String(colors.nav_text || '#ffffff'))
+  root.setProperty('--footer-bg', String(colors.footer_bg || '#253D4E'))
+  root.setProperty('--footer-text', String(colors.footer_text || '#ffffff'))
 
-  root.setProperty('--border-radius-md', spacing.border_radius || '15px')
-  root.setProperty('--container-max-width', spacing.container_width || '1200px')
+  root.setProperty('--border-radius-md', String(spacing.border_radius || '15px'))
+  root.setProperty('--container-max-width', String(spacing.container_width || '1200px'))
 
-  root.setProperty('--font-heading', FONT_STACKS[fonts.heading] || FONT_STACKS.Cairo)
-  root.setProperty('--font-body', FONT_STACKS[fonts.body] || FONT_STACKS.Cairo)
+  root.setProperty('--font-heading', String(FONT_STACKS[fonts.heading] || FONT_STACKS.Cairo))
+  root.setProperty('--font-body', String(FONT_STACKS[fonts.body] || FONT_STACKS.Cairo))
 
-  document.documentElement.dataset.layout = (theme.layout_style || 'Oasis').toLowerCase()
+  document.documentElement.dataset.layout = String(theme.layout_style || 'Oasis').toLowerCase()
 }
 
 export function ThemeProvider({ children }) {
@@ -57,7 +57,6 @@ export function ThemeProvider({ children }) {
       .catch((err) => console.error('Theme fetch error:', err))
   }, [])
 
-  // Don't block rendering if theme is not loaded yet
   return <ThemeContext.Provider value={theme || { colors: {}, fonts: {} }}>{children}</ThemeContext.Provider>
 }
 
