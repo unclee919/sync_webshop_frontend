@@ -25,38 +25,63 @@ async function callMethod(path, { method = 'GET', params, body, apiKey, apiSecre
   }
   return data?.message
 }
+
 export function getTheme() {
   return callMethod('sync_webshop.api.theme.get_theme')
 }
+
 export function getContent() {
   return callMethod('sync_webshop.api.content.get_content')
 }
+
 export function getCatalog({ itemGroup, search, page = 1, pageSize = 20, minPrice, maxPrice } = {}) {
   return callMethod('sync_webshop.api.catalog.get_catalog', {
     params: { item_group: itemGroup, search, page, page_size: pageSize, min_price: minPrice, max_price: maxPrice },
   })
 }
+
 export function getCategories() {
   return callMethod('sync_webshop.api.catalog.get_categories')
 }
+
 export function getSearchSuggestions(search) {
   return callMethod('sync_webshop.api.catalog.get_search_suggestions', {
     params: { search },
   })
 }
+
 export function getItem(itemCode) {
   return callMethod('sync_webshop.api.catalog.get_item', {
     params: { item_code: itemCode },
   })
 }
+
 export function getMyOrders({ email, phone } = {}) {
   return callMethod('sync_webshop.api.orders.list_my_orders', {
     params: { email, phone },
   })
 }
-export function createOrder({ customer, items, submit = false }) {
+
+export function getOrderStatus(orderName, { email, phone } = {}) {
+  return callMethod('sync_webshop.api.orders.get_order_status', {
+    params: { order_name: orderName, email, phone },
+  })
+}
+
+export function getCheckoutSettings() {
+  return callMethod('sync_webshop.api.checkout.get_checkout_settings')
+}
+
+export function createOrder({ customer, items, payment_method, stripe_payment_intent, delivery_date, submit = false }) {
   return callMethod('sync_webshop.api.checkout.create_order', {
     method: 'POST',
-    body: { customer, items, submit },
+    body: { customer, items, payment_method, stripe_payment_intent, delivery_date, submit },
+  })
+}
+
+export function createPaymentIntent(amount, currency = 'gbp') {
+  return callMethod('sync_webshop.api.payment.create_payment_intent', {
+    method: 'POST',
+    body: { amount, currency },
   })
 }

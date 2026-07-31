@@ -1,11 +1,24 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { useLanguage } from '../context/LanguageContext'
+import { getCheckoutSettings } from '../api/client'
 import './Cart.css'
 
 export default function Cart() {
   const { items, setQty, removeItem, total } = useCart()
   const { lang, isRtl } = useLanguage()
+  const [shippingRule, setShippingRule] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    getCheckoutSettings().then(settings => {
+      if (settings.shipping_rules && settings.shipping_rules.length > 0) {
+        setShippingRule(settings.shipping_rules[0])
+      }
+      setLoading(false)
+    }).catch(() => setLoading(false))
+  }, [])
 
   if (!items.length) {
     return (
@@ -22,11 +35,33 @@ export default function Cart() {
   }
 
   const currency = items[0]?.currency || ''
+  const threshold = shippingRule?.free_shipping_threshold || 0
+  const progress = threshold > 0 ? Math.min((total / threshold) * 100, 100) : 0
+  const remaining = threshold - total
 
   return (
     <div className={`cart-page container ${isRtl ? 'rtl' : 'ltr'}`}>
       <h1 className="page-title">{lang === 'ar' ? 'سلة التسوق' : 'Shopping Cart'}</h1>
       
+      {threshold > 0 && (
+        <div className="shipping-progress-container">
+          <div className="shipping-progress-text">
+            {total >= threshold ? (
+              <span>{lang === 'ar' ? 'مبروك! لقد حصلت على شحن مجاني' : 'Congratulations! You have free shipping'}</span>
+            ) : (
+              <span>
+                {lang === 'ar' 
+                  ? `بقي ${remaining.toFixed(2)} ${currency} للحصول على شحن مجاني` 
+                  : `You're ${remaining.toFixed(2)} ${currency} away from free shipping`}
+              </span>
+            )}
+          </div>
+          <div className="shipping-progress-bar-bg">
+            <div className="shipping-progress-bar-fill" style={{ width: `${progress}%` }}></div>
+          </div>
+        </div>
+      )}
+
       <div className="cart-container">
         <div className="cart-main">
           <div className="cart-header">
@@ -86,11 +121,19 @@ export default function Cart() {
             </div>
             <div className="summary-row">
               <span>{lang === 'ar' ? 'الشحن' : 'Shipping'}</span>
-              <span>{lang === 'ar' ? 'محسوب عند الدفع' : 'Calculated at checkout'}</span>
+              <span>
+                {shippingRule ? (
+                  total >= threshold ? (lang === 'ar' ? 'مجاني' : 'Free') : `${shippingRule.shipping_cost.toFixed(2)} ${currency}`
+                ) : (
+                  lang === 'ar' ? 'محسوب عند الدفع' : 'Calculated at checkout'
+                )}
+              </span>
             </div>
             <div className="summary-total">
               <span>{lang === 'ar' ? 'الإجمالي' : 'Total'}</span>
-              <span>{total.toFixed(2)} {currency}</span>
+              <span>
+                {(total + (shippingRule && total < threshold ? shippingRule.shipping_cost : 0)).toFixed(2)} {currency}
+              </span>
             </div>
             <Link to="/checkout" className="checkout-btn">
               {lang === 'ar' ? 'إتمام الشراء' : 'Proceed to Checkout'}

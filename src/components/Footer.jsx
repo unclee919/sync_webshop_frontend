@@ -30,6 +30,7 @@ export default function Footer() {
               <li><Link to="/products">{lang === 'ar' ? 'المنتجات' : 'Products'}</Link></li>
               <li><Link to="/cart">{lang === 'ar' ? 'السلة' : 'Cart'}</Link></li>
               <li><Link to="/dashboard">{lang === 'ar' ? 'حسابي' : 'Account'}</Link></li>
+              <li><Link to="/track">{lang === 'ar' ? 'تتبع الطلب' : 'Track Order'}</Link></li>
             </ul>
           </div>
 
