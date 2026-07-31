@@ -1,18 +1,35 @@
 :root {
-  --color-primary: #21504C;
-  --color-secondary: #84B082;
-  --color-accent: #FF9900;
+  /* Oasis Market Palette */
+  --color-primary: #253D4E; /* Dark Navy/Green */
+  --color-secondary: #84B082; /* Light Green */
+  --color-accent: #FDC040; /* Yellow/Gold */
+  --color-danger: #F74B81; /* Pink/Red for badges */
   --color-background: #ffffff;
-  --top-bar-bg: #f8f9fa;
-  --top-bar-text: #333333;
+  --color-text-main: #253D4E;
+  --color-text-muted: #7E7E7E;
+
+  /* Section Colors */
+  --top-bar-bg: #ffffff;
+  --top-bar-text: #253D4E;
   --header-bg: #ffffff;
-  --header-text: #333333;
-  --nav-bg: #ffffff;
-  --nav-text: #333333;
-  --footer-bg: #21504C;
+  --header-text: #253D4E;
+  --nav-bg: #84B082;
+  --nav-text: #ffffff;
+  --footer-bg: #253D4E;
   --footer-text: #ffffff;
-  --font-heading: 'Inter', sans-serif;
-  --font-body: 'Inter', sans-serif;
+
+  /* Typography */
+  --font-heading: 'Cairo', sans-serif;
+  --font-body: 'Cairo', sans-serif;
+  
+  /* Spacing & Effects */
+  --container-max-width: 1200px;
+  --border-radius-sm: 8px;
+  --border-radius-md: 15px;
+  --border-radius-lg: 30px;
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+  --shadow-md: 5px 5px 15px rgba(0,0,0,0.05);
+  --transition-base: all 0.3s ease-in-out;
 }
 
 * {
@@ -22,56 +39,39 @@
 body {
   margin: 0;
   background: var(--color-background);
-  color: var(--color-accent);
+  color: var(--color-text-main);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
 }
 
-/* Oasis Layout Refinements */
-[data-layout="oasis"] .product-card,
-[data-layout="oasis"] .sidebar-widget,
-[data-layout="oasis"] .add-to-cart-btn,
-[data-layout="oasis"] .search-form {
-  border-radius: 15px;
+.container {
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: 0 15px;
 }
 
-[data-layout="oasis"] .main-header {
-  border-bottom: 1px solid #f0f0f0;
-}
-
-[data-layout="oasis"] .nav-bar {
-  background-color: var(--color-primary);
-}
-
-[data-layout="oasis"] .nav-links a {
-  color: #ffffff;
-}
-
-[data-layout="oasis"] .all-categories a {
-  background-color: var(--color-accent);
-  color: #ffffff;
-}
-
-h1, h2, h3, h4 {
+h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
+  font-weight: 700;
+  margin-bottom: 1rem;
 }
 
 a {
   color: inherit;
   text-decoration: none;
+  transition: var(--transition-base);
 }
 
 button {
   font-family: var(--font-body);
   cursor: pointer;
+  border: none;
+  outline: none;
+  transition: var(--transition-base);
 }
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-}
-
+/* Layout Utilities */
 .rtl {
   direction: rtl;
   text-align: right;
@@ -80,4 +80,79 @@ button {
 .ltr {
   direction: ltr;
   text-align: left;
+}
+
+/* Oasis Specific Component Refinements */
+[data-layout="oasis"] .product-card {
+  border: 1px solid #ececec;
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  transition: var(--transition-base);
+  background: #fff;
+}
+
+[data-layout="oasis"] .product-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-secondary);
+  transform: translateY(-5px);
+}
+
+[data-layout="oasis"] .btn-primary {
+  background-color: var(--color-secondary);
+  color: #fff;
+  border-radius: var(--border-radius-sm);
+  padding: 10px 20px;
+  font-weight: 600;
+}
+
+[data-layout="oasis"] .btn-primary:hover {
+  background-color: var(--color-primary);
+}
+
+[data-layout="oasis"] .badge-sale {
+  background-color: var(--color-danger);
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 20px 0 20px 0;
+  font-size: 12px;
+}
+
+/* Header & Nav */
+[data-layout="oasis"] .main-header {
+  padding: 20px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+[data-layout="oasis"] .nav-bar {
+  background-color: var(--nav-bg);
+  padding: 10px 0;
+}
+
+[data-layout="oasis"] .nav-links a {
+  color: var(--nav-text);
+  font-weight: 600;
+  padding: 5px 15px;
+}
+
+[data-layout="oasis"] .nav-links a:hover {
+  color: var(--color-accent);
+}
+
+[data-layout="oasis"] .search-form {
+  border: 2px solid var(--color-secondary);
+  border-radius: var(--border-radius-sm);
+  display: flex;
+  overflow: hidden;
+}
+
+[data-layout="oasis"] .search-form input {
+  border: none;
+  padding: 10px 15px;
+  flex-grow: 1;
+}
+
+[data-layout="oasis"] .search-form button {
+  background: var(--color-secondary);
+  color: #fff;
+  padding: 10px 20px;
 }
