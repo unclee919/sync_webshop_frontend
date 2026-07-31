@@ -1,7 +1,7 @@
 :root {
-  --color-primary: #6f4e37;
-  --color-secondary: #c9a66b;
-  --color-accent: #2e2a25;
+  --color-primary: #21504C;
+  --color-secondary: #84B082;
+  --color-accent: #FF9900;
   --color-background: #ffffff;
   --top-bar-bg: #f8f9fa;
   --top-bar-text: #333333;
@@ -9,7 +9,7 @@
   --header-text: #333333;
   --nav-bg: #ffffff;
   --nav-text: #333333;
-  --footer-bg: #333333;
+  --footer-bg: #21504C;
   --footer-text: #ffffff;
   --font-heading: 'Inter', sans-serif;
   --font-body: 'Inter', sans-serif;

@@ -36,6 +36,14 @@ export function getCatalog({ itemGroup, search, page = 1, pageSize = 20 } = {}) 
     params: { item_group: itemGroup, search, page, page_size: pageSize },
   })
 }
+export function getCategories() {
+  return callMethod('sync_webshop.api.catalog.get_categories')
+}
+export function getSearchSuggestions(search) {
+  return callMethod('sync_webshop.api.catalog.get_search_suggestions', {
+    params: { search },
+  })
+}
 export function getItem(itemCode) {
   return callMethod('sync_webshop.api.catalog.get_item', {
     params: { item_code: itemCode },

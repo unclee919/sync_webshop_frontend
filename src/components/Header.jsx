@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useTheme } from '../theme/ThemeProvider'
 import { useContent } from '../context/ContentContext'
+import { getSearchSuggestions } from '../api/client'
 import './Header.css'
 
 export default function Header() {
@@ -12,15 +13,48 @@ export default function Header() {
   const theme = useTheme()
   const { content } = useContent()
   const [search, setSearch] = useState('')
+  const [suggestions, setSuggestions] = useState([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
   const navigate = useNavigate()
+  const suggestionRef = useRef(null)
 
   const count = items.reduce((n, i) => n + i.qty, 0)
+
+  useEffect(() => {
+    if (search.length >= 2) {
+      const timer = setTimeout(() => {
+        getSearchSuggestions(search)
+          .then(setSuggestions)
+          .catch(() => setSuggestions([]))
+      }, 300)
+      return () => clearTimeout(timer)
+    } else {
+      setSuggestions([])
+    }
+  }, [search])
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (suggestionRef.current && !suggestionRef.current.contains(event.target)) {
+        setShowSuggestions(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
   const handleSearch = (e) => {
     e.preventDefault()
     if (search.trim()) {
+      setShowSuggestions(false)
       navigate(`/products?search=${encodeURIComponent(search.trim())}`)
     }
+  }
+
+  const handleSuggestionClick = (itemCode) => {
+    setSearch('')
+    setShowSuggestions(false)
+    navigate(`/products/${encodeURIComponent(itemCode)}`)
   }
 
   if (!content) return null
@@ -59,15 +93,36 @@ export default function Header() {
             )}
           </Link>
 
-          <form onSubmit={handleSearch} className="search-form">
-            <input
-              type="text"
-              placeholder={lang === 'ar' ? 'البحث عن العناصر...' : 'Search for items...'}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <button type="submit" className="search-btn">🔍</button>
-          </form>
+          <div className="search-container" ref={suggestionRef}>
+            <form onSubmit={handleSearch} className="search-form">
+              <input
+                type="text"
+                placeholder={lang === 'ar' ? 'البحث عن العناصر...' : 'Search for items...'}
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value)
+                  setShowSuggestions(true)
+                }}
+                onFocus={() => setShowSuggestions(true)}
+              />
+              <button type="submit" className="search-btn">🔍</button>
+            </form>
+            
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="search-suggestions">
+                {suggestions.map((item) => (
+                  <div 
+                    key={item.item_code} 
+                    className="suggestion-item"
+                    onClick={() => handleSuggestionClick(item.item_code)}
+                  >
+                    {item.image && <img src={item.image} alt="" className="suggestion-img" />}
+                    <span className="suggestion-name">{item.item_name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           <div className="header-actions">
             <Link to="/dashboard" className="action-item">
