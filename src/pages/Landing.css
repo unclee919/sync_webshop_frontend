@@ -272,6 +272,16 @@
   object-fit: contain;
 }
 
+.no-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  border-radius: 10px;
+}
+
 .product-content {
   padding: 20px;
   flex-grow: 1;

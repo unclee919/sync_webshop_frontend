@@ -127,7 +127,13 @@ export default function Landing() {
                 <div key={item.item_code} className="product-card">
                   <div className="product-badge">{lang === 'ar' ? 'جديد' : 'New'}</div>
                   <Link to={`/products/${encodeURIComponent(item.item_code)}`} className="product-img-link">
-                    <img src={item.image} alt={item.item_name} />
+                    {item.image ? (
+                      <img src={item.image} alt={item.item_name} />
+                    ) : (
+                      <div className="no-image-placeholder">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                      </div>
+                    )}
                   </Link>
                   <div className="product-content">
                     <span className="product-cat">{item.item_group}</span>
