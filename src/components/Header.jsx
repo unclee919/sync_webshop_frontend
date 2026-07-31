@@ -13,6 +13,7 @@ export default function Header() {
   const theme = useTheme()
   const { content } = useContent()
   const [search, setSearch] = useState('')
+  const [showAnnouncement, setShowAnnouncement] = useState(true)
   const [suggestions, setSuggestions] = useState([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [isCompact, setIsCompact] = useState(false)
@@ -78,19 +79,46 @@ export default function Header() {
 
   return (
     <div className={`site-header-wrapper ${isRtl ? 'rtl' : 'ltr'} ${isCompact ? 'compact' : ''}`} style={{ '--header-max-width': headerMaxWidth }}>
+      {/* Announcement Bar */}
+      {content?.announcement?.enabled && showAnnouncement && (
+        <div 
+          className="announcement-bar" 
+          style={{ 
+            backgroundColor: content.announcement.background_color || '#3bb77e',
+            color: content.announcement.text_color || '#ffffff'
+          }}
+        >
+          <div className="container announcement-inner">
+            {content.announcement.link_url ? (
+              <Link to={content.announcement.link_url}>
+                {lang === 'ar' ? content.announcement.message_ar : content.announcement.message_en}
+              </Link>
+            ) : (
+              <span>{lang === 'ar' ? content.announcement.message_ar : content.announcement.message_en}</span>
+            )}
+            {content.announcement.show_close_button && (
+              <button className="close-announcement" onClick={() => setShowAnnouncement(false)}>×</button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Top Bar */}
       {content?.show_top_bar && !isCompact && (
         <div className="top-bar">
           <div className="container top-bar-inner" style={{ maxWidth: headerMaxWidth }}>
             <div className="top-bar-left">
-              {content.phone_number && <span>📞 {content.phone_number}</span>}
-              {content.email_address && <span>✉️ {content.email_address}</span>}
+              <Link to="/contact-us">{lang === 'ar' ? 'تواصل معنا' : 'Contact Us'}</Link>
+              <span className="separator">|</span>
+              <Link to="/track">{lang === 'ar' ? 'تتبع الطلب' : 'Track Order'}</Link>
             </div>
             <div className="top-bar-center">
               {lang === 'ar' ? content.top_bar_message_ar : content.top_bar_message_en}
             </div>
             <div className="top-bar-right">
-              <Link to="/dashboard">{lang === 'ar' ? 'تتبع الطلب' : 'Track Order'}</Link>
+              <div className="contact-info">
+                {content.phone_number && <span>{content.phone_number}</span>}
+              </div>
               <button onClick={toggleLang} className="lang-toggle">
                 {lang === 'ar' ? 'English' : 'العربية'}
               </button>
@@ -157,14 +185,27 @@ export default function Header() {
           </div>
 
           <div className="header-actions">
-            <Link to="/dashboard" className="action-item">
-              <span className="icon">👤</span>
-              <span className="label">{lang === 'ar' ? 'الحساب' : 'Account'}</span>
-            </Link>
+            {content?.enable_wishlist && (
+              <Link to="/wishlist" className="action-item">
+                <div className="icon-wrapper">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.78-8.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                  <span className="badge">0</span>
+                </div>
+                <span className="label">{lang === 'ar' ? 'قائمة الأمنيات' : 'Wishlist'}</span>
+              </Link>
+            )}
             <Link to="/cart" className="action-item cart-item">
-              <span className="icon">🛒</span>
+              <div className="icon-wrapper">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                {count > 0 && <span className="badge">{count}</span>}
+              </div>
               <span className="label">{lang === 'ar' ? 'السلة' : 'Cart'}</span>
-              {count > 0 && <span className="cart-count">{count}</span>}
+            </Link>
+            <Link to="/dashboard" className="action-item">
+              <div className="icon-wrapper">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              </div>
+              <span className="label">{lang === 'ar' ? 'الحساب' : 'Account'}</span>
             </Link>
           </div>
         </div>

@@ -11,13 +11,58 @@
   box-shadow: var(--shadow-md);
 }
 
+/* Announcement Bar */
+.announcement-bar {
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 8px 0;
+  text-align: center;
+  position: relative;
+  z-index: 1001;
+}
+
+.announcement-inner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 40px;
+}
+
+.announcement-inner a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.close-announcement {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 5px;
+}
+
+.rtl .close-announcement {
+  right: auto;
+  left: 15px;
+}
+
 /* Top Bar */
 .top-bar {
   background-color: var(--top-bar-bg);
   color: var(--top-bar-text);
   font-size: 0.75rem;
-  padding: 4px 0;
+  padding: 8px 0;
   border-bottom: 1px solid #f0f0f0;
+}
+
+.separator {
+  margin: 0 10px;
+  color: #e0e0e0;
 }
 
 .top-bar-inner {
@@ -217,32 +262,50 @@
   color: var(--header-text);
   position: relative;
   font-weight: 600;
+  transition: var(--transition-base);
 }
 
-.action-item .icon {
-  font-size: 1.5rem;
+.action-item:hover {
+  color: var(--color-primary);
+}
+
+.icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 4px;
 }
 
-.action-item .label {
-  font-size: 0.8rem;
+.icon-wrapper svg {
+  width: 26px;
+  height: 26px;
 }
 
-.cart-count {
+.action-item .label {
+  font-size: 0.75rem;
+}
+
+.badge {
   position: absolute;
   top: -8px;
   right: -8px;
-  background-color: var(--color-secondary);
+  background-color: var(--color-primary);
   color: white;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: bold;
-  min-width: 20px;
-  height: 20px;
+  min-width: 18px;
+  height: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  border: 2px solid #fff;
+  border: 1px solid #fff;
+}
+
+.rtl .badge {
+  right: auto;
+  left: -8px;
 }
 
 /* Nav Bar */

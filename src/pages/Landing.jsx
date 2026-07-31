@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { useContent } from '../context/ContentContext'
@@ -8,6 +8,14 @@ export default function Landing() {
   const { lang, isRtl } = useLanguage()
   const { content, loading } = useContent()
   const [currentSlide, setCurrentSlide] = useState(0)
+
+  useEffect(() => {
+    if (!content?.banners?.length) return
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev === content.banners.length - 1 ? 0 : prev + 1))
+    }, 5000)
+    return () => clearInterval(timer)
+  }, [content?.banners])
 
   if (loading) return <div className="loading-state container">Loading...</div>
   if (!content) return null
@@ -26,69 +34,56 @@ export default function Landing() {
     setCurrentSlide((prev) => (prev === banners.length - 1 ? 0 : prev + 1))
   }
 
-  const handleDotClick = (index) => {
-    setCurrentSlide(index)
-  }
-
   const theme = content?.theme || {}
-  const heroHeight = theme?.dimensions?.hero_height ? `${theme.dimensions.hero_height}px` : '450px';
-  const heroWidth = theme?.dimensions?.hero_width ? `${theme.dimensions.hero_width}px` : '100%';
+  const heroHeight = theme?.dimensions?.hero_height ? `${theme.dimensions.hero_height}px` : '500px';
 
   return (
     <div className={`landing ${isRtl ? 'rtl' : 'ltr'}`}>
       {/* Hero Section / Slider */}
       {banners.length > 0 && (
         <section className="hero-slider">
-          <div className="slider-wrapper" style={{ height: heroHeight, maxWidth: heroWidth }}>
-            <div className="slider-container" style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
+          <div className="slider-wrapper" style={{ height: heroHeight }}>
+            <div className="slider-container" style={{ transform: `translateX(${isRtl ? currentSlide * 100 : -currentSlide * 100}%)` }}>
               {banners.map((b, i) => (
                 <div key={i} className="slide" style={{ height: heroHeight }}>
                   <img src={b.image} alt={b.title} />
                   <div className="slide-content">
                     <div className="container">
-                      <h2>{b.title}</h2>
-                      <p>{b.subtitle}</p>
-                      {b.link_url && (
-                        <Link to={b.link_url} className="btn-primary">
-                          {lang === 'ar' ? 'تسوق الآن' : 'Shop Now'}
-                        </Link>
-                      )}
+                      <div className="slide-text-box">
+                        <h2>{b.title}</h2>
+                        <p>{b.subtitle}</p>
+                        {b.link_url && (
+                          <Link to={b.link_url} className="btn-primary">
+                            {lang === 'ar' ? 'تسوق الآن' : 'Shop Now'}
+                          </Link>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Navigation Arrows */}
             {banners.length > 1 && (
               <>
-                <button className="slider-arrow slider-arrow-prev" onClick={handlePrevSlide} aria-label="Previous slide">
-                  ‹
-                </button>
-                <button className="slider-arrow slider-arrow-next" onClick={handleNextSlide} aria-label="Next slide">
-                  ›
-                </button>
+                <button className="slider-arrow slider-arrow-prev" onClick={handlePrevSlide}>‹</button>
+                <button className="slider-arrow slider-arrow-next" onClick={handleNextSlide}>›</button>
+                <div className="slider-dots">
+                  {banners.map((_, i) => (
+                    <button
+                      key={i}
+                      className={`slider-dot ${i === currentSlide ? 'active' : ''}`}
+                      onClick={() => setCurrentSlide(i)}
+                    />
+                  ))}
+                </div>
               </>
-            )}
-
-            {/* Dots Navigation */}
-            {banners.length > 1 && (
-              <div className="slider-dots">
-                {banners.map((_, i) => (
-                  <button
-                    key={i}
-                    className={`slider-dot ${i === currentSlide ? 'active' : ''}`}
-                    onClick={() => handleDotClick(i)}
-                    aria-label={`Go to slide ${i + 1}`}
-                  />
-                ))}
-              </div>
             )}
           </div>
         </section>
       )}
 
-      {/* Featured Categories */}
+      {/* Featured Categories Grid */}
       {categories.length > 0 && (
         <section className="section-categories">
           <div className="container">
@@ -97,13 +92,15 @@ export default function Landing() {
             </h2>
             <div className="categories-grid">
               {categories.map((cat, i) => (
-                <Link key={i} to={`/products?category=${encodeURIComponent(cat.item_group)}`} className="category-item">
-                  <div className="category-image">
+                <Link key={i} to={`/products?category=${encodeURIComponent(cat.item_group)}`} className="category-card">
+                  <div className="category-img-wrapper">
                     <img src={cat.image} alt={cat.label_en} />
                   </div>
-                  <span className="category-label">
-                    {lang === 'ar' ? (cat.label_ar || cat.label_en) : cat.label_en}
-                  </span>
+                  <div className="category-info">
+                    <h4 className="category-name">
+                      {lang === 'ar' ? (cat.label_ar || cat.label_en) : cat.label_en}
+                    </h4>
+                  </div>
                 </Link>
               ))}
             </div>
@@ -111,32 +108,41 @@ export default function Landing() {
         </section>
       )}
 
-      {/* Dynamic Landing Sections */}
+      {/* Dynamic Landing Sections (Product Grids) */}
       {landingSections.map((section, idx) => (
         <section key={idx} className="landing-section">
           <div className="container">
-            <h2 className="section-title">
-              {lang === 'ar' ? (section.title_ar || section.title_en) : section.title_en}
-            </h2>
-            {(section.subtitle_en || section.subtitle_ar) && (
-              <p className="section-subtitle">
-                {lang === 'ar' ? (section.subtitle_ar || section.subtitle_en) : section.subtitle_en}
-              </p>
-            )}
-            <div className="landing-items-grid">
+            <div className="section-header">
+              <h2 className="section-title">
+                {lang === 'ar' ? (section.title_ar || section.title_en) : section.title_en}
+              </h2>
+              {section.link_url && (
+                <Link to={section.link_url} className="view-all">
+                  {lang === 'ar' ? 'عرض الكل' : 'View All'}
+                </Link>
+              )}
+            </div>
+            <div className="products-grid">
               {section.items.map((item) => (
                 <div key={item.item_code} className="product-card">
-                  <Link to={`/products/${encodeURIComponent(item.item_code)}`}>
-                    <div className="product-image">
-                      {item.image && <img src={item.image} alt={item.item_name} />}
-                    </div>
-                    <div className="product-info">
-                      <h3 className="product-name">{item.item_name}</h3>
-                      <div className="product-price">
-                        {item.price.toFixed(2)} {item.currency}
-                      </div>
-                    </div>
+                  <div className="product-badge">{lang === 'ar' ? 'جديد' : 'New'}</div>
+                  <Link to={`/products/${encodeURIComponent(item.item_code)}`} className="product-img-link">
+                    <img src={item.image} alt={item.item_name} />
                   </Link>
+                  <div className="product-content">
+                    <span className="product-cat">{item.item_group}</span>
+                    <h3 className="product-title">
+                      <Link to={`/products/${encodeURIComponent(item.item_code)}`}>{item.item_name}</Link>
+                    </h3>
+                    <div className="product-card-bottom">
+                      <div className="product-price">
+                        <span className="current-price">{(item.price || 0).toFixed(2)} {item.currency}</span>
+                      </div>
+                      <button className="add-to-cart-btn">
+                        {lang === 'ar' ? 'أضف' : 'Add'}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -150,9 +156,9 @@ export default function Landing() {
           <div className="container">
             <div className="trust-grid">
               {trustBadges.map((badge, i) => (
-                <div key={i} className="trust-item">
-                  <div className="trust-icon">{badge.icon}</div>
-                  <div className="trust-text">
+                <div key={i} className="trust-card">
+                  <div className="trust-icon" dangerouslySetInnerHTML={{ __html: badge.icon }} />
+                  <div className="trust-content">
                     <h3>{lang === 'ar' ? (badge.label_ar || badge.label_en) : badge.label_en}</h3>
                     <p>{lang === 'ar' ? (badge.description_ar || badge.description_en) : badge.description_en}</p>
                   </div>
@@ -162,17 +168,6 @@ export default function Landing() {
           </div>
         </section>
       )}
-
-      {/* About Section */}
-      <section className="section-about">
-        <div className="container">
-          <h2 className="section-title">{lang === 'ar' ? `عن ${c.site_name}` : `About ${c.site_name}`}</h2>
-          <div 
-            className="about-content"
-            dangerouslySetInnerHTML={{ __html: lang === 'ar' ? (c.about_text_ar || c.about_text_en) : c.about_text_en }} 
-          />
-        </div>
-      </section>
     </div>
   )
 }
