@@ -70,7 +70,8 @@
   gap: 2rem;
   max-width: var(--header-max-width);
   margin: 0 auto;
-  min-height: 50px;
+  height: var(--header-height);
+  padding: 0 var(--header-padding-horizontal);
 }
 
 .logo img {

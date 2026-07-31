@@ -39,7 +39,9 @@ function applyThemeToDocument(theme) {
 
   const dimensions = theme.dimensions || {}
   root.setProperty('--header-max-width', `${dimensions.header_max_width || 1200}px`)
+  root.setProperty('--header-height', `${dimensions.header_height || 80}px`)
   root.setProperty('--header-padding-vertical', `${dimensions.header_padding_vertical || 15}px`)
+  root.setProperty('--header-padding-horizontal', `${dimensions.header_padding_horizontal || 15}px`)
   root.setProperty('--logo-height', `${dimensions.logo_height || 45}px`)
   root.setProperty('--logo-width', dimensions.logo_width ? `${dimensions.logo_width}px` : 'auto')
   root.setProperty('--search-bar-max-width', `${dimensions.search_bar_max_width || 600}px`)
