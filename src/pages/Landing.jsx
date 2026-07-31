@@ -21,7 +21,7 @@ export default function Landing() {
   if (!content) return null
 
   const c = content
-  const banners = c.banners || []
+  const banners = c.banners || c.hero_slides || []
   const categories = c.featured_categories || []
   const trustBadges = c.trust_badges || []
   const landingSections = c.landing_sections || []
@@ -46,7 +46,7 @@ export default function Landing() {
             <div className="slider-container" style={{ transform: `translateX(${isRtl ? currentSlide * 100 : -currentSlide * 100}%)` }}>
               {banners.map((b, i) => (
                 <div key={i} className="slide" style={{ height: heroHeight }}>
-                  <img src={b.image} alt={b.title} />
+                    <img src={b.image} alt={b.title} loading="lazy" />
                   <div className="slide-content">
                     <div className="container">
                       <div className="slide-text-box">

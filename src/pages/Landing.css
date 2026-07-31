@@ -12,6 +12,7 @@
   position: relative;
   width: 100%;
   background: #f8f8f8;
+  overflow: hidden;
 }
 
 .slider-container {
@@ -40,37 +41,51 @@
   height: 100%;
   display: flex;
   align-items: center;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.15);
 }
 
 .slide-text-box {
-  max-width: 500px;
-  padding: 40px;
-  background: rgba(255, 255, 255, 0.9);
+  max-width: 600px;
+  padding: 50px;
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 20px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  margin: 0 50px;
 }
 
 .rtl .slide-text-box {
   margin-right: 50px;
-}
-
-.ltr .slide-text-box {
-  margin-left: 50px;
+  margin-left: 0;
 }
 
 .slide-text-box h2 {
-  font-size: 3rem;
+  font-size: 3.5rem;
   font-weight: 800;
-  color: #253d4e;
+  color: var(--color-primary, #253d4e);
   margin-bottom: 20px;
-  line-height: 1.2;
+  line-height: 1.1;
 }
 
 .slide-text-box p {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   color: #7e7e7e;
-  margin-bottom: 30px;
+  margin-bottom: 35px;
+}
+
+.btn-primary {
+  display: inline-block;
+  background: var(--color-secondary, #3bb77e);
+  color: #fff;
+  padding: 15px 35px;
+  border-radius: 5px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  transition: 0.3s;
+}
+
+.btn-primary:hover {
+  background: var(--color-primary, #253d4e);
+  transform: translateY(-3px);
 }
 
 .slider-arrow {
@@ -79,10 +94,10 @@
   transform: translateY(-50%);
   background: #fff;
   border: none;
-  width: 45px;
-  height: 45px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  font-size: 1.5rem;
+  font-size: 2rem;
   cursor: pointer;
   box-shadow: 0 5px 15px rgba(0,0,0,0.1);
   z-index: 10;
@@ -90,85 +105,84 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--color-primary);
 }
 
 .slider-arrow:hover {
-  background: #3bb77e;
+  background: var(--color-secondary);
   color: #fff;
 }
 
-.slider-arrow-prev { left: 20px; }
-.slider-arrow-next { right: 20px; }
+.slider-arrow-prev { left: 30px; }
+.slider-arrow-next { right: 30px; }
 
 .slider-dots {
   position: absolute;
-  bottom: 20px;
+  bottom: 30px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 10px;
+  gap: 12px;
 }
 
 .slider-dot {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   border: 2px solid #fff;
   background: transparent;
   cursor: pointer;
+  transition: 0.3s;
 }
 
 .slider-dot.active {
   background: #fff;
-  width: 30px;
+  width: 35px;
   border-radius: 10px;
 }
 
 /* Categories Grid */
 .section-categories {
-  padding: 40px 0;
+  padding: 60px 0;
 }
 
 .section-title {
-  font-size: 2rem;
+  font-size: 2.2rem;
   font-weight: 800;
-  color: #253d4e;
-  margin-bottom: 30px;
+  color: var(--color-primary, #253d4e);
+  margin-bottom: 40px;
 }
 
 .categories-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 20px;
-  margin-top: 30px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 25px;
 }
 
 .category-card {
   text-align: center;
-  padding: 20px;
+  padding: 25px;
   background: #f2fce4;
   border-radius: 15px;
   transition: 0.3s;
   text-decoration: none;
+  border: 1px solid transparent;
 }
 
-.category-card:nth-child(2n) { background: #fffceb; }
-.category-card:nth-child(3n) { background: #ecffec; }
-.category-card:nth-child(4n) { background: #feefea; }
-.category-card:nth-child(5n) { background: #fff3eb; }
-
 .category-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+  transform: translateY(-10px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+  border-color: var(--color-secondary);
 }
 
 .category-img-wrapper {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 15px;
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 20px;
   border-radius: 50%;
   overflow: hidden;
   background: #fff;
+  padding: 10px;
 }
 
 .category-img-wrapper img {
@@ -178,33 +192,34 @@
 }
 
 .category-name {
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #253d4e;
 }
 
 /* Products Grid */
 .landing-section {
-  padding: 40px 0;
+  padding: 50px 0;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 40px;
 }
 
 .view-all {
-  color: #3bb77e;
-  font-weight: 600;
+  color: var(--color-secondary, #3bb77e);
+  font-weight: 700;
   text-decoration: none;
+  font-size: 1.1rem;
 }
 
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 25px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 30px;
 }
 
 .product-card {
@@ -214,21 +229,25 @@
   border-radius: 15px;
   overflow: hidden;
   transition: 0.3s;
+  display: flex;
+  flex-direction: column;
 }
 
 .product-card:hover {
-  border-color: #bce3c9;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+  border-color: var(--color-secondary);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  transform: translateY(-5px);
 }
 
 .product-badge {
   position: absolute;
   top: 0;
   left: 0;
-  background: #3bb77e;
+  background: var(--color-secondary);
   color: #fff;
-  padding: 5px 15px;
-  font-size: 0.75rem;
+  padding: 6px 18px;
+  font-size: 0.8rem;
+  font-weight: 700;
   border-bottom-right-radius: 15px;
   z-index: 1;
 }
@@ -242,8 +261,9 @@
 
 .product-img-link {
   display: block;
-  padding: 20px;
-  height: 200px;
+  padding: 30px;
+  height: 240px;
+  background: #f8f9fa;
 }
 
 .product-img-link img {
@@ -253,21 +273,23 @@
 }
 
 .product-content {
-  padding: 0 20px 20px;
+  padding: 20px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .product-cat {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   color: #adadad;
-  display: block;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
 }
 
 .product-title {
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 700;
   margin-bottom: 15px;
-  height: 40px;
+  height: 44px;
   overflow: hidden;
 }
 
@@ -277,78 +299,78 @@
 }
 
 .product-card-bottom {
+  margin-top: auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .current-price {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #3bb77e;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--color-secondary);
 }
 
 .add-to-cart-btn {
   background: #def9ec;
-  color: #3bb77e;
+  color: var(--color-secondary);
   border: none;
-  padding: 8px 15px;
-  border-radius: 4px;
+  padding: 10px 20px;
+  border-radius: 5px;
   font-weight: 700;
   cursor: pointer;
   transition: 0.3s;
 }
 
 .add-to-cart-btn:hover {
-  background: #3bb77e;
+  background: var(--color-secondary);
   color: #fff;
 }
 
 /* Trust Badges */
 .section-trust {
-  padding: 60px 0;
+  padding: 80px 0;
   background: #f8f9fa;
-  margin-top: 40px;
+  margin-top: 60px;
 }
 
 .trust-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 30px;
 }
 
 .trust-card {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 25px;
+  gap: 25px;
+  padding: 30px;
   background: #fff;
   border-radius: 15px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.03);
 }
 
 .trust-icon {
-  font-size: 2.5rem;
-  color: #3bb77e;
+  font-size: 3rem;
+  color: var(--color-secondary);
 }
 
 .trust-content h3 {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 700;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
   color: #253d4e;
 }
 
 .trust-content p {
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: #adadad;
 }
 
 @media (max-width: 768px) {
-  .slide-text-box h2 { font-size: 2rem; }
-  .slide-text-box { padding: 25px; margin: 0 20px !important; }
-  .categories-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+  .slide-text-box h2 { font-size: 2.2rem; }
+  .slide-text-box { padding: 30px; margin: 0 20px !important; }
+  .categories-grid { grid-template-columns: repeat(2, 1fr); }
   .products-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
-  .product-img-link { height: 150px; padding: 10px; }
-  .product-title { font-size: 0.9rem; height: 36px; }
+  .product-img-link { height: 180px; padding: 15px; }
 }
