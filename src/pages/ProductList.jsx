@@ -23,20 +23,32 @@ export default function ProductList() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let isMounted = true
     setLoading(true)
-    Promise.all([
-      getCatalog({ itemGroup: category, search, page, pageSize: PAGE_SIZE }),
-      getCategories()
-    ])
-      .then(([catalogData, categoriesData]) => {
-        setCatalog(catalogData)
-        setCategories(categoriesData)
-        setLoading(false)
-      })
-      .catch((err) => {
-        setError(err.message)
-        setLoading(false)
-      })
+    
+    async function fetchData() {
+      try {
+        const [catalogData, categoriesData] = await Promise.all([
+          getCatalog({ itemGroup: category, search, page, pageSize: PAGE_SIZE }),
+          getCategories()
+        ])
+        
+        if (isMounted) {
+          setCatalog(catalogData)
+          setCategories(categoriesData || [])
+          setLoading(false)
+        }
+      } catch (err) {
+        console.error("Fetch error:", err)
+        if (isMounted) {
+          setError(err.message)
+          setLoading(false)
+        }
+      }
+    }
+
+    fetchData()
+    return () => { isMounted = false }
   }, [category, search, page])
 
   function goToPage(p) {
@@ -54,14 +66,6 @@ export default function ProductList() {
     }
     next.set('page', 1)
     setSearchParams(next)
-  }
-
-  if (error) {
-    return (
-      <div className="products-page container">
-        <p className="products-error">Couldn't load products: {error}</p>
-      </div>
-    )
   }
 
   const totalPages = catalog ? Math.max(1, Math.ceil(catalog.total_count / PAGE_SIZE)) : 1
@@ -93,7 +97,6 @@ export default function ProductList() {
             {content?.show_price_filter && (
               <div className="sidebar-widget">
                 <h3 className="widget-title">{lang === 'ar' ? 'تصفية حسب السعر' : 'Filter by Price'}</h3>
-                {/* Price filter implementation could go here */}
                 <div className="price-filter-placeholder">
                   {lang === 'ar' ? 'قريباً...' : 'Coming soon...'}
                 </div>
@@ -114,13 +117,20 @@ export default function ProductList() {
             )}
           </div>
 
+          {error && (
+            <div className="products-error-box">
+              <p className="products-error">Couldn't load products: {error}</p>
+              <button onClick={() => window.location.reload()}>Retry</button>
+            </div>
+          )}
+
           {loading && <div className="loading-state">Loading...</div>}
 
-          {!loading && catalog && catalog.items.length === 0 && (
+          {!loading && !error && catalog && catalog.items.length === 0 && (
             <p className="products-empty">{lang === 'ar' ? 'لم يتم العثور على منتجات.' : 'No products found.'}</p>
           )}
 
-          {!loading && catalog && catalog.items.length > 0 && (
+          {!loading && !error && catalog && catalog.items.length > 0 && (
             <>
               <div className="products-grid">
                 {catalog.items.map((item) => (
