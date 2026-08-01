@@ -5,12 +5,15 @@ import { Elements } from '@stripe/react-stripe-js'
 import { createOrder, getCheckoutSettings, createPaymentIntent } from '../api/client'
 import { useCart } from '../context/CartContext'
 import { useLanguage } from '../context/LanguageContext'
+import { useContent } from '../context/ContentContext'
 import StripePaymentForm from '../components/StripePaymentForm'
 import './Cart.css'
 
 export default function Checkout() {
   const { items, clear, total } = useCart()
   const { lang, isRtl } = useLanguage()
+  const { content } = useContent()
+  const c = content || {}
   
   // Form state
   const [name, setName] = useState('')
@@ -112,7 +115,7 @@ export default function Checkout() {
       <div className={`checkout-page container ${isRtl ? 'rtl' : 'ltr'}`}>
         <div className="checkout-success-card">
           <div className="success-icon">✓</div>
-          <h1>{lang === 'ar' ? 'تم تقديم الطلب بنجاح' : 'Order Placed Successfully'}</h1>
+          <h1>{lang === 'ar' ? (c.order_success_title_ar || 'تم تقديم الطلب بنجاح') : (c.order_success_title_en || 'Order Placed Successfully')}</h1>
           <p>
             {lang === 'ar' ? 'رقم الطلب:' : 'Order Number:'} <strong>{result.sales_order}</strong>
           </p>
@@ -124,7 +127,7 @@ export default function Checkout() {
           )}
           <div className="success-actions">
             <Link to="/products" className="btn-primary">
-              {lang === 'ar' ? 'مواصلة التسوق' : 'Continue Shopping'}
+              {lang === 'ar' ? (c.continue_shopping_text_ar || 'مواصلة التسوق') : (c.continue_shopping_text_en || 'Continue Shopping')}
             </Link>
           </div>
         </div>
@@ -134,7 +137,7 @@ export default function Checkout() {
 
   return (
     <div className={`checkout-page container ${isRtl ? 'rtl' : 'ltr'}`}>
-      <h1 className="page-title">{lang === 'ar' ? 'الدفع' : 'Checkout'}</h1>
+      <h1 className="page-title">{lang === 'ar' ? (c.checkout_title_ar || 'الدفع') : (c.checkout_title_en || 'Checkout')}</h1>
       
       <div className="checkout-grid">
         <div className="checkout-form-container">

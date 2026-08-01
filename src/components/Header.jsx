@@ -1,33 +1,49 @@
-import { useState, useEffect, useRef } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useCart } from '../context/CartContext'
-import { useLanguage } from '../context/LanguageContext'
-import { useTheme } from '../theme/ThemeProvider'
+import React, { useState, useEffect, useRef } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useContent } from '../context/ContentContext'
-import { getSearchSuggestions } from '../api/client'
+import { useLanguage } from '../context/LanguageContext'
+import { useCart } from '../context/CartContext'
+import { getSearchSuggestions, getCategories } from '../api/client'
 import './Header.css'
 
-export default function Header() {
-  const { items } = useCart()
-  const { lang, isRtl, toggleLang } = useLanguage()
-  const theme = useTheme()
+const Header = () => {
   const { content } = useContent()
+  const theme = content?.theme
+  const { lang, setLang, isRtl } = useLanguage()
+  const { count } = useCart()
   const [search, setSearch] = useState('')
-  const [showAnnouncement, setShowAnnouncement] = useState(true)
   const [suggestions, setSuggestions] = useState([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [isCompact, setIsCompact] = useState(false)
+  const [categories, setCategories] = useState([])
+  const [selectedCategory, setSelectedCategory] = useState('')
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
+  
   const navigate = useNavigate()
+  const location = useLocation()
   const suggestionRef = useRef(null)
 
-  const count = items.reduce((n, i) => n + i.qty, 0)
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsCompact(window.scrollY > 100)
+    }
+    window.addEventListener('scroll', handleScroll)
+    
+    // Load categories for search dropdown
+    getCategories().then(setCategories).catch(console.error)
+    
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   useEffect(() => {
-    if (search.length >= 2) {
-      const timer = setTimeout(() => {
-        getSearchSuggestions(search)
-          .then(setSuggestions)
-          .catch(() => setSuggestions([]))
+    if (search.length > 1) {
+      const timer = setTimeout(async () => {
+        try {
+          const res = await getSearchSuggestions(search)
+          setSuggestions(res || [])
+        } catch (err) {
+          console.error(err)
+        }
       }, 300)
       return () => clearTimeout(timer)
     } else {
@@ -36,113 +52,95 @@ export default function Header() {
   }, [search])
 
   useEffect(() => {
-    function handleClickOutside(event) {
+    const handleClickOutside = (event) => {
       if (suggestionRef.current && !suggestionRef.current.contains(event.target)) {
         setShowSuggestions(false)
       }
     }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
-
-  useEffect(() => {
-    function handleScroll() {
-      if (window.scrollY > 50) {
-        setIsCompact(true)
-      } else {
-        setIsCompact(false)
-      }
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
   const handleSearch = (e) => {
     e.preventDefault()
     if (search.trim()) {
+      const params = new URLSearchParams()
+      params.set('search', search)
+      if (selectedCategory) params.set('category', selectedCategory)
+      navigate(`/products?${params.toString()}`)
       setShowSuggestions(false)
-      navigate(`/products?search=${encodeURIComponent(search.trim())}`)
     }
   }
 
   const handleSuggestionClick = (suggestion) => {
-    setSearch('')
-    setShowSuggestions(false)
     if (suggestion.type === 'category') {
-      navigate(`/products?category=${encodeURIComponent(suggestion.id)}`)
+      navigate(`/products?category=${encodeURIComponent(suggestion.name)}`)
     } else {
-      navigate(`/products/${encodeURIComponent(suggestion.id)}`)
+      navigate(`/products/${encodeURIComponent(suggestion.item_code)}`)
     }
+    setShowSuggestions(false)
+    setSearch('')
   }
 
-  const headerMaxWidth = theme?.dimensions?.header_max_width ? `${theme.dimensions.header_max_width}px` : '1200px';
+  const headerMaxWidth = theme?.dimensions?.header_max_width ? `${theme.dimensions.header_max_width}px` : '1200px'
 
   return (
-    <div className={`site-header-wrapper ${isRtl ? 'rtl' : 'ltr'} ${isCompact ? 'compact' : ''}`} style={{ '--header-max-width': headerMaxWidth }}>
-      {/* Announcement Bar */}
-      {content?.announcement?.enabled && showAnnouncement && (
-        <div 
-          className="announcement-bar" 
-          style={{ 
-            backgroundColor: content.announcement.background_color || '#3bb77e',
-            color: content.announcement.text_color || '#ffffff'
-          }}
-        >
-          <div className="container announcement-inner">
-            {content.announcement.link_url ? (
-              <Link to={content.announcement.link_url}>
-                {lang === 'ar' ? content.announcement.message_ar : content.announcement.message_en}
-              </Link>
-            ) : (
-              <span>{lang === 'ar' ? content.announcement.message_ar : content.announcement.message_en}</span>
-            )}
-            {content.announcement.show_close_button && (
-              <button className="close-announcement" onClick={() => setShowAnnouncement(false)}>×</button>
-            )}
-          </div>
-        </div>
-      )}
-
+    <div className={`site-header-wrapper ${isCompact ? 'compact' : ''} ${isRtl ? 'rtl' : ''}`}>
       {/* Top Bar */}
-      {content?.show_top_bar && !isCompact && (
-        <div className="top-bar">
-          <div className="container top-bar-inner" style={{ maxWidth: headerMaxWidth }}>
-            <div className="top-bar-left">
-              <Link to="/contact-us">{lang === 'ar' ? 'تواصل معنا' : 'Contact Us'}</Link>
-              <span className="separator">|</span>
-              <Link to="/track">{lang === 'ar' ? 'تتبع الطلب' : 'Track Order'}</Link>
-            </div>
-            <div className="top-bar-center">
-              {lang === 'ar' ? content.top_bar_message_ar : content.top_bar_message_en}
-            </div>
-            <div className="top-bar-right">
-              <div className="contact-info">
-                {content.phone_number && <span>{content.phone_number}</span>}
+      <div className="top-bar">
+        <div className="container top-bar-inner" style={{ maxWidth: headerMaxWidth }}>
+          <div className="top-bar-left">
+            <Link to="/contact-us">{lang === 'ar' ? (content?.contact_us_text_ar || 'تواصل معنا') : (content?.contact_us_text_en || 'Contact Us')}</Link>
+            <span className="separator">|</span>
+            <Link to="/track">{lang === 'ar' ? (content?.track_order_text_ar || 'تتبع الطلب') : (content?.track_order_text_en || 'Track Order')}</Link>
+          </div>
+          <div className="top-bar-center">
+            {content?.announcement?.enabled && (
+              <div className="announcement-text">
+                {lang === 'ar' ? content.announcement.message_ar : content.announcement.message_en}
               </div>
-              <button onClick={toggleLang} className="lang-toggle">
-                {lang === 'ar' ? 'English' : 'العربية'}
-              </button>
-            </div>
+            )}
+          </div>
+          <div className="top-bar-right">
+            <span className="contact-info">
+              {lang === 'ar' ? (content?.need_help_text_ar || 'تحتاج مساعدة؟ اتصل بنا:') : (content?.need_help_text_en || 'Need help? Call us:')} 
+              <strong> {content?.header_contact_number || content?.phone_number || '07341375333'}</strong>
+            </span>
+            <button className="lang-toggle" onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}>
+              {lang === 'ar' ? 'English' : 'العربية'}
+            </button>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Main Header */}
       <header className="main-header">
         <div className="container header-inner" style={{ maxWidth: headerMaxWidth }}>
           <Link to="/" className="logo">
             {theme?.logo ? (
-              <img src={theme.logo} alt={content?.site_name} />
+              <img src={theme.logo} alt={content?.site_name_en} />
             ) : (
-              <span className="site-name">{content?.site_name || 'Sync Webshop'}</span>
+              <span className="site-name">{isRtl ? content?.site_name_ar : content?.site_name_en}</span>
             )}
           </Link>
 
-          <div className="search-container" ref={suggestionRef}>
-            <form onSubmit={handleSearch} className="search-form">
+          <div className="search-area" ref={suggestionRef}>
+            <form onSubmit={handleSearch} className="search-box">
+              <div className="category-select-wrapper">
+                <select 
+                  value={selectedCategory} 
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="category-select"
+                >
+                  <option value="">{lang === 'ar' ? (content?.all_categories_text_ar || 'جميع الفئات') : (content?.all_categories_text_en || 'All Categories')}</option>
+                  {categories.map(cat => (
+                    <option key={cat.name} value={cat.name}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
               <input
                 type="text"
-                placeholder={lang === 'ar' ? 'البحث عن العناصر...' : 'Search for items...'}
+                placeholder={lang === 'ar' ? (content?.search_placeholder_ar || 'البحث عن العناصر...') : (content?.search_placeholder_en || 'Search for items...')}
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value)
@@ -150,33 +148,29 @@ export default function Header() {
                 }}
                 onFocus={() => setShowSuggestions(true)}
               />
-              <button type="submit" className="search-btn">🔍</button>
+              <button type="submit" className="search-submit-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              </button>
             </form>
             
             {showSuggestions && suggestions.length > 0 && (
-              <div className="search-suggestions">
+              <div className="search-results">
                 {suggestions.map((s, idx) => (
                   <div 
                     key={idx} 
-                    className={`suggestion-item ${s.type}-suggestion`}
+                    className={`result-item ${s.type}-result`}
                     onClick={() => handleSuggestionClick(s)}
                   >
-                    <div className="suggestion-icon-box">
+                    <div className="result-img-box">
                       {s.image ? (
-                        <img src={s.image} alt="" className="suggestion-img" />
+                        <img src={s.image} alt="" />
                       ) : (
-                        <span className="suggestion-icon-placeholder">
-                          {s.type === 'category' ? '📁' : '📦'}
-                        </span>
+                        <span className="result-icon-placeholder">{s.type === 'category' ? '📁' : '📦'}</span>
                       )}
                     </div>
-                    <div className="suggestion-info">
-                      <span className="suggestion-name">{s.name}</span>
-                      <span className="suggestion-type">
-                        {s.type === 'category' 
-                          ? (lang === 'ar' ? 'فئة' : 'Category') 
-                          : (lang === 'ar' ? 'منتج' : 'Product')}
-                      </span>
+                    <div className="result-text">
+                      <span className="result-name">{s.name}</span>
+                      <span className="result-type">{s.type === 'category' ? (lang === 'ar' ? 'فئة' : 'Category') : (lang === 'ar' ? 'منتج' : 'Product')}</span>
                     </div>
                   </div>
                 ))}
@@ -184,51 +178,72 @@ export default function Header() {
             )}
           </div>
 
-          <div className="header-actions">
-            {content?.enable_wishlist && (
-              <Link to="/wishlist" className="action-item">
-                <div className="icon-wrapper">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.78-8.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                  <span className="badge">0</span>
-                </div>
-                <span className="label">{lang === 'ar' ? 'قائمة الأمنيات' : 'Wishlist'}</span>
-              </Link>
-            )}
-            <Link to="/cart" className="action-item cart-item">
-              <div className="icon-wrapper">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-                {count > 0 && <span className="badge">{count}</span>}
+          <div className="header-meta">
+            <Link to="/wishlist" className="meta-item">
+              <div className="meta-icon-box">
+                <img src={content?.wishlist_icon || "https://oasismarket.co.uk/themes/oasismarket-child-2/imgs/theme/icons/icon-heart.svg"} alt="" />
+                <span className="meta-badge">0</span>
               </div>
-              <span className="label">{lang === 'ar' ? 'السلة' : 'Cart'}</span>
+              <span className="meta-label">{lang === 'ar' ? (content?.wishlist_text_ar || 'قائمة الأمنيات') : (content?.wishlist_text_en || 'Wishlist')}</span>
             </Link>
-            <Link to="/dashboard" className="action-item">
-              <div className="icon-wrapper">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <Link to="/cart" className="meta-item">
+              <div className="meta-icon-box">
+                <img src={content?.cart_icon || "https://oasismarket.co.uk/themes/oasismarket-child-2/imgs/theme/icons/icon-cart.svg"} alt="" />
+                {count > 0 && <span className="meta-badge">{count}</span>}
               </div>
-              <span className="label">{lang === 'ar' ? 'الحساب' : 'Account'}</span>
+              <span className="meta-label">{lang === 'ar' ? (content?.cart_text_ar || 'السلة') : (content?.cart_text_en || 'Cart')}</span>
+            </Link>
+            <Link to="/dashboard" className="meta-item">
+              <div className="meta-icon-box">
+                <img src={content?.account_icon || "https://oasismarket.co.uk/themes/oasismarket-child-2/imgs/theme/icons/icon-user.svg"} alt="" />
+              </div>
+              <span className="meta-label">{lang === 'ar' ? (content?.account_text_ar || 'الحساب') : (content?.account_text_en || 'Account')}</span>
             </Link>
           </div>
         </div>
       </header>
 
-      {/* Navigation Bar */}
-      <nav className="nav-bar">
-        <div className="container nav-inner" style={{ maxWidth: headerMaxWidth }}>
-          <div className="all-categories">
-            <Link to="/products">
-              {lang === 'ar' ? 'تصفح جميع الفئات' : 'Browse All Categories'}
-            </Link>
+      {/* Nav Section */}
+      <nav className="bottom-nav">
+        <div className="container nav-container" style={{ maxWidth: headerMaxWidth }}>
+          <div className="browse-categories">
+            <button className="browse-btn" onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}>
+              <span className="grid-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+              </span>
+              {lang === 'ar' ? (content?.browse_categories_text_ar || 'تصفح جميع الفئات') : (content?.browse_categories_text_en || 'Browse All Categories')}
+            </button>
+            {showCategoryDropdown && (
+              <div className="categories-menu">
+                {categories.map(cat => (
+                  <Link key={cat.name} to={`/products?category=${encodeURIComponent(cat.name)}`} onClick={() => setShowCategoryDropdown(false)}>
+                    {cat.name}
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
-          <div className="nav-links">
-            <Link to="/">{lang === 'ar' ? 'الصفحة الرئيسية' : 'Home'}</Link>
+          <div className="main-menu">
+            <Link to="/" className={location.pathname === '/' ? 'active' : ''}>
+              {lang === 'ar' ? 'الصفحة الرئيسية' : 'Home'}
+            </Link>
             {content?.nav_links && content.nav_links.map((link, i) => (
-              <Link key={i} to={link.link_url}>
+              <Link key={i} to={link.link_url} className={location.pathname === link.link_url ? 'active' : ''}>
                 {lang === 'ar' ? (link.label_ar || link.label_en) : link.label_en}
               </Link>
             ))}
+          </div>
+          <div className="hotline">
+            <img src={content?.support_icon || "https://oasismarket.co.uk/themes/oasismarket-child-2/imgs/theme/icons/icon-headphone.svg"} alt="" />
+            <div className="hotline-info">
+              <span className="phone">{content?.header_contact_number || content?.phone_number || '07341375333'}</span>
+              <span className="support-text">{lang === 'ar' ? (content?.support_center_text_ar || '24/7 مركز الدعم') : (content?.support_center_text_en || '24/7 Support Center')}</span>
+            </div>
           </div>
         </div>
       </nav>
     </div>
   )
 }
+
+export default Header

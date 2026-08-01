@@ -54,7 +54,7 @@ export default function Landing() {
                         <p>{b.subtitle}</p>
                         {b.link_url && (
                           <Link to={b.link_url} className="btn-primary">
-                            {lang === 'ar' ? 'تسوق الآن' : 'Shop Now'}
+                            {lang === 'ar' ? (content?.shop_now_text_ar || 'تسوق الآن') : (content?.shop_now_text_en || 'Shop Now')}
                           </Link>
                         )}
                       </div>
@@ -88,7 +88,7 @@ export default function Landing() {
         <section className="section-categories">
           <div className="container">
             <h2 className="section-title">
-              {lang === 'ar' ? 'أفضل الفئات' : 'Best Categories'}
+              {lang === 'ar' ? (content?.best_categories_text_ar || 'أفضل الفئات') : (content?.best_categories_text_en || 'Best Categories')}
             </h2>
             <div className="categories-grid">
               {categories.map((cat, i) => (
@@ -118,14 +118,14 @@ export default function Landing() {
               </h2>
               {section.link_url && (
                 <Link to={section.link_url} className="view-all">
-                  {lang === 'ar' ? 'عرض الكل' : 'View All'}
+                  {lang === 'ar' ? (content?.view_all_text_ar || 'عرض الكل') : (content?.view_all_text_en || 'View All')}
                 </Link>
               )}
             </div>
             <div className="products-grid">
               {section.items.map((item) => (
                 <div key={item.item_code} className="product-card">
-                  <div className="product-badge">{lang === 'ar' ? 'جديد' : 'New'}</div>
+                  <div className="product-badge">{lang === 'ar' ? (content?.new_badge_text_ar || 'جديد') : (content?.new_badge_text_en || 'New')}</div>
                   <Link to={`/products/${encodeURIComponent(item.item_code)}`} className="product-img-link">
                     {item.image ? (
                       <img src={item.image} alt={item.item_name} />
@@ -145,7 +145,7 @@ export default function Landing() {
                         <span className="current-price">{(item.price || 0).toFixed(2)} {item.currency}</span>
                       </div>
                       <button className="add-to-cart-btn">
-                        {lang === 'ar' ? 'أضف' : 'Add'}
+                        {lang === 'ar' ? (content?.add_to_cart_text_ar || 'أضف') : (content?.add_to_cart_text_en || 'Add')}
                       </button>
                     </div>
                   </div>

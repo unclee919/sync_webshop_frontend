@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { getCatalog, getCategories } from '../api/client'
 import { useLanguage } from '../context/LanguageContext'
@@ -25,8 +25,8 @@ export default function ProductList() {
   
   // Price filter state
   const [priceRange, setPriceRange] = useState({ min_price: 0, max_price: 1000 })
-  const [minPrice, setMinPrice] = useState(null)
-  const [maxPrice, setMaxPrice] = useState(null)
+  const [minPrice, setMinPrice] = useState(0)
+  const [maxPrice, setMaxPrice] = useState(1000)
   const [priceFilterApplied, setPriceFilterApplied] = useState(false)
 
   useEffect(() => {
@@ -49,6 +49,7 @@ export default function ProductList() {
             setCatalog(catalogData)
             if (catalogData.price_range) {
               setPriceRange(catalogData.price_range)
+              // Only update local min/max if filter NOT applied to avoid resetting user input
               if (!priceFilterApplied) {
                 setMinPrice(catalogData.price_range.min_price)
                 setMaxPrice(catalogData.price_range.max_price)
@@ -67,22 +68,13 @@ export default function ProductList() {
       }
     }
 
-    async function fetchCategories() {
-      try {
-        const categoriesData = await getCategories()
-        if (isMounted) {
-          setCategories(categoriesData || [])
-        }
-      } catch (err) {
-        console.error("ProductList: getCategories error", err)
-      }
-    }
-
     fetchCatalog()
-    fetchCategories()
-
     return () => { isMounted = false }
-  }, [category, search, page, priceFilterApplied, minPrice, maxPrice])
+  }, [category, search, page, priceFilterApplied]) // Removed minPrice/maxPrice from deps
+
+  useEffect(() => {
+    getCategories().then(setCategories).catch(console.error)
+  }, [])
 
   function goToPage(p) {
     const next = new URLSearchParams(searchParams)
@@ -151,36 +143,36 @@ export default function ProductList() {
                     {lang === 'ar' ? 'جميع المنتجات' : 'All Products'}
                   </button>
                 </li>
-                {categories && categories.map((cat) => (
+                {categories.map(cat => (
                   <li key={cat.name} className={category === cat.name ? 'active' : ''}>
                     <button onClick={() => handleCategoryClick(cat.name)}>
-                      {cat.label}
+                      {cat.name}
                     </button>
                   </li>
                 ))}
               </ul>
             </div>
 
-            {(content?.show_price_filter ?? true) && priceRange.max_price > 0 && (
+            {priceRange && (
               <div className="sidebar-widget">
                 <h3 className="widget-title">{lang === 'ar' ? 'تصفية حسب السعر' : 'Filter by Price'}</h3>
-                <div className="price-filter">
-                  <div className="price-range-inputs">
+                <div className="price-filter-content">
+                  <div className="price-inputs">
                     <div className="price-input-group">
-                      <label>{lang === 'ar' ? 'من' : 'Min'}</label>
-                      <input
-                        type="number"
-                        value={minPrice ?? priceRange.min_price}
+                      <label>{lang === 'ar' ? 'من' : 'From'}</label>
+                      <input 
+                        type="number" 
+                        value={minPrice}
                         onChange={(e) => setMinPrice(Number(e.target.value))}
                         className="price-input"
                       />
                     </div>
-                    <span className="price-separator">—</span>
+                    <span className="price-sep">—</span>
                     <div className="price-input-group">
-                      <label>{lang === 'ar' ? 'إلى' : 'Max'}</label>
-                      <input
-                        type="number"
-                        value={maxPrice ?? priceRange.max_price}
+                      <label>{lang === 'ar' ? 'إلى' : 'To'}</label>
+                      <input 
+                        type="number" 
+                        value={maxPrice}
                         onChange={(e) => setMaxPrice(Number(e.target.value))}
                         className="price-input"
                       />
@@ -201,7 +193,6 @@ export default function ProductList() {
             )}
           </aside>
         )}
-
         <main className="products-main">
           <div className="products-header">
             <h1 className="products-title">
@@ -213,7 +204,6 @@ export default function ProductList() {
               </span>
             )}
           </div>
-
           {loading ? (
             <div className="loading-state">{lang === 'ar' ? 'جاري التحميل...' : 'Loading...'}</div>
           ) : error ? (
@@ -229,39 +219,59 @@ export default function ProductList() {
             <>
               <div className="products-grid">
                 {catalog.items.map((item) => (
-                  <div key={item.item_code} className="product-card">
-                    <Link to={`/products/${encodeURIComponent(item.item_code)}`} className="product-img-link">
-                      {item.image ? (
-                        <img src={item.image} alt={item.item_name} loading="lazy" />
-                      ) : (
-                        <div className="no-image">{lang === 'ar' ? 'لا توجد صورة' : 'No image'}</div>
-                      )}
-                    </Link>
-                    <div className="product-content">
-                      <span className="product-cat">{item.item_group}</span>
-                      <h3 className="product-title">
-                        <Link to={`/products/${encodeURIComponent(item.item_code)}`}>
-                          {item.item_name}
-                        </Link>
-                      </h3>
-                      <div className="product-card-bottom">
-                        <div className="product-price">
-                          <span className="current-price">
-                            {item.price ? `${item.price.toFixed(2)} ${item.currency}` : (lang === 'ar' ? 'عند الطلب' : 'On Request')}
-                          </span>
+                  <div key={item.item_code} className="product-card-wrap">
+                    <div className="product-card-v2">
+                      <div className="product-img-action-wrap">
+                        <div className="product-img">
+                          <Link to={`/products/${encodeURIComponent(item.item_code)}`}>
+                            {item.image ? (
+                              <img className="default-img" src={item.image} alt={item.item_name} />
+                            ) : (
+                              <div className="no-image-placeholder">No Image</div>
+                            )}
+                          </Link>
                         </div>
-                        <button 
-                          className="add-to-cart-btn"
-                          onClick={() => addItem(item)}
-                        >
-                          {lang === 'ar' ? 'أضف' : 'Add'}
-                        </button>
+                        <div className="product-badges">
+                          {item.is_new && <span className="badge-new">{lang === 'ar' ? 'جديد' : 'New'}</span>}
+                          {item.discount_percentage > 0 && (
+                            <span className="badge-hot">-{item.discount_percentage}%</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="product-content-wrap">
+                        <div className="product-category">
+                          <Link to={`/products?category=${encodeURIComponent(item.item_group)}`}>{item.item_group}</Link>
+                        </div>
+                        <h2 className="product-title">
+                          <Link to={`/products/${encodeURIComponent(item.item_code)}`}>{item.item_name}</Link>
+                        </h2>
+                        <div className="product-rate-feedback">
+                          <div className="star-rating">
+                            <div className="stars-outer">
+                              <div className="stars-inner" style={{ width: `${(item.rating || 4.5) * 20}%` }}></div>
+                            </div>
+                          </div>
+                          <span className="rating-count">({item.review_count || 0})</span>
+                        </div>
+                        <div className="product-card-bottom">
+                          <div className="product-price">
+                            <span>{item.price ? `${item.price.toFixed(2)} ${item.currency}` : (lang === 'ar' ? 'عند الطلب' : 'On Request')}</span>
+                            {item.old_price > item.price && (
+                              <span className="old-price">{item.old_price.toFixed(2)} {item.currency}</span>
+                            )}
+                          </div>
+                          <div className="add-cart">
+                            <button className="add-btn" onClick={() => addItem(item)}>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                              {lang === 'ar' ? 'أضف' : 'Add'}
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
-
               {totalPages > 1 && (
                 <div className="pagination">
                   <button 

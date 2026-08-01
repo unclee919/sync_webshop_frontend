@@ -3,12 +3,15 @@ import { Link, useParams } from 'react-router-dom'
 import { getItem } from '../api/client'
 import { useCart } from '../context/CartContext'
 import { useLanguage } from '../context/LanguageContext'
+import { useContent } from '../context/ContentContext'
 import SEOHead from '../components/SEOHead'
 import './Products.css'
 
 export default function ProductDetail() {
   const { itemCode } = useParams()
   const { lang, isRtl } = useLanguage()
+  const { content } = useContent()
+  const c = content || {}
   const [item, setItem] = useState(null)
   const [error, setError] = useState(null)
   const [qty, setQty] = useState(1)
@@ -100,9 +103,9 @@ export default function ProductDetail() {
           </div>
 
           <ul className="product-meta">
-            <li>{lang === 'ar' ? 'رمز المنتج:' : 'Item Code:'} <span>{item.item_code}</span></li>
-            <li>{lang === 'ar' ? 'الفئة:' : 'Category:'} <span>{item.item_group}</span></li>
-            {item.stock_uom && <li>{lang === 'ar' ? 'الوحدة:' : 'Unit:'} <span>{item.stock_uom}</span></li>}
+            <li>{lang === 'ar' ? (c.item_code_label_ar || 'رمز المنتج:') : (c.item_code_label_en || 'Item Code:')} <span>{item.item_code}</span></li>
+            <li>{lang === 'ar' ? (c.category_label_ar || 'الفئة:') : (c.category_label_en || 'Category:')} <span>{item.item_group}</span></li>
+            {item.stock_uom && <li>{lang === 'ar' ? (c.unit_label_ar || 'الوحدة:') : (c.unit_label_en || 'Unit:')} <span>{item.stock_uom}</span></li>}
           </ul>
 
           <div className="detail-actions">
@@ -119,7 +122,7 @@ export default function ProductDetail() {
               className={`add-cart-large ${added ? 'added' : ''}`}
               onClick={handleAdd}
             >
-              {added ? (lang === 'ar' ? 'تمت الإضافة' : 'Added') : (lang === 'ar' ? 'أضف إلى السلة' : 'Add to Cart')}
+              {added ? (lang === 'ar' ? (c.added_text_ar || 'تمت الإضافة') : (c.added_text_en || 'Added')) : (lang === 'ar' ? (c.add_to_cart_text_ar || 'أضف إلى السلة') : (c.add_to_cart_text_en || 'Add to Cart'))}
             </button>
           </div>
         </div>
