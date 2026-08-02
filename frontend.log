@@ -1,9 +1,0 @@
-
-> sync-webshop-storefront@0.1.0 dev
-> vite --host --port 80
-
-
-  VITE v5.4.21  ready in 796 ms
-
-  ➜  Local:   http://localhost:80/
-  ➜  Network: http://194.163.131.237:80/
