@@ -3,43 +3,101 @@ import { getContent } from '../api/client'
 
 const ContentContext = createContext(null)
 
+const FONT_STACKS = {
+  Poppins: "'Poppins', sans-serif",
+   Cairo: "'Cairo', sans-serif",
+  Inter: "'Inter', sans-serif",
+  Roboto: "'Roboto', sans-serif",
+  'Open Sans': "'Open Sans', sans-serif",
+}
+
+function applyThemeToDocument(theme) {
+  if (!theme) return
+  const root = document.documentElement.style
+  const colors = theme.colors || {}
+  const fonts = theme.fonts || {}
+  const spacing = theme.spacing || {}
+  const dimensions = theme.dimensions || {}
+
+  // Colors
+  root.setProperty('--color-primary', String(colors.primary || '#253D4E'))
+  root.setProperty('--color-secondary', String(colors.secondary || '#84B082'))
+  root.setProperty('--color-accent', String(colors.accent || '#FDC040'))
+  root.setProperty('--color-danger', String(colors.danger || '#F74B81'))
+  root.setProperty('--color-background', String(colors.background || '#ffffff'))
+  root.setProperty('--top-bar-bg', String(colors.top_bar_bg || '#ffffff'))
+  root.setProperty('--top-bar-text', String(colors.top_bar_text || '#253D4E'))
+  root.setProperty('--header-bg', String(colors.header_bg || '#ffffff'))
+  root.setProperty('--header-text', String(colors.header_text || '#253D4E'))
+  root.setProperty('--nav-bg', String(colors.nav_bg || '#84B082'))
+  root.setProperty('--nav-text', String(colors.nav_text || '#ffffff'))
+  root.setProperty('--footer-bg', String(colors.footer_bg || '#253D4E'))
+  root.setProperty('--footer-text', String(colors.footer_text || '#ffffff'))
+
+  // Dimensions & Spacing
+  root.setProperty('--border-radius-md', String(spacing.border_radius || '15px'))
+  root.setProperty('--container-max-width', String(spacing.container_width || '1200px'))
+  root.setProperty('--header-max-width', `${dimensions.header_max_width || 1200}px`)
+  root.setProperty('--header-height', `${dimensions.header_height || 80}px`)
+  root.setProperty('--header-padding-vertical', `${dimensions.header_padding_vertical || 15}px`)
+  root.setProperty('--header-padding-horizontal', `${dimensions.header_padding_horizontal || 15}px`)
+  root.setProperty('--logo-height', `${dimensions.logo_height || 45}px`)
+  root.setProperty('--logo-width', dimensions.logo_width ? `${dimensions.logo_width}px` : 'auto')
+  root.setProperty('--search-bar-max-width', `${dimensions.search_bar_max_width || 600}px`)
+  root.setProperty('--search-bar-height', `${dimensions.search_bar_height || 45}px`)
+  root.setProperty('--nav-bar-height', `${dimensions.nav_bar_height || 50}px`)
+  root.setProperty('--hero-height', `${dimensions.hero_height || 450}px`)
+  root.setProperty('--hero-width', `${dimensions.hero_width || 1200}px`)
+
+  // Fonts
+  root.setProperty('--font-heading', String(FONT_STACKS[fonts.heading] || FONT_STACKS.Cairo))
+  root.setProperty('--font-body', String(FONT_STACKS[fonts.body] || FONT_STACKS.Cairo))
+  
+  // Layout Data Attribute
+  document.documentElement.dataset.layout = String(theme.layout_style || 'Oasis').toLowerCase()
+}
+
 export function ContentProvider({ children }) {
   const [content, setContent] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    getContent()
-      .then((data) => {
+    async function fetchData() {
+      try {
+        setLoading(true)
+        const data = await getContent()
         setContent(data)
-        setLoading(false)
-        if (data?.theme?.colors) {
-          const root = document.documentElement;
-          const colors = data.theme.colors;
-          if (colors.primary) root.style.setProperty('--color-primary', colors.primary);
-          if (colors.secondary) root.style.setProperty('--color-secondary', colors.secondary);
-          if (colors.accent) root.style.setProperty('--color-accent', colors.accent);
-          if (colors.background) root.style.setProperty('--color-background', colors.background);
-          if (colors.top_bar_bg) root.style.setProperty('--top-bar-bg', colors.top_bar_bg);
-          if (colors.top_bar_text) root.style.setProperty('--top-bar-text', colors.top_bar_text);
-          if (colors.header_bg) root.style.setProperty('--header-bg', colors.header_bg);
-          if (colors.header_text) root.style.setProperty('--header-text', colors.header_text);
-          if (colors.nav_bg) root.style.setProperty('--nav-bg', colors.nav_bg);
-          if (colors.nav_text) root.style.setProperty('--nav-text', colors.nav_text);
-          if (colors.footer_bg) root.style.setProperty('--footer-bg', colors.footer_bg);
-          if (colors.footer_text) root.style.setProperty('--footer-text', colors.footer_text);
+        if (data?.theme) {
+          applyThemeToDocument(data.theme)
         }
-      })
-      .catch((err) => {
-        console.error('Content fetch error:', err)
+      } catch (err) {
+        console.error('Failed to fetch content:', err)
+        setError(err.message)
+      } finally {
         setLoading(false)
-      })
+      }
+    }
+    fetchData()
   }, [])
 
-  const value = { content, loading }
+  const value = { 
+    content, 
+    loading, 
+    error,
+    theme: content?.theme || {},
+    refresh: async () => {
+      const data = await getContent()
+      setContent(data)
+      if (data?.theme) applyThemeToDocument(data.theme)
+    }
+  }
+
   return <ContentContext.Provider value={value}>{children}</ContentContext.Provider>
 }
 
 export function useContent() {
   const ctx = useContext(ContentContext)
+  if (!ctx) throw new Error('useContent must be used inside ContentProvider')
   return ctx
 }

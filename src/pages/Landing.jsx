@@ -1,73 +1,75 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { useLanguage } from '../context/LanguageContext'
 import { useContent } from '../context/ContentContext'
+import { useLanguage } from '../context/LanguageContext'
+import { useCart } from '../context/CartContext'
 import './Landing.css'
 
 export default function Landing() {
-  const { lang, isRtl } = useLanguage()
   const { content, loading } = useContent()
+  const { lang } = useLanguage()
+  const { addItem } = useCart()
   const [currentSlide, setCurrentSlide] = useState(0)
 
+  const banners = content?.banners || []
+  const categories = content?.featured_categories || []
+  const trustBadges = content?.trust_badges || []
+  const landingSections = content?.landing_sections || []
+
   useEffect(() => {
-    if (!content?.banners?.length) return
+    if (banners.length <= 1) return
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev === content.banners.length - 1 ? 0 : prev + 1))
+      setCurrentSlide((prev) => (prev + 1) % banners.length)
     }, 5000)
     return () => clearInterval(timer)
-  }, [content?.banners])
+  }, [banners.length])
 
-  if (loading) return <div className="loading-state container">Loading...</div>
-  if (!content) return null
+  const handleNextSlide = () => setCurrentSlide((prev) => (prev + 1) % banners.length)
+  const handlePrevSlide = () => setCurrentSlide((prev) => (prev - 1 + banners.length) % banners.length)
 
-  const c = content
-  const banners = c.banners || c.hero_slides || []
-  const categories = c.featured_categories || []
-  const trustBadges = c.trust_badges || []
-  const landingSections = c.landing_sections || []
-
-  const handlePrevSlide = () => {
-    setCurrentSlide((prev) => (prev === 0 ? banners.length - 1 : prev - 1))
+  if (loading) {
+    return (
+      <div className="landing-loading">
+        <div className="skeleton hero-skeleton"></div>
+        <div className="container">
+          <div className="skeleton title-skeleton"></div>
+          <div className="skeleton-grid">
+            {[1, 2, 3, 4].map(i => <div key={i} className="skeleton card-skeleton"></div>)}
+          </div>
+        </div>
+      </div>
+    )
   }
-
-  const handleNextSlide = () => {
-    setCurrentSlide((prev) => (prev === banners.length - 1 ? 0 : prev + 1))
-  }
-
-  const theme = content?.theme || {}
-  const heroHeight = theme?.dimensions?.hero_height ? `${theme.dimensions.hero_height}px` : '500px';
 
   return (
-    <div className={`landing ${isRtl ? 'rtl' : 'ltr'}`}>
-      {/* Hero Section / Slider */}
+    <div className="landing-page">
+      {/* Hero Slider */}
       {banners.length > 0 && (
-        <section className="hero-slider">
-          <div className="slider-wrapper" style={{ height: heroHeight }}>
-            <div className="slider-container" style={{ transform: `translateX(${isRtl ? currentSlide * 100 : -currentSlide * 100}%)` }}>
-              {banners.map((b, i) => (
-                <div key={i} className="slide" style={{ height: heroHeight }}>
-                    <img src={b.image} alt={b.title} loading="lazy" />
-                  <div className="slide-content">
-                    <div className="container">
-                      <div className="slide-text-box">
-                        <h2>{b.title}</h2>
-                        <p>{b.subtitle}</p>
-                        {b.link_url && (
-                          <Link to={b.link_url} className="btn-primary">
-                            {lang === 'ar' ? (content?.shop_now_text_ar || 'تسوق الآن') : (content?.shop_now_text_en || 'Shop Now')}
-                          </Link>
-                        )}
-                      </div>
-                    </div>
+        <section className="hero-section">
+          <div className="hero-slider">
+            {banners.map((banner, idx) => (
+              <div
+                key={idx}
+                className={`hero-slide ${idx === currentSlide ? 'active' : ''}`}
+                style={{ backgroundImage: `url(${banner.image})` }}
+              >
+                <div className="container">
+                  <div className="hero-content">
+                    <h1>{banner.title}</h1>
+                    <p>{banner.subtitle}</p>
+                    {banner.link_url && (
+                      <Link to={banner.link_url} className="btn btn-primary">
+                        {lang === 'ar' ? (content?.shop_now_text_ar || 'تسوق الآن') : (content?.shop_now_text_en || 'Shop Now')}
+                      </Link>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
-
+              </div>
+            ))}
             {banners.length > 1 && (
               <>
-                <button className="slider-arrow slider-arrow-prev" onClick={handlePrevSlide}>‹</button>
-                <button className="slider-arrow slider-arrow-next" onClick={handleNextSlide}>›</button>
+                <button className="slider-nav prev" onClick={handlePrevSlide}>‹</button>
+                <button className="slider-nav next" onClick={handleNextSlide}>›</button>
                 <div className="slider-dots">
                   {banners.map((_, i) => (
                     <button
@@ -108,7 +110,7 @@ export default function Landing() {
         </section>
       )}
 
-      {/* Dynamic Landing Sections (Product Grids) */}
+      {/* Dynamic Landing Sections */}
       {landingSections.map((section, idx) => (
         <section key={idx} className="landing-section">
           <div className="container">
@@ -144,7 +146,10 @@ export default function Landing() {
                       <div className="product-price">
                         <span className="current-price">{(item.price || 0).toFixed(2)} {item.currency}</span>
                       </div>
-                      <button className="add-to-cart-btn">
+                      <button 
+                        className="add-to-cart-btn"
+                        onClick={() => addItem(item)}
+                      >
                         {lang === 'ar' ? (content?.add_to_cart_text_ar || 'أضف') : (content?.add_to_cart_text_en || 'Add')}
                       </button>
                     </div>

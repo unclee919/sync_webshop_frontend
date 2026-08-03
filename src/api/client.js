@@ -2,28 +2,49 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 
 async function callMethod(path, { method = 'GET', params, body, apiKey, apiSecret } = {}) {
   let url = `${API_BASE_URL}/api/method/${path}`
+  
   if (params) {
-    const query = new URLSearchParams(
-      Object.entries(params).filter(([, v]) => v !== undefined && v !== null)
-    )
-    if ([...query].length) url += `?${query.toString()}`
+    const query = new URLSearchParams()
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        query.append(key, value)
+      }
+    })
+    const queryString = query.toString()
+    if (queryString) url += `?${queryString}`
   }
-  const headers = {}
-  if (body) headers['Content-Type'] = 'application/json'
+
+  const headers = {
+    'Accept': 'application/json',
+  }
+  
+  if (body) {
+    headers['Content-Type'] = 'application/json'
+  }
+  
   if (apiKey && apiSecret) {
     headers['Authorization'] = `token ${apiKey}:${apiSecret}`
   }
-  const response = await fetch(url, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-  })
-  const data = await response.json().catch(() => null)
-  if (!response.ok) {
-    const message = data?.message || data?.exception || `Request failed (${response.status})`
-    throw new Error(message)
+
+  try {
+    const response = await fetch(url, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+    })
+
+    const data = await response.json().catch(() => null)
+
+    if (!response.ok) {
+      const message = data?.message || data?.exception || `Request failed (${response.status})`
+      throw new Error(message)
+    }
+
+    return data?.message
+  } catch (error) {
+    console.error(`API Error (${path}):`, error)
+    throw error
   }
-  return data?.message
 }
 
 export function getTheme() {

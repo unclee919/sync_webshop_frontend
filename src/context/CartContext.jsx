@@ -1,9 +1,16 @@
-import { createContext, useContext, useMemo, useState } from 'react'
+import { createContext, useContext, useMemo, useState, useEffect } from 'react'
 
 const CartContext = createContext(null)
 
 export function CartProvider({ children }) {
-  const [items, setItems] = useState([]) // [{ item_code, item_name, price, currency, qty }]
+  const [items, setItems] = useState(() => {
+    const saved = localStorage.getItem('sync_webshop_cart')
+    return saved ? JSON.parse(saved) : []
+  })
+
+  useEffect(() => {
+    localStorage.setItem('sync_webshop_cart', JSON.stringify(items))
+  }, [items])
 
   function addItem(item, qty = 1) {
     setItems((prev) => {
@@ -35,8 +42,13 @@ export function CartProvider({ children }) {
     [items]
   )
 
-  const value = { items, addItem, removeItem, setQty, clear, total }
+  const count = useMemo(
+    () => items.reduce((sum, i) => sum + i.qty, 0),
+    [items]
+  )
 
+  const value = { items, addItem, removeItem, setQty, clear, total, count }
+  
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>
 }
 
