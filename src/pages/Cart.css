@@ -389,3 +389,29 @@
   padding-top: 1rem;
   border-top: 2px solid #eee;
 }
+
+.coupon-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.coupon-form input { flex: 1 1 180px; min-width: 0; }
+.coupon-form button {
+  min-height: 42px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  background: var(--color-primary, #21504C);
+  cursor: pointer;
+  font-weight: 600;
+}
+.coupon-form button:disabled { cursor: not-allowed; opacity: 0.55; }
+.coupon-form .coupon-remove { color: #8b2f2f; background: #f9e9e9; }
+.coupon-message { margin: 8px 0 0; font-size: 0.88rem; }
+.coupon-message.success, .discount-row { color: #237a49; }
+.coupon-message.error { color: #b42318; }
+.checkout-form select, .checkout-form input, .checkout-form textarea { width: 100%; }
+.checkout-form select:disabled { cursor: not-allowed; opacity: 0.62; }
+@media (max-width: 600px) { .coupon-form button { flex: 1 1 92px; } }

@@ -21,6 +21,7 @@ export default function AiChatWidget() {
     open: isArabic ? 'افتح المساعد' : 'Open assistant',
     unavailable: isArabic ? 'المساعد غير متاح حالياً.' : 'The assistant is currently unavailable.',
     fallback: isArabic ? 'تعذر الحصول على رد. حاول مرة أخرى.' : 'We could not get a response. Please try again.',
+    privacy: isArabic ? 'لأمانك، لا ترسل كلمات المرور أو بيانات البطاقات أو رموز التحقق أو أي بيانات خاصة.' : 'For your safety, do not share passwords, card details, OTPs, API keys, or private information.',
   }), [isArabic])
 
   useEffect(() => {
@@ -59,6 +60,7 @@ export default function AiChatWidget() {
           {sending && <div className="ai-chat-message assistant">{isArabic ? 'جارٍ التفكير...' : 'Thinking...'}</div>}
           {error && <div className="ai-chat-error">{error}</div>}
         </div>
+        {settings.prevent_sensitive_data !== false && <p className="ai-chat-privacy">{copy.privacy}</p>}
         <form className="ai-chat-form" onSubmit={submit}><input value={input} onChange={(e) => setInput(e.target.value)} maxLength={settings.max_message_length || 2000} placeholder={copy.placeholder} disabled={sending} /><button type="submit" disabled={sending || !input.trim()}>{copy.send}</button></form>
       </section>}
       <button type="button" className="ai-chat-launcher" onClick={() => setOpen(!open)} aria-label={copy.open}><span className="ai-chat-launcher-icon">✦</span><span>{copy.title}</span></button>

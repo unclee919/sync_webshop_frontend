@@ -1,0 +1,12 @@
+{
+  "name": "Sync Webshop",
+  "short_name": "Webshop",
+  "description": "A fast, bilingual ERPNext-powered webshop.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#21504c",
+  "lang": "en",
+  "dir": "auto",
+  "icons": []
+}

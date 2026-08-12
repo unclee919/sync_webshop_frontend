@@ -2,46 +2,55 @@ import { useEffect } from 'react'
 import { useContent } from '../context/ContentContext'
 import { useLanguage } from '../context/LanguageContext'
 
-/**
- * SEOHead - Dynamically manages document <head> meta tags for SEO and social sharing.
- * Reads defaults from Content Settings and can be overridden per-page via props.
- */
+function addScript(id, src, inlineCode) {
+  if (document.getElementById(id)) return
+  const script = document.createElement('script')
+  script.id = id
+  if (src) script.src = src
+  if (inlineCode) script.textContent = inlineCode
+  if (src) script.async = true
+  document.head.appendChild(script)
+}
+
+function addJsonLd(id, value) {
+  let script = document.getElementById(id)
+  if (!script) {
+    script = document.createElement('script')
+    script.id = id
+    script.type = 'application/ld+json'
+    document.head.appendChild(script)
+  }
+  script.textContent = JSON.stringify(value)
+}
+
 export default function SEOHead({ title, description, image, url, type = 'website' }) {
   const { content } = useContent()
   const { lang } = useLanguage()
 
   useEffect(() => {
     if (!content) return
-
     const siteName = content.site_name || 'Sync Webshop'
     const pageTitle = title ? `${title} | ${siteName}` : siteName
-    const pageDescription = description || 
-      (lang === 'ar' ? content.seo_meta_description_ar : content.seo_meta_description_en) || ''
+    const pageDescription = description || (lang === 'ar' ? content.seo_meta_description_ar : content.seo_meta_description_en) || ''
     const pageImage = image || content.seo_og_image || ''
     const pageUrl = url || window.location.href
     const keywords = content.seo_keywords || ''
 
-    // Update document title
     document.title = pageTitle
-
-    // Helper to set or create a meta tag
-    function setMeta(property, content, isName = false) {
-      if (!content) return
+    function setMeta(property, value, isName = false) {
+      if (!value) return
       const attr = isName ? 'name' : 'property'
-      let el = document.querySelector(`meta[${attr}="${property}"]`)
-      if (!el) {
-        el = document.createElement('meta')
-        el.setAttribute(attr, property)
-        document.head.appendChild(el)
+      let element = document.querySelector(`meta[${attr}="${property}"]`)
+      if (!element) {
+        element = document.createElement('meta')
+        element.setAttribute(attr, property)
+        document.head.appendChild(element)
       }
-      el.setAttribute('content', content)
+      element.setAttribute('content', value)
     }
 
-    // Standard SEO meta
     setMeta('description', pageDescription, true)
     setMeta('keywords', keywords, true)
-
-    // Open Graph
     setMeta('og:title', pageTitle)
     setMeta('og:description', pageDescription)
     setMeta('og:image', pageImage)
@@ -49,14 +58,34 @@ export default function SEOHead({ title, description, image, url, type = 'websit
     setMeta('og:type', type)
     setMeta('og:site_name', siteName)
     setMeta('og:locale', lang === 'ar' ? 'ar_AR' : 'en_US')
-
-    // Twitter Card
     setMeta('twitter:card', 'summary_large_image', true)
     setMeta('twitter:title', pageTitle, true)
     setMeta('twitter:description', pageDescription, true)
     setMeta('twitter:image', pageImage, true)
 
+    addJsonLd('sync-webshop-website-schema', { '@context': 'https://schema.org', '@type': 'WebSite', name: siteName, description: pageDescription, url: pageUrl, inLanguage: lang === 'ar' ? 'ar' : 'en' })
+    if (content.seo?.structured_data) {
+      try {
+        const configured = typeof content.seo.structured_data === 'string' ? JSON.parse(content.seo.structured_data) : content.seo.structured_data
+        addJsonLd('sync-webshop-configured-schema', configured)
+      } catch {
+        // Invalid Desk JSON must not break storefront rendering.
+      }
+    }
+
+    if (content.enable_analytics_tracking && content.ga4_measurement_id) {
+      const measurementId = content.ga4_measurement_id
+      window.dataLayer = window.dataLayer || []
+      window.gtag = window.gtag || function gtag() { window.dataLayer.push(arguments) }
+      window.gtag('js', new Date())
+      window.gtag('config', measurementId, { anonymize_ip: true })
+      addScript('sync-webshop-ga4-src', `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`)
+    }
+    if (content.enable_analytics_tracking && content.facebook_pixel_id) {
+      const pixelId = String(content.facebook_pixel_id).replace(/'/g, '')
+      addScript('sync-webshop-facebook-pixel', null, `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${pixelId}');fbq('track','PageView');`)
+    }
   }, [content, title, description, image, url, type, lang])
 
-  return null // This component only manages <head>, no visible output
+  return null
 }

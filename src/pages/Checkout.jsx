@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements } from '@stripe/react-stripe-js'
-import { createOrder, createPaymobIntention, getCheckoutSettings } from '../api/client'
+import { createOrder, createPaymobIntention, getCheckoutSettings, getTerritories, validateCoupon } from '../api/client'
 import { useCart } from '../context/CartContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useContent } from '../context/ContentContext'
@@ -14,20 +14,25 @@ export default function Checkout() {
   const { lang, isRtl } = useLanguage()
   const { content } = useContent()
   const c = content || {}
-  
-  // Form state
+
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
+  const [secondPhone, setSecondPhone] = useState('')
   const [address, setAddress] = useState('')
+  const [governorate, setGovernorate] = useState('')
+  const [city, setCity] = useState('')
+  const [location, setLocation] = useState('')
   const [deliveryDate, setDeliveryDate] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('cod')
-  
-  // Settings state
+  const [couponCode, setCouponCode] = useState('')
+  const [coupon, setCoupon] = useState(null)
+  const [couponMessage, setCouponMessage] = useState(null)
+  const [couponLoading, setCouponLoading] = useState(false)
+
   const [settings, setSettings] = useState(null)
+  const [territories, setTerritories] = useState([])
   const [stripePromise, setStripePromise] = useState(null)
-  
-  // UI state
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
@@ -36,53 +41,82 @@ export default function Checkout() {
 
   const gatewayList = settings?.payment_gateways || []
   const currency = items[0]?.currency || 'GBP'
+  const cities = useMemo(() => territories.find((row) => row.governorate === governorate)?.cities || [], [territories, governorate])
+  const requireTerritory = settings?.checkout_require_city_governorate ?? true
+  const requireSecondPhone = settings?.checkout_require_second_phone ?? true
+  const shippingRule = settings?.shipping_rules?.[0]
+  const shippingCost = shippingRule && total < Number(shippingRule.free_shipping_threshold || 0) ? Number(shippingRule.shipping_cost || 0) : 0
+  const discount = Math.min(Number(coupon?.discount_amount || 0), total)
+  const grandTotal = Math.max(0, total - discount) + shippingCost
 
   useEffect(() => {
-    getCheckoutSettings().then(data => {
-      setSettings(data)
+    Promise.all([getCheckoutSettings(), getTerritories()]).then(([data, territoryRows]) => {
+      setSettings(data || {})
+      setTerritories(Array.isArray(territoryRows) ? territoryRows : [])
       setSettingsError(null)
-      const gateways = data.payment_gateways || []
-      setPaymentMethod(gateways.find(g => g.name === 'cod')?.name || gateways[0]?.name || 'cod')
-      const stripeGateway = gateways.find(g => g.name === 'stripe')
-      if (stripeGateway?.publishable_key) {
-        setStripePromise(loadStripe(stripeGateway.publishable_key))
-      }
-      
-      // Set default delivery date based on min_days
-      const minDays = data.delivery_settings?.min_days || 1
+      const gateways = data?.payment_gateways || []
+      setPaymentMethod(gateways.find((gateway) => gateway.name === 'cod')?.name || gateways[0]?.name || 'cod')
+      const stripeGateway = gateways.find((gateway) => gateway.name === 'stripe')
+      if (stripeGateway?.publishable_key) setStripePromise(loadStripe(stripeGateway.publishable_key))
       const date = new Date()
-      date.setDate(date.getDate() + minDays)
+      date.setDate(date.getDate() + (data?.delivery_settings?.min_days || 1))
       setDeliveryDate(date.toISOString().split('T')[0])
-      
-      setLoading(false)
-    }).catch(err => {
-      console.error(err)
-      setSettingsError(err.message)
-      setLoading(false)
-    })
+    }).catch((err) => setSettingsError(err.message)).finally(() => setLoading(false))
   }, [])
 
-  const shippingRule = settings?.shipping_rules?.[0]
-  const threshold = shippingRule?.free_shipping_threshold || 0
-  const shippingCost = (shippingRule && total < threshold) ? shippingRule.shipping_cost : 0
-  const grandTotal = total + shippingCost
+  function customerPayload() {
+    return { name, email, phone, second_phone: secondPhone, address, governorate, city, location, coupon_code: coupon?.coupon_code }
+  }
 
-  async function handleConfirmOrder(stripePaymentIntentId = null) {
+  async function handleApplyCoupon(event) {
+    event?.preventDefault()
+    const code = couponCode.trim()
+    if (!code || couponLoading || coupon) return
+    setCouponLoading(true)
+    setCouponMessage(null)
+    try {
+      const validated = await validateCoupon(code, total)
+      setCoupon(validated)
+      setCouponMessage({ type: 'success', text: lang === 'ar' ? `تم تطبيق الخصم: ${Number(validated.discount_amount || 0).toFixed(2)} ${currency}` : `Coupon applied: ${Number(validated.discount_amount || 0).toFixed(2)} ${currency}` })
+    } catch (err) {
+      setCoupon(null)
+      setCouponMessage({ type: 'error', text: err.message })
+    } finally {
+      setCouponLoading(false)
+    }
+  }
+
+  function removeCoupon() {
+    setCoupon(null)
+    setCouponCode('')
+    setCouponMessage(null)
+  }
+
+  async function handleConfirmOrder(stripePaymentIntentId = null, submit = true) {
     setSubmitting(true)
     setError(null)
     try {
       const order = await createOrder({
-        customer: { name, email, phone, address },
-        items: items.map((i) => ({ item_code: i.item_code, qty: i.qty })),
+        customer: customerPayload(),
+        items: items.map((item) => ({ item_code: item.item_code, qty: item.qty })),
         payment_method: paymentMethod,
         stripe_payment_intent: stripePaymentIntentId,
         delivery_date: deliveryDate,
-        submit: true,
+        coupon_code: coupon?.coupon_code,
+        governorate,
+        city,
+        location,
+        second_phone: secondPhone,
+        submit,
       })
-      setResult(order)
-      clear()
+      if (submit) {
+        setResult(order)
+        clear()
+      }
+      return order
     } catch (err) {
-      setError(err.message || (lang === 'ar' ? 'تعذر التحقق من المخزون والأسعار.' : 'We could not validate stock and pricing. Please review your cart and try again.'))
+      setError(err.message || (lang === 'ar' ? 'تعذر التحقق من المخزون والأسعار.' : 'We could not validate stock and pricing.'))
+      throw err
     } finally {
       setSubmitting(false)
     }
@@ -92,22 +126,9 @@ export default function Checkout() {
     setSubmitting(true)
     setError(null)
     try {
-      const draft = await createOrder({
-        customer: { name, email, phone, address },
-        items: items.map((i) => ({ item_code: i.item_code, qty: i.qty })),
-        payment_method: 'paymob',
-        delivery_date: deliveryDate,
-        submit: false,
-      })
+      const draft = await createOrder({ customer: customerPayload(), items: items.map((item) => ({ item_code: item.item_code, qty: item.qty })), payment_method: 'paymob', delivery_date: deliveryDate, coupon_code: coupon?.coupon_code, governorate, city, location, second_phone: secondPhone, submit: false })
       const paymobGateway = gatewayList.find((gateway) => gateway.name === 'paymob')
-      const intention = await createPaymobIntention({
-        amount: draft.grand_total,
-        currency: paymobGateway?.currency || draft.currency || currency,
-        customer: { name, email, phone, address },
-        items: items.map((i) => ({ item_code: i.item_code, item_name: i.item_name, qty: i.qty, price: i.price })),
-        salesOrder: draft.sales_order,
-        deliveryDate,
-      })
+      const intention = await createPaymobIntention({ amount: draft.grand_total, currency: paymobGateway?.currency || draft.currency || currency, customer: customerPayload(), items: items.map((item) => ({ item_code: item.item_code, item_name: item.item_name, qty: item.qty, price: item.price })), salesOrder: draft.sales_order, deliveryDate })
       if (!intention?.checkout_url) throw new Error(lang === 'ar' ? 'تعذر فتح بوابة الدفع.' : 'Paymob did not return a checkout URL.')
       window.location.assign(intention.checkout_url)
     } catch (err) {
@@ -116,161 +137,58 @@ export default function Checkout() {
     }
   }
 
-  async function handleSubmit(e) {
-    if (e) e.preventDefault()
-    if (paymentMethod === 'cod') {
-      await handleConfirmOrder()
-    } else if (paymentMethod === 'paymob') {
-      await handlePaymobOrder()
-    } else if (paymentMethod === 'stripe') {
-      setError(lang === 'ar' ? 'يرجى استخدام زر الدفع بعد إدخال بيانات البطاقة.' : 'Use the card payment button after entering your card details.')
-    }
+  async function handleSubmit(event) {
+    event?.preventDefault()
+    if (paymentMethod === 'cod') await handleConfirmOrder()
+    else if (paymentMethod === 'paymob') await handlePaymobOrder()
+    else if (paymentMethod === 'stripe') setError(lang === 'ar' ? 'يرجى استخدام زر الدفع بعد إدخال بيانات البطاقة.' : 'Use the card payment button after entering your card details.')
   }
 
   if (loading) return <div className="container">{lang === 'ar' ? 'جارٍ تحميل إعدادات الدفع...' : 'Loading checkout settings...'}</div>
   if (!items.length) return <div className={`checkout-page container ${isRtl ? 'rtl' : 'ltr'}`}><p className="dashboard-empty">{lang === 'ar' ? 'السلة فارغة.' : 'Your cart is empty.'} <Link to="/products">{lang === 'ar' ? 'العودة للمنتجات' : 'Return to products'}</Link></p></div>
 
-  if (result) {
-    return (
-      <div className={`checkout-page container ${isRtl ? 'rtl' : 'ltr'}`}>
-        <div className="checkout-success-card">
-          <div className="success-icon">✓</div>
-          <h1>{lang === 'ar' ? (c.order_success_title_ar || 'تم تقديم الطلب بنجاح') : (c.order_success_title_en || 'Order Placed Successfully')}</h1>
-          <p>
-            {lang === 'ar' ? 'رقم الطلب:' : 'Order Number:'} <strong>{result.sales_order}</strong>
-          </p>
-          <p>
-            {lang === 'ar' ? 'الإجمالي:' : 'Total:'} <strong>{result.grand_total.toFixed(2)} {result.currency}</strong>
-          </p>
-          {result.shipping_cost > 0 && (
-            <p>{lang === 'ar' ? 'شامل رسوم الشحن:' : 'Including shipping:'} {result.shipping_cost.toFixed(2)} {result.currency}</p>
-          )}
-          <div className="success-actions">
-            <Link to="/products" className="btn-primary">
-              {lang === 'ar' ? (c.continue_shopping_text_ar || 'مواصلة التسوق') : (c.continue_shopping_text_en || 'Continue Shopping')}
-            </Link>
-          </div>
-        </div>
+  if (result) return (
+    <div className={`checkout-page container ${isRtl ? 'rtl' : 'ltr'}`}>
+      <div className="checkout-success-card">
+        <div className="success-icon">✓</div>
+        <h1>{lang === 'ar' ? (c.order_success_title_ar || 'تم تقديم الطلب بنجاح') : (c.order_success_title_en || 'Order Placed Successfully')}</h1>
+        <p>{lang === 'ar' ? 'رقم الطلب:' : 'Order Number:'} <strong>{result.sales_order}</strong></p>
+        <p>{lang === 'ar' ? 'الإجمالي:' : 'Total:'} <strong>{Number(result.grand_total || 0).toFixed(2)} {result.currency}</strong></p>
+        {Number(result.coupon_discount || 0) > 0 && <p>{lang === 'ar' ? 'الخصم:' : 'Discount:'} {Number(result.coupon_discount).toFixed(2)} {result.currency}</p>}
+        {Number(result.shipping_cost || 0) > 0 && <p>{lang === 'ar' ? 'شامل رسوم الشحن:' : 'Including shipping:'} {Number(result.shipping_cost).toFixed(2)} {result.currency}</p>}
+        <div className="success-actions"><Link to="/products" className="btn-primary">{lang === 'ar' ? (c.continue_shopping_text_ar || 'مواصلة التسوق') : (c.continue_shopping_text_en || 'Continue Shopping')}</Link></div>
       </div>
-    )
-  }
+    </div>
+  )
 
   return (
     <div className={`checkout-page container ${isRtl ? 'rtl' : 'ltr'}`}>
       <h1 className="page-title">{lang === 'ar' ? (c.checkout_title_ar || 'الدفع') : (c.checkout_title_en || 'Checkout')}</h1>
       {settingsError && <div className="error-message" role="alert">{settingsError}</div>}
-      
       <div className="checkout-grid">
         <div className="checkout-form-container">
           <form className="checkout-form" onSubmit={handleSubmit}>
             <section className="checkout-section">
               <h2 className="section-title-small">{lang === 'ar' ? 'معلومات الشحن' : 'Shipping Information'}</h2>
-              <div className="form-group">
-                <label>{lang === 'ar' ? 'الاسم الكامل' : 'Full Name'}</label>
-                <input required value={name} onChange={e => setName(e.target.value)} />
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>{lang === 'ar' ? 'البريد الإلكتروني' : 'Email'}</label>
-                  <input type="email" required value={email} onChange={e => setEmail(e.target.value)} />
-                </div>
-                <div className="form-group">
-                  <label>{lang === 'ar' ? 'رقم الهاتف' : 'Phone'}</label>
-                  <input required value={phone} onChange={e => setPhone(e.target.value)} />
-                </div>
-              </div>
-              <div className="form-group">
-                <label>{lang === 'ar' ? 'العنوان بالتفصيل' : 'Detailed Address'}</label>
-                <textarea required value={address} onChange={e => setAddress(e.target.value)} rows="2"></textarea>
-              </div>
+              <div className="form-group"><label>{lang === 'ar' ? 'الاسم الكامل' : 'Full Name'}</label><input required value={name} onChange={(event) => setName(event.target.value)} /></div>
+              <div className="form-row"><div className="form-group"><label>{lang === 'ar' ? 'البريد الإلكتروني' : 'Email'}</label><input type="email" required value={email} onChange={(event) => setEmail(event.target.value)} /></div><div className="form-group"><label>{lang === 'ar' ? 'رقم الهاتف الأساسي' : 'Primary Phone'}</label><input required value={phone} onChange={(event) => setPhone(event.target.value)} /></div></div>
+              <div className="form-group"><label>{lang === 'ar' ? 'رقم هاتف إضافي' : 'Second Phone Number'}{requireSecondPhone ? ' *' : ''}</label><input required={requireSecondPhone} value={secondPhone} onChange={(event) => setSecondPhone(event.target.value)} /></div>
+              <div className="form-row"><div className="form-group"><label>{lang === 'ar' ? 'المحافظة' : 'Governorate'}{requireTerritory ? ' *' : ''}</label><select required={requireTerritory} value={governorate} onChange={(event) => { setGovernorate(event.target.value); setCity('') }}><option value="">{lang === 'ar' ? 'اختر المحافظة' : 'Select governorate'}</option>{territories.map((row) => <option key={row.governorate} value={row.governorate}>{row.governorate}</option>)}</select></div><div className="form-group"><label>{lang === 'ar' ? 'المدينة' : 'City'}{requireTerritory ? ' *' : ''}</label><select required={requireTerritory} value={city} onChange={(event) => setCity(event.target.value)} disabled={!governorate}><option value="">{lang === 'ar' ? 'اختر المدينة' : 'Select city'}</option>{cities.map((cityName) => <option key={cityName} value={cityName}>{cityName}</option>)}</select></div></div>
+              <div className="form-group"><label>{lang === 'ar' ? 'العنوان بالتفصيل' : 'Detailed Address'}</label><textarea required value={address} onChange={(event) => setAddress(event.target.value)} rows="2" /></div>
+              <div className="form-group"><label>{lang === 'ar' ? 'موقع إضافي (اختياري)' : 'Optional Location'}</label><input value={location} onChange={(event) => setLocation(event.target.value)} placeholder={lang === 'ar' ? 'رابط خرائط أو علامة مميزة' : 'Map link or nearby landmark'} /></div>
             </section>
 
-            <section className="checkout-section">
-              <h2 className="section-title-small">{lang === 'ar' ? 'موعد التوصيل' : 'Delivery Date'}</h2>
-              <div className="form-group">
-                <input 
-                  type="date" 
-                  required 
-                  value={deliveryDate} 
-                  min={new Date().toISOString().split('T')[0]}
-                  onChange={e => setDeliveryDate(e.target.value)} 
-                />
-                <p className="form-hint">
-                  {lang === 'ar' ? 'اختر موعد التوصيل المفضل لديك' : 'Select your preferred delivery date'}
-                </p>
-              </div>
-            </section>
+            <section className="checkout-section"><h2 className="section-title-small">{lang === 'ar' ? 'رمز الخصم' : 'Coupon Code'}</h2><div className="coupon-form"><input value={couponCode} onChange={(event) => setCouponCode(event.target.value)} placeholder={lang === 'ar' ? (settings?.coupon_placeholder_ar || 'أدخل كود الخصم') : (settings?.coupon_placeholder_en || 'Enter coupon code')} disabled={Boolean(coupon)} /><button type="button" onClick={handleApplyCoupon} disabled={couponLoading || Boolean(coupon)}>{couponLoading ? '...' : (lang === 'ar' ? 'تطبيق' : 'Apply')}</button>{coupon && <button type="button" className="coupon-remove" onClick={removeCoupon}>{lang === 'ar' ? 'إزالة' : 'Remove'}</button>}</div>{couponMessage && <p className={`coupon-message ${couponMessage.type}`}>{couponMessage.text}</p>}</section>
 
-            <section className="checkout-section">
-              <h2 className="section-title-small">{lang === 'ar' ? 'طريقة الدفع' : 'Payment Method'}</h2>
-              <div className="payment-methods">
-                {gatewayList.map(gw => (
-                  <label key={gw.name} className={`payment-method-option ${paymentMethod === gw.name ? 'active' : ''}`}>
-                    <input 
-                      type="radio" 
-                      name="paymentMethod" 
-                      value={gw.name} 
-                      checked={paymentMethod === gw.name}
-                      onChange={e => setPaymentMethod(e.target.value)}
-                    />
-                    <span>{lang === 'ar' ? (gw.label_ar || gw.label) : (gw.label_en || gw.label)}</span>
-                  </label>
-                ))}
-              </div>
+            <section className="checkout-section"><h2 className="section-title-small">{lang === 'ar' ? 'موعد التوصيل' : 'Delivery Date'}</h2><div className="form-group"><input type="date" required value={deliveryDate} min={new Date().toISOString().split('T')[0]} onChange={(event) => setDeliveryDate(event.target.value)} /><p className="form-hint">{lang === 'ar' ? 'اختر موعد التوصيل المفضل لديك' : 'Select your preferred delivery date'}</p></div></section>
 
-              {paymentMethod === 'stripe' && stripePromise && (
-                <div className="stripe-payment-box">
-                  <Elements stripe={stripePromise}>
-                    <StripePaymentForm 
-                      customer={{ name, email, phone }}
-                      amount={grandTotal}
-                      currency={currency}
-                      onPaymentSuccess={(id) => handleConfirmOrder(id)}
-                    />
-                  </Elements>
-                </div>
-              )}
-            </section>
-            
+            <section className="checkout-section"><h2 className="section-title-small">{lang === 'ar' ? 'طريقة الدفع' : 'Payment Method'}</h2><div className="payment-methods">{gatewayList.map((gateway) => <label key={gateway.name} className={`payment-method-option ${paymentMethod === gateway.name ? 'active' : ''}`}><input type="radio" name="paymentMethod" value={gateway.name} checked={paymentMethod === gateway.name} onChange={(event) => setPaymentMethod(event.target.value)} /><span>{lang === 'ar' ? (gateway.label_ar || gateway.label) : (gateway.label_en || gateway.label)}</span></label>)}</div>{paymentMethod === 'stripe' && stripePromise && <div className="stripe-payment-box"><Elements stripe={stripePromise}><StripePaymentForm customer={{ name, email, phone }} amount={grandTotal} currency={currency} onPaymentSuccess={(id) => handleConfirmOrder(id)} /></Elements></div>}</section>
             {error && <div className="error-message">{error}</div>}
-            
-            {(paymentMethod === 'cod' || paymentMethod === 'paymob') && (
-              <button type="submit" className="place-order-btn" disabled={submitting}>
-                {submitting ? (lang === 'ar' ? 'جاري المعالجة...' : 'Processing...') : (paymentMethod === 'paymob' ? (lang === 'ar' ? 'المتابعة إلى الدفع' : 'Continue to Paymob') : (lang === 'ar' ? 'تأكيد الطلب' : 'Confirm Order'))}
-              </button>
-            )}
+            {(paymentMethod === 'cod' || paymentMethod === 'paymob') && <button type="submit" className="place-order-btn" disabled={submitting}>{submitting ? (lang === 'ar' ? 'جاري المعالجة...' : 'Processing...') : (paymentMethod === 'paymob' ? (lang === 'ar' ? 'المتابعة إلى الدفع' : 'Continue to Paymob') : (lang === 'ar' ? 'تأكيد الطلب' : 'Confirm Order'))}</button>}
           </form>
         </div>
 
-        <div className="checkout-summary-container">
-          <h2 className="section-title-small">{lang === 'ar' ? 'ملخص الطلب' : 'Order Summary'}</h2>
-          <div className="checkout-items">
-            {items.map(item => (
-              <div key={item.item_code} className="checkout-item">
-                <div className="item-img-mini">
-                  {item.image && <img src={item.image} alt="" />}
-                  <span className="item-qty-badge">{item.qty}</span>
-                </div>
-                <div className="item-name-mini">{item.item_name}</div>
-                <div className="item-price-mini">{(item.price * item.qty).toFixed(2)} {item.currency}</div>
-              </div>
-            ))}
-          </div>
-          <div className="summary-footer">
-            <div className="summary-row">
-              <span>{lang === 'ar' ? 'المجموع الفرعي' : 'Subtotal'}</span>
-              <span>{total.toFixed(2)} {currency}</span>
-            </div>
-            <div className="summary-row">
-              <span>{lang === 'ar' ? 'الشحن' : 'Shipping'}</span>
-              <span>{shippingCost > 0 ? `${shippingCost.toFixed(2)} ${currency}` : (lang === 'ar' ? 'مجاني' : 'Free')}</span>
-            </div>
-            <div className="summary-row total-row">
-              <span>{lang === 'ar' ? 'الإجمالي' : 'Total'}</span>
-              <span className="total-price">{grandTotal.toFixed(2)} {currency}</span>
-            </div>
-          </div>
-        </div>
+        <div className="checkout-summary-container"><h2 className="section-title-small">{lang === 'ar' ? 'ملخص الطلب' : 'Order Summary'}</h2><div className="checkout-items">{items.map((item) => <div key={item.item_code} className="checkout-item"><div className="item-img-mini">{item.image && <img src={item.image} alt="" />}<span className="item-qty-badge">{item.qty}</span></div><div className="item-name-mini">{item.item_name}</div><div className="item-price-mini">{(item.price * item.qty).toFixed(2)} {item.currency}</div></div>)}</div><div className="summary-footer"><div className="summary-row"><span>{lang === 'ar' ? 'المجموع الفرعي' : 'Subtotal'}</span><span>{total.toFixed(2)} {currency}</span></div>{discount > 0 && <div className="summary-row discount-row"><span>{lang === 'ar' ? 'الخصم' : 'Discount'}</span><span>-{discount.toFixed(2)} {currency}</span></div>}<div className="summary-row"><span>{lang === 'ar' ? 'الشحن' : 'Shipping'}</span><span>{shippingCost > 0 ? `${shippingCost.toFixed(2)} ${currency}` : (lang === 'ar' ? 'مجاني' : 'Free')}</span></div><div className="summary-row total-row"><span>{lang === 'ar' ? 'الإجمالي' : 'Total'}</span><span className="total-price">{grandTotal.toFixed(2)} {currency}</span></div></div></div>
       </div>
     </div>
   )

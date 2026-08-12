@@ -91,9 +91,13 @@ export function getInvoice(invoiceName, { email, phone } = {}) {
 }
 
 export function getCheckoutSettings() { return callMethod('sync_webshop.api.checkout.get_checkout_settings') }
-export function createOrder({ customer, items, payment_method, stripe_payment_intent, delivery_date, submit = false }) {
+export function getTerritories() { return callMethod('sync_webshop.api.checkout.get_territories') }
+export function validateCoupon(couponCode, totalAmount) {
+  return callMethod('sync_webshop.api.checkout.validate_coupon', { params: { coupon_code: couponCode, total_amount: totalAmount } })
+}
+export function createOrder({ customer, items, payment_method, stripe_payment_intent, delivery_date, coupon_code, governorate, city, location, second_phone, submit = false }) {
   return callMethod('sync_webshop.api.checkout.create_order', {
-    method: 'POST', body: { customer, items, payment_method, stripe_payment_intent, delivery_date, submit },
+    method: 'POST', body: { customer, items, payment_method, stripe_payment_intent, delivery_date, coupon_code, governorate, city, location, second_phone, submit },
   })
 }
 export function createPaymentIntent(amount, currency = 'gbp') {
