@@ -1,0 +1,59 @@
+.dark-mode-float {
+  position: fixed;
+  bottom: 84px;
+  left: 24px;
+  z-index: 9999;
+}
+.rtl .dark-mode-float {
+  left: auto;
+  right: 24px;
+}
+.dark-mode-toggle-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-primary, #173F3A);
+  color: #fff;
+  border: none;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.dark-mode-toggle-btn:hover {
+  transform: scale(1.08);
+}
+
+/* Dark Mode Global Variables Overrides */
+[data-theme="dark"] {
+  --color-background: #0F172A !important;
+  --color-surface: #1E293B !important;
+  --color-border: #334155 !important;
+  --color-text-main: #F8FAFC !important;
+  --color-text-muted: #94A3B8 !important;
+  --header-bg: #1E293B !important;
+  --header-text: #F8FAFC !important;
+  --nav-bg: #1E293B !important;
+  --nav-text: #F8FAFC !important;
+  --footer-bg: #0B0F19 !important;
+  --footer-text: #F8FAFC !important;
+}
+[data-theme="dark"] .home-product-card,
+[data-theme="dark"] .product-card-v2,
+[data-theme="dark"] .sidebar-widget,
+[data-theme="dark"] .quick-view-modal,
+[data-theme="dark"] .ai-chat-panel {
+  background: #1E293B !important;
+  color: #F8FAFC !important;
+  border-color: #334155 !important;
+}
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background: #0F172A !important;
+  color: #F8FAFC !important;
+  border-color: #334155 !important;
+}
