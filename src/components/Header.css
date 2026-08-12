@@ -46,8 +46,9 @@
 .language-switch:hover { border-color: var(--color-accent); color: var(--color-accent); }
 
 .main-header {
-  background: var(--header-bg);
-  border-bottom: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--header-bg) 92%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 74%, transparent);
+  backdrop-filter: blur(18px);
 }
 .header-inner {
   min-height: var(--header-height);
@@ -69,14 +70,16 @@
 .header-search { position: relative; width: 100%; max-width: var(--search-bar-max-width); justify-self: center; }
 .search-form {
   display: flex; align-items: center; min-height: var(--search-bar-height); overflow: hidden;
-  border: 1px solid var(--color-border); border-radius: 999px; background: var(--color-background); transition: box-shadow 0.2s, border-color 0.2s;
+  border: 1px solid color-mix(in srgb, var(--color-border) 86%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--color-background) 92%, #fff); box-shadow: 0 5px 18px rgba(23, 63, 58, 0.045); transition: box-shadow var(--transition-smooth), border-color var(--transition-base), transform var(--transition-base);
 }
+.search-form:hover { border-color: color-mix(in srgb, var(--color-secondary) 42%, var(--color-border)); }
+.search-form:focus-within { transform: translateY(-1px); }
 .search-form:focus-within { border-color: var(--color-secondary); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-secondary) 14%, transparent); }
 .search-leading { padding-left: 1rem; color: var(--color-secondary); display: inline-flex; }
 .search-leading svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; }
 .search-form input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--header-text); padding: 0.75rem 0.8rem; font: inherit; font-size: 0.83rem; }
 .search-form input::placeholder { color: var(--color-text-muted); }
-.search-form button { align-self: stretch; border: 0; background: var(--color-primary); color: #fff; padding: 0 1.25rem; font-size: 0.78rem; font-weight: 700; }
+.search-form button { align-self: stretch; border: 0; background: var(--color-primary); color: #fff; padding: 0 1.3rem; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.01em; }
 .search-form button:hover { background: var(--color-secondary); }
 .search-suggestions { position: absolute; top: calc(100% + 0.6rem); inset-inline: 0; background: var(--header-bg); border: 1px solid var(--color-border); border-radius: 16px; box-shadow: var(--shadow-lg); padding: 0.4rem; overflow: hidden; }
 .search-suggestions button { width: 100%; display: flex; gap: 0.7rem; align-items: center; text-align: start; border: 0; background: transparent; color: var(--header-text); padding: 0.6rem; border-radius: 11px; }
@@ -88,15 +91,15 @@
 .search-suggestions small { color: var(--color-text-muted); font-size: 0.67rem; }
 
 .header-actions { display: flex; gap: clamp(0.7rem, 1.6vw, 1.25rem); align-items: center; }
-.header-action { display: grid; justify-items: center; gap: 0.18rem; color: var(--header-text); min-width: 38px; }
-.header-action:hover { color: var(--color-secondary); }
+.header-action { display: grid; justify-items: center; gap: 0.22rem; color: var(--header-text); min-width: 42px; transition: transform var(--transition-base), color var(--transition-base); }
+.header-action:hover { color: var(--color-secondary); transform: translateY(-2px); }
 .action-icon { position: relative; display: inline-flex; }
 .action-icon svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.55; stroke-linecap: round; stroke-linejoin: round; }
 .action-label { color: var(--color-text-muted); font-size: 0.65rem; font-weight: 600; }
 .action-count { position: absolute; top: -9px; right: -11px; min-width: 17px; height: 17px; padding: 0 4px; display: grid; place-items: center; border-radius: 999px; background: var(--color-accent); color: var(--color-primary); font-size: 0.62rem; font-weight: 800; }
 .mobile-menu-toggle { display: none; }
 
-.store-nav { background: var(--nav-bg); border-bottom: 1px solid var(--color-border); }
+.store-nav { background: color-mix(in srgb, var(--nav-bg) 94%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--color-border) 74%, transparent); }
 .nav-inner { min-height: var(--nav-bar-height); display: flex; align-items: center; gap: 1.25rem; }
 .category-menu-wrap { position: relative; align-self: stretch; display: flex; align-items: center; }
 .category-menu-trigger { display: inline-flex; gap: 0.6rem; align-items: center; color: var(--nav-text); background: var(--color-accent); padding: 0.65rem 1rem; border-radius: 12px; font-size: 0.76rem; font-weight: 800; white-space: nowrap; }
@@ -116,11 +119,11 @@
 .mega-featured-copy h4 { margin: 0 0 0.5rem; font-size: 1.1rem; }
 .mega-featured-copy a { font-size: 0.75rem; font-weight: 800; color: var(--color-accent); }
 .nav-links { display: flex; align-items: center; gap: clamp(0.8rem, 2vw, 1.5rem); flex: 1; }
-.nav-links a { position: relative; color: var(--nav-text); font-size: 0.78rem; font-weight: 700; padding: 0.95rem 0; white-space: nowrap; opacity: 0.78; }
+.nav-links a { position: relative; color: var(--nav-text); font-size: 0.78rem; font-weight: 700; padding: 0.95rem 0; white-space: nowrap; opacity: 0.78; transition: opacity var(--transition-base), color var(--transition-base); }
 .nav-links a::after { content: ''; position: absolute; inset-inline: 0.1rem; bottom: 0; height: 2px; border-radius: 99px; transform: scaleX(0); background: var(--color-secondary); transition: transform 0.2s; }
 .nav-links a:hover, .nav-links a.active { opacity: 1; color: var(--color-secondary); }
 .nav-links a:hover::after, .nav-links a.active::after { transform: scaleX(1); }
-.support-pill { display: flex; align-items: center; gap: 0.45rem; color: var(--nav-text); font-size: 0.7rem; white-space: nowrap; }
+.support-pill { display: flex; align-items: center; gap: 0.45rem; color: var(--nav-text); font-size: 0.7rem; white-space: nowrap; padding: 0.45rem 0.75rem; border: 1px solid color-mix(in srgb, var(--color-border) 72%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--color-surface) 42%, transparent); }
 .support-pill strong { color: var(--color-secondary); }
 .support-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-secondary); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-secondary) 15%, transparent); }
 

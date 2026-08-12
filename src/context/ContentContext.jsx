@@ -53,7 +53,7 @@ export const DEFAULT_CONTENT = {
       footer_text: '#F8FAF7',
     },
     fonts: { heading: 'Poppins', body: 'Inter' },
-    spacing: { container_width: '1240px', border_radius: '18px' },
+    spacing: { container_width: '1240px', border_radius: '18px', border_radius_sm: '10px', border_radius_lg: '28px', section_gap: '5rem', card_gap: '1.25rem' },
     dimensions: {
       header_max_width: 1240,
       header_height: 84,
@@ -91,7 +91,11 @@ function applyThemeToDocument(theme) {
   const dimensions = theme.dimensions || {}
 
   Object.entries(colors).forEach(([key, value]) => root.setProperty(`--${key.replaceAll('_', '-')}`, String(value)))
+  root.setProperty('--border-radius-sm', String(spacing.border_radius_sm || '10px'))
   root.setProperty('--border-radius-md', String(spacing.border_radius || '18px'))
+  root.setProperty('--border-radius-lg', String(spacing.border_radius_lg || '28px'))
+  root.setProperty('--section-gap', String(spacing.section_gap || '5rem'))
+  root.setProperty('--card-gap', String(spacing.card_gap || '1.25rem'))
   root.setProperty('--container-max-width', String(spacing.container_width || '1240px'))
   root.setProperty('--header-max-width', `${dimensions.header_max_width || 1240}px`)
   root.setProperty('--header-height', `${dimensions.header_height || 84}px`)

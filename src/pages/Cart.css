@@ -135,21 +135,22 @@
 /* Checkout Styles */
 .checkout-grid {
   display: grid;
-  grid-template-columns: 1fr 400px;
-  gap: 4rem;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 400px);
+  gap: clamp(1.5rem, 4vw, 4rem);
   align-items: start;
 }
 
 .section-title-small {
-  font-size: 1.25rem;
-  margin-bottom: 1.5rem;
-  font-weight: 700;
+  font-size: 1.15rem;
+  margin-bottom: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .checkout-form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .form-group {
@@ -160,17 +161,21 @@
 }
 
 .form-group label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #555;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--color-text-main);
 }
 
 .form-group input, .form-group textarea {
-  padding: 0.85rem;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 1rem;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid color-mix(in srgb, var(--color-border) 90%, transparent);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-background);
+  color: var(--color-text-main);
+  font-size: 0.88rem;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base), background var(--transition-base);
 }
+.form-group input:focus, .form-group textarea:focus, .checkout-form select:focus { border-color: var(--color-secondary); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-secondary) 12%, transparent); outline: none; background: var(--header-bg); }
 
 .form-row {
   display: flex;
@@ -178,14 +183,15 @@
 }
 
 .place-order-btn {
-  background-color: var(--color-primary);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   color: #fff;
   border: none;
-  padding: 1.25rem;
-  border-radius: 5px;
-  font-weight: 700;
-  font-size: 1.1rem;
-  margin-top: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.92rem;
+  margin-top: 0.5rem;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--color-primary) 18%, transparent);
 }
 
 .place-order-btn:disabled {
@@ -193,11 +199,13 @@
 }
 
 .checkout-summary-container {
-  background-color: #f9f9f9;
-  padding: 2rem;
-  border-radius: 8px;
+  background: linear-gradient(160deg, var(--header-bg), color-mix(in srgb, var(--color-surface) 55%, var(--header-bg)));
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+  border-radius: var(--border-radius-lg);
   position: sticky;
   top: 120px;
+  box-shadow: var(--shadow-md);
 }
 
 .checkout-item {
@@ -208,11 +216,11 @@
 }
 
 .item-img-mini {
-  width: 60px;
-  height: 60px;
-  background: #fff;
-  border: 1px solid #eee;
-  border-radius: 4px;
+  width: 64px;
+  height: 64px;
+  background: var(--header-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
   position: relative;
 }
 
@@ -224,9 +232,9 @@
 
 .item-qty-badge {
   position: absolute;
-  top: -8px;
-  right: -8px;
-  background: #666;
+  top: -7px;
+  inset-inline-end: -7px;
+  background: var(--color-primary);
   color: #fff;
   width: 20px;
   height: 20px;
@@ -263,10 +271,11 @@
   max-width: 600px;
   margin: 4rem auto;
   text-align: center;
-  padding: 4rem;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  padding: clamp(2rem, 6vw, 4rem);
+  background: var(--header-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-lg);
 }
 
 .success-icon {
@@ -284,6 +293,7 @@
 
 @media (max-width: 768px) {
   .checkout-grid { grid-template-columns: 1fr; }
+  .checkout-summary-container { position: static; order: -1; }
   .form-row { flex-direction: column; }
 }
 
@@ -322,9 +332,11 @@
 
 /* Payment Methods */
 .checkout-section {
-  margin-bottom: 2.5rem;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+  border-radius: var(--border-radius-md);
+  background: color-mix(in srgb, var(--header-bg) 90%, transparent);
 }
 
 .payment-methods {
@@ -339,15 +351,17 @@
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 84%, transparent);
+  border-radius: var(--border-radius-sm);
   cursor: pointer;
-  transition: all 0.2s;
+  background: var(--color-background);
+  transition: transform var(--transition-base), border-color var(--transition-base), background var(--transition-base), box-shadow var(--transition-base);
 }
 
 .payment-method-option.active {
-  border-color: var(--color-primary);
-  background-color: #f0fdf4;
+  border-color: var(--color-secondary);
+  background: color-mix(in srgb, var(--color-secondary) 9%, var(--header-bg));
+  box-shadow: var(--shadow-sm);
 }
 
 .payment-method-option input {
@@ -401,7 +415,7 @@
   min-height: 42px;
   padding: 0 14px;
   border: 0;
-  border-radius: 8px;
+  border-radius: 999px;
   color: #fff;
   background: var(--color-primary, #21504C);
   cursor: pointer;
