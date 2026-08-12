@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements } from '@stripe/react-stripe-js'
-import { createOrder, getCheckoutSettings, createPaymentIntent } from '../api/client'
+import { createOrder, getCheckoutSettings } from '../api/client'
 import { useCart } from '../context/CartContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useContent } from '../context/ContentContext'
@@ -32,14 +32,19 @@ export default function Checkout() {
   const [error, setError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [settingsError, setSettingsError] = useState(null)
 
+  const gatewayList = settings?.payment_gateways || []
   const currency = items[0]?.currency || 'GBP'
 
   useEffect(() => {
     getCheckoutSettings().then(data => {
       setSettings(data)
-      const stripeGateway = data.payment_gateways.find(g => g.name === 'stripe')
-      if (stripeGateway) {
+      setSettingsError(null)
+      const gateways = data.payment_gateways || []
+      setPaymentMethod(gateways.find(g => g.name === 'cod')?.name || gateways[0]?.name || 'cod')
+      const stripeGateway = gateways.find(g => g.name === 'stripe')
+      if (stripeGateway?.publishable_key) {
         setStripePromise(loadStripe(stripeGateway.publishable_key))
       }
       
@@ -52,6 +57,7 @@ export default function Checkout() {
       setLoading(false)
     }).catch(err => {
       console.error(err)
+      setSettingsError(err.message)
       setLoading(false)
     })
   }, [])
@@ -67,16 +73,16 @@ export default function Checkout() {
     try {
       const order = await createOrder({
         customer: { name, email, phone, address },
-        items: items.map((i) => ({ item_code: i.item_code, qty: i.qty, price: i.price })),
+        items: items.map((i) => ({ item_code: i.item_code, qty: i.qty })),
         payment_method: paymentMethod,
         stripe_payment_intent: stripePaymentIntentId,
         delivery_date: deliveryDate,
-        submit: true
+        submit: true,
       })
       setResult(order)
       clear()
     } catch (err) {
-      setError(err.message)
+      setError(err.message || (lang === 'ar' ? 'تعذر التحقق من المخزون والأسعار.' : 'We could not validate stock and pricing. Please review your cart and try again.'))
     } finally {
       setSubmitting(false)
     }
@@ -84,31 +90,15 @@ export default function Checkout() {
 
   async function handleSubmit(e) {
     if (e) e.preventDefault()
-    
     if (paymentMethod === 'cod') {
       await handleConfirmOrder()
     } else if (paymentMethod === 'stripe') {
-      // For Stripe, the confirmation happens inside StripePaymentForm 
-      // which then calls onPaymentSuccess -> handleConfirmOrder
-      // So we just trigger the form submission if needed, 
-      // but here we'll handle the logic for Stripe confirmation.
-      setSubmitting(true)
-      try {
-        const { clientSecret } = await createPaymentIntent(grandTotal, currency)
-        // In a real app, we'd use the clientSecret with stripe.confirmCardPayment
-        // For this MVP, we'll simulate the success or expect the user to have 
-        // a more integrated Stripe flow.
-        // Let's assume the StripePaymentForm will handle the actual payment.
-        setError(lang === 'ar' ? 'يرجى إكمال بيانات البطاقة' : 'Please complete card details')
-        setSubmitting(false)
-      } catch (err) {
-        setError(err.message)
-        setSubmitting(false)
-      }
+      setError(lang === 'ar' ? 'يرجى استخدام زر الدفع بعد إدخال بيانات البطاقة.' : 'Use the card payment button after entering your card details.')
     }
   }
 
-  if (loading) return <div className="container">Loading...</div>
+  if (loading) return <div className="container">{lang === 'ar' ? 'جارٍ تحميل إعدادات الدفع...' : 'Loading checkout settings...'}</div>
+  if (!items.length) return <div className={`checkout-page container ${isRtl ? 'rtl' : 'ltr'}`}><p className="dashboard-empty">{lang === 'ar' ? 'السلة فارغة.' : 'Your cart is empty.'} <Link to="/products">{lang === 'ar' ? 'العودة للمنتجات' : 'Return to products'}</Link></p></div>
 
   if (result) {
     return (
@@ -138,6 +128,7 @@ export default function Checkout() {
   return (
     <div className={`checkout-page container ${isRtl ? 'rtl' : 'ltr'}`}>
       <h1 className="page-title">{lang === 'ar' ? (c.checkout_title_ar || 'الدفع') : (c.checkout_title_en || 'Checkout')}</h1>
+      {settingsError && <div className="error-message" role="alert">{settingsError}</div>}
       
       <div className="checkout-grid">
         <div className="checkout-form-container">
@@ -183,7 +174,7 @@ export default function Checkout() {
             <section className="checkout-section">
               <h2 className="section-title-small">{lang === 'ar' ? 'طريقة الدفع' : 'Payment Method'}</h2>
               <div className="payment-methods">
-                {settings?.payment_gateways.map(gw => (
+                {gatewayList.map(gw => (
                   <label key={gw.name} className={`payment-method-option ${paymentMethod === gw.name ? 'active' : ''}`}>
                     <input 
                       type="radio" 

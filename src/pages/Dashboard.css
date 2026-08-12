@@ -90,3 +90,210 @@
   opacity: 0.65;
   padding: 2rem 0;
 }
+
+.dashboard-header p {
+  max-width: 42rem;
+  opacity: 0.7;
+  margin-top: -1rem;
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-notice {
+  color: #1d6b49;
+  background: #edf8f1;
+  border: 1px solid #bde4ca;
+  border-radius: 4px;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+}
+
+.portal-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.portal-summary > div {
+  border: 1px solid #ddd0ba;
+  background: color-mix(in srgb, var(--color-background, #fff) 88%, #f6efe4);
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+.portal-summary strong,
+.portal-summary span,
+.portal-row span,
+.portal-row div {
+  display: block;
+}
+
+.portal-summary strong {
+  font-size: 1.7rem;
+  line-height: 1;
+  color: var(--color-primary);
+}
+
+.portal-summary span {
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+  opacity: 0.7;
+}
+
+.portal-section {
+  margin-top: 2rem;
+}
+
+.portal-section h2 {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  margin-bottom: 0.85rem;
+}
+
+.order-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.3rem 0;
+}
+
+.inline-action {
+  border: 0;
+  padding: 0;
+  color: var(--color-primary);
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.75rem;
+  text-decoration: underline;
+}
+
+.delivery-note {
+  font-size: 0.8rem;
+  color: #2b6b53;
+  margin: 0.5rem 0;
+}
+
+.portal-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 1rem;
+  align-items: center;
+  border: 1px solid #ddd0ba;
+  border-radius: 4px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.6rem;
+}
+
+.portal-row div span {
+  font-size: 0.78rem;
+  opacity: 0.65;
+  margin-top: 0.2rem;
+}
+
+.portal-row button,
+.return-modal-actions button {
+  border: 1px solid var(--color-primary);
+  border-radius: 3px;
+  color: var(--color-primary);
+  background: transparent;
+  padding: 0.55rem 0.8rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.portal-row button:disabled,
+.dashboard-lookup button:disabled,
+.return-modal-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.return-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgb(20 17 13 / 55%);
+}
+
+.return-modal {
+  width: min(100%, 32rem);
+  border-radius: 6px;
+  background: var(--color-background, #fff);
+  padding: 1.5rem;
+  box-shadow: 0 16px 48px rgb(0 0 0 / 18%);
+}
+
+.return-modal h2 {
+  margin-top: 0;
+}
+
+.return-modal label {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 1rem;
+  font-weight: 600;
+}
+
+.return-modal input,
+.return-modal textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #ddd0ba;
+  border-radius: 3px;
+  padding: 0.65rem;
+  font: inherit;
+}
+
+.return-modal textarea {
+  min-height: 6rem;
+  resize: vertical;
+}
+
+.return-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.return-modal-actions button:last-child {
+  color: var(--color-background, #fff);
+  background: var(--color-primary);
+}
+
+@media (max-width: 640px) {
+  .dashboard-page {
+    padding: 2rem 1rem 4rem;
+  }
+
+  .portal-summary {
+    gap: 0.45rem;
+  }
+
+  .portal-summary > div {
+    padding: 0.7rem;
+  }
+
+  .portal-summary strong {
+    font-size: 1.3rem;
+  }
+
+  .portal-row {
+    grid-template-columns: 1fr auto;
+  }
+
+  .portal-row > button {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .order-line {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+}

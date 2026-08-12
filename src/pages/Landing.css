@@ -35,6 +35,7 @@
 .home-section { padding-top: 5.2rem; padding-bottom: 5.2rem; }
 .categories-section { padding-bottom: 3.3rem; }
 .soft-section { background: var(--color-surface); }
+.smart-recommendations { background: color-mix(in srgb, var(--color-background, #fff) 93%, var(--color-primary, #1d5b4a)); }
 .home-section-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 2rem; margin-bottom: 2rem; }
 .section-kicker { color: var(--color-secondary); font-size: 0.66rem; font-weight: 800; letter-spacing: 0.13em; text-transform: uppercase; }
 .home-section-heading h2 { margin: 0.35rem 0 0; color: var(--color-primary); font-family: var(--font-heading); font-size: clamp(1.55rem, 2.7vw, 2.25rem); line-height: 1.1; letter-spacing: -0.035em; }

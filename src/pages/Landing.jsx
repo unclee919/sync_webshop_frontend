@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { getCatalog } from '../api/client'
+import { getCatalog, getRecommendations } from '../api/client'
 import { useCart } from '../context/CartContext'
 import { useContent } from '../context/ContentContext'
 import { useLanguage } from '../context/LanguageContext'
@@ -61,6 +61,7 @@ export default function Landing() {
   const { addItem } = useCart()
   const [currentSlide, setCurrentSlide] = useState(0)
   const [fallbackItems, setFallbackItems] = useState([])
+  const [recommendations, setRecommendations] = useState([])
   const [quickViewCode, setQuickViewCode] = useState(null)
 
   const isArabic = lang === 'ar'
@@ -81,6 +82,11 @@ export default function Landing() {
     if (configuredSections.length > 0) return
     getCatalog({ page: 1, pageSize: 8 }).then(r => setFallbackItems(r?.items || [])).catch(() => {})
   }, [configuredSections.length])
+
+  useEffect(() => {
+    if (content?.recommendations_enabled === 0) return
+    getRecommendations({ limit: 8 }).then(setRecommendations).catch(() => {})
+  }, [content?.recommendations_enabled])
 
   const sections = useMemo(() => configuredSections.length ? configuredSections : (fallbackItems.length ? [{ title_en: 'New arrivals', title_ar: 'وصل حديثاً', items: fallbackItems }] : []), [configuredSections, fallbackItems])
   const hero = banners[currentSlide]
@@ -105,12 +111,15 @@ export default function Landing() {
         </div>
       </section>
 
-      {categories.length > 0 && <section className="home-section container">
+            {categories.length > 0 && <section className="home-section container">
         <div className="home-section-heading"><div><h2>{t(content?.best_categories_text_en, content?.best_categories_text_ar, 'Best Categories')}</h2></div><Link to="/products" className="section-view-all">{t(content?.view_all_text_en, content?.view_all_text_ar, 'View All')}<ArrowIcon /></Link></div>
         <div className="category-rail">{categories.slice(0, 8).map((cat, i) => <Link key={i} to={`/products?category=${encodeURIComponent(cat.item_group)}`} className="category-tile"><div className="category-tile-image">{cat.image ? <img src={cat.image} alt="" /> : <span>{i+1}</span>}</div><div className="category-tile-copy"><h3>{t(cat.label_en, cat.label_ar, cat.item_group)}</h3><span>{t('Explore collection', 'استكشف المجموعة')} →</span></div></Link>)}</div>
       </section>}
 
-      {sections.map((s, i) => <section key={i} className={`home-section ${i % 2 ? 'soft-section' : ''}`}><div className="container"><div className="home-section-heading"><div><h2>{t(s.title_en, s.title_ar)}</h2></div><Link to="/products" className="section-view-all">{t(content?.view_all_text_en, content?.view_all_text_ar, 'View All')}<ArrowIcon /></Link></div><div className="home-product-grid">{s.items?.map(item => <ProductCard key={item.item_code} item={item} content={content} lang={lang} onAdd={addItem} onQuickView={setQuickViewCode} />)}</div></div></section>)}
+      {content?.recommendations_enabled !== 0 && recommendations.length > 0 && <section className="home-section smart-recommendations"><div className="container"><div className="home-section-heading"><div><span className="section-kicker">{t('Smart selection', 'اختيار ذكي')}</span><h2>{t(content?.recommendations_title_en, content?.recommendations_title_ar, 'Picked for you')}</h2></div><Link to="/products" className="section-view-all">{t(content?.view_all_text_en, content?.view_all_text_ar, 'View All')}<ArrowIcon /></Link></div><div className="home-product-grid">{recommendations.map(item => <ProductCard key={item.item_code} item={item} content={content} lang={lang} onAdd={addItem} onQuickView={setQuickViewCode} />)}</div></div></section>}
+
+      {sections.map((s, i) => <section key={i} className={`home-section ${i % 2 ? 'soft-section' : ''}`}>
+<div className="container"><div className="home-section-heading"><div><h2>{t(s.title_en, s.title_ar)}</h2></div><Link to="/products" className="section-view-all">{t(content?.view_all_text_en, content?.view_all_text_ar, 'View All')}<ArrowIcon /></Link></div><div className="home-product-grid">{s.items?.map(item => <ProductCard key={item.item_code} item={item} content={content} lang={lang} onAdd={addItem} onQuickView={setQuickViewCode} />)}</div></div></section>)}
 
       {trustBadges.length > 0 && <section className="benefits-section"><div className="container benefits-grid">{trustBadges.slice(0, 4).map((b, i) => <div className="benefit-item" key={i}><div className="benefit-icon" dangerouslySetInnerHTML={{ __html: b.icon }} /><div><h3>{t(b.label_en, b.label_ar)}</h3><p>{t(b.description_en, b.description_ar)}</p></div></div>)}</div></section>}
 
