@@ -1,0 +1,10 @@
+.info-page { padding-top: 2.5rem; padding-bottom: 5rem; }
+.info-card { max-width: 860px; margin: 2rem auto 0; border-radius: var(--border-radius-lg); background: var(--color-primary); color: #fff; padding: clamp(2rem, 6vw, 5rem); }
+.info-card h1 { margin: 0.5rem 0 1rem; color: #fff; font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.08; }
+.info-card > p { max-width: 620px; margin: 0; color: rgba(255,255,255,0.74); font-size: 0.95rem; line-height: 1.7; }
+.info-details { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; margin: 2rem 0; }
+.info-details a, .info-details > div { display: grid; gap: 0.25rem; border-top: 1px solid rgba(255,255,255,0.22); padding-top: 0.75rem; color: #fff; }
+.info-details strong { color: var(--color-accent); font-size: 0.74rem; }
+.info-details span { color: rgba(255,255,255,0.75); font-size: 0.75rem; }
+.info-card .primary-button { background: var(--color-accent); }
+@media (max-width: 680px) { .info-details { grid-template-columns: 1fr; } }

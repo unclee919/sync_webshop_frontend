@@ -84,6 +84,19 @@ export default function ProductDetail() {
         <div className="product-info">
           <span className="product-cat">{item.item_group}</span>
           <h1>{item.item_name}</h1>
+          <div className="product-rate-feedback">
+            <div className="star-rating">
+              <div className="stars-outer">
+                ★★★★★
+                <div className="stars-inner" style={{ width: `${(item.rating || 4.5) * 20}%` }}>
+                  ★★★★★
+                </div>
+              </div>
+            </div>
+            <span className="rating-count" style={{ color: '#adadad', fontSize: '14px' }}>
+              ({item.review_count || 0} {lang === 'ar' ? 'تقييم' : 'reviews'})
+            </span>
+          </div>
           
           <div className="detail-price">
             {item.price != null ? (

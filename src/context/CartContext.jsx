@@ -3,6 +3,7 @@ import { createContext, useContext, useMemo, useState, useEffect } from 'react'
 const CartContext = createContext(null)
 
 export function CartProvider({ children }) {
+  const [toast, setToast] = useState(null)
   const [items, setItems] = useState(() => {
     const saved = localStorage.getItem('sync_webshop_cart')
     return saved ? JSON.parse(saved) : []
@@ -22,6 +23,8 @@ export function CartProvider({ children }) {
       }
       return [...prev, { ...item, qty }]
     })
+    setToast({ message: `${item.item_name} added to cart`, type: "success" })
+    setTimeout(() => setToast(null), 3000)
   }
 
   function removeItem(itemCode) {
@@ -47,9 +50,30 @@ export function CartProvider({ children }) {
     [items]
   )
 
-  const value = { items, addItem, removeItem, setQty, clear, total, count }
+  const value = { items, addItem, removeItem, setQty, clear, total, count, toast }
   
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>
+  return <CartContext.Provider value={value}>{children}
+      {toast && (
+        <div className="cart-toast" style={{
+          position: 'fixed',
+          bottom: '30px',
+          right: '30px',
+          backgroundColor: '#3BB77E',
+          color: 'white',
+          padding: '15px 30px',
+          borderRadius: '10px',
+          boxShadow: '0 10px 25px rgba(59, 183, 126, 0.2)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          animation: 'toast-in 0.3s ease-out'
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span style={{ fontWeight: '600' }}>{toast.message}</span>
+        </div>
+      )}
+    </CartContext.Provider>
 }
 
 export function useCart() {

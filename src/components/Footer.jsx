@@ -1,109 +1,39 @@
 import { Link } from 'react-router-dom'
-import { useLanguage } from '../context/LanguageContext'
 import { useContent } from '../context/ContentContext'
+import { useLanguage } from '../context/LanguageContext'
 import './Footer.css'
 
+function ArrowIcon() { return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13" /><path d="m13 6 6 6-6 6" /></svg> }
+
 export default function Footer() {
-  const { lang, isRtl } = useLanguage()
   const { content } = useContent()
-  
-  if (!content) return null
+  const { lang, isRtl } = useLanguage()
+  if (!content || content.footer_settings?.enabled === 0) return null
 
-  const c = content
-  const socialLinks = c.social_links || []
-  const footer = c.footer_settings || {}
+  const isArabic = lang === 'ar'
+  const t = (en, ar, fallback = '') => (isArabic ? (ar || en || fallback) : (en || ar || fallback))
+  const footer = content.footer_settings || {}
   const columns = footer.columns || []
+  const socialLinks = content.social_links || []
+  const year = new Date().getFullYear()
 
-  return (
-    <footer className={`site-footer ${isRtl ? 'rtl' : 'ltr'}`}>
-      <div className="container footer-inner">
-        <div className="footer-grid">
-          <div className="footer-col about-col">
-            {footer.footer_logo ? (
-              <img src={footer.footer_logo} alt={c.site_name} className="footer-logo" />
-            ) : (
-              <h3 className="footer-site-name">{c.site_name}</h3>
-            )}
-            <p className="footer-tagline">
-              {lang === 'ar' ? (c.tagline_ar || c.tagline_en) : c.tagline_en}
-            </p>
-            <div className="footer-contact">
-              {c.phone_number && (
-                <div className="contact-item">
-                  <span className="icon">📞</span>
-                  <span>{c.phone_number}</span>
-                </div>
-              )}
-              {c.email_address && (
-                <div className="contact-item">
-                  <span className="icon">✉️</span>
-                  <span>{c.email_address}</span>
-                </div>
-              )}
-              {(c.contact_address_en || c.contact_address_ar) && (
-                <div className="contact-item">
-                  <span className="icon">📍</span>
-                  <span>{lang === 'ar' ? (c.contact_address_ar || c.contact_address_en) : c.contact_address_en}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {columns.length > 0 ? (
-            columns.map((col, idx) => (
-              <div key={idx} className="footer-col">
-                <h3 className="footer-title">{lang === 'ar' ? col.title_ar : col.title_en}</h3>
-                <ul className="footer-links">
-                  {col.links.map((link, lIdx) => (
-                    <li key={lIdx}>
-                      {link.is_external ? (
-                        <a href={link.link_url} target="_blank" rel="noopener noreferrer">
-                          {lang === 'ar' ? (link.label_ar || link.label_en) : link.label_en}
-                        </a>
-                      ) : (
-                        <Link to={link.link_url}>
-                          {lang === 'ar' ? (link.label_ar || link.label_en) : link.label_en}
-                        </Link>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))
-          ) : (
-            <div className="footer-col links-col">
-              <h3 className="footer-title">{lang === 'ar' ? 'روابط سريعة' : 'Quick Links'}</h3>
-              <ul className="footer-links">
-                <li><Link to="/">{lang === 'ar' ? 'الصفحة الرئيسية' : 'Home'}</Link></li>
-                <li><Link to="/products">{lang === 'ar' ? 'المنتجات' : 'Products'}</Link></li>
-                <li><Link to="/cart">{lang === 'ar' ? 'السلة' : 'Cart'}</Link></li>
-                <li><Link to="/dashboard">{lang === 'ar' ? 'حسابي' : 'Account'}</Link></li>
-                <li><Link to="/track">{lang === 'ar' ? 'تتبع الطلب' : 'Track Order'}</Link></li>
-              </ul>
-            </div>
-          )}
-
-          <div className="footer-col social-col">
-            <h3 className="footer-title">{lang === 'ar' ? 'تابعنا' : 'Follow Us'}</h3>
-            <div className="social-links">
-              {socialLinks.map((link, i) => (
-                <a key={i} href={link.link_url} target="_blank" rel="noopener noreferrer" className="social-link">
-                  {link.platform}
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="footer-bottom">
-          <div className="footer-copyright">
-            {lang === 'ar' 
-              ? (footer.copyright_ar || `© ${new Date().getFullYear()} ${c.site_name}. جميع الحقوق محفوظة.`)
-              : (footer.copyright_en || `© ${new Date().getFullYear()} ${c.site_name}. All rights reserved.`)
-            }
-          </div>
+  return <footer className={`site-footer ${isRtl ? 'rtl' : 'ltr'}`}>
+    <div className="footer-main container">
+      <div className="footer-brand-column">
+        {footer.footer_logo ? <img className="footer-logo" src={footer.footer_logo} alt={content.site_name} /> : <div className="footer-brand-name">{t(content.site_name_en, content.site_name_ar, content.site_name)}</div>}
+        <p>{t(content.footer_text_en, content.footer_text_ar, content.tagline_en || content.tagline_ar || 'A calmer way to discover the products you need.')}</p>
+        <div className="footer-contact-list">
+          {content.phone_number && <a href={`tel:${content.phone_number}`}><span>01</span>{content.phone_number}</a>}
+          {content.email_address && <a href={`mailto:${content.email_address}`}><span>02</span>{content.email_address}</a>}
+          {(content.contact_address_en || content.contact_address_ar) && <span><span>03</span>{t(content.contact_address_en, content.contact_address_ar)}</span>}
         </div>
       </div>
-    </footer>
-  )
+
+      <div className="footer-links-grid">
+        {columns.length > 0 ? columns.slice(0, 4).map((column, index) => <div className="footer-link-column" key={`${column.title_en}-${index}`}><h3>{t(column.title_en, column.title_ar)}</h3><ul>{(column.links || []).map((link, linkIndex) => <li key={`${link.link_url}-${linkIndex}`}>{link.is_external ? <a href={link.link_url} target="_blank" rel="noreferrer">{t(link.label_en, link.label_ar)} <ArrowIcon /></a> : <Link to={link.link_url}>{t(link.label_en, link.label_ar)} <ArrowIcon /></Link>}</li>)}</ul></div>) : <div className="footer-link-column"><h3>{t('Explore', 'استكشف')}</h3><ul><li><Link to="/">{t('Home', 'الرئيسية')} <ArrowIcon /></Link></li><li><Link to="/products">{t('All products', 'كل المنتجات')} <ArrowIcon /></Link></li><li><Link to="/track">{t('Track order', 'تتبع الطلب')} <ArrowIcon /></Link></li><li><Link to="/features">{t('Why us', 'لماذا نحن')} <ArrowIcon /></Link></li></ul></div>}
+        <div className="footer-link-column footer-social-column"><h3>{t('Follow along', 'تابعنا')}</h3><div className="footer-social-links">{socialLinks.length > 0 ? socialLinks.map((link, index) => <a key={`${link.platform}-${index}`} href={link.link_url} target="_blank" rel="noreferrer">{link.platform}</a>) : <span>{t('Social links can be managed from Frappe Desk.', 'يمكن إدارة روابط التواصل الاجتماعي من لوحة Frappe.')}</span>}</div></div>
+      </div>
+    </div>
+    <div className="footer-bottom"><div className="container footer-bottom-inner"><span>{footer.copyright_en || footer.copyright_ar || `© ${year} ${content.site_name}. ${t('All rights reserved.', 'جميع الحقوق محفوظة.')}`}</span><span>{t('Designed for a better shopping experience.', 'مصمم لتجربة تسوق أفضل.')}</span></div></div>
+  </footer>
 }
