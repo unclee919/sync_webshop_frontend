@@ -52,6 +52,12 @@ export function getOrderStatus(orderName, { email, phone } = {}) {
 export function getCustomerPortal({ email, phone } = {}) {
   return callMethod('sync_webshop.api.portal.get_customer_portal', { params: { email, phone } })
 }
+export function getDashboardSettings() { return callMethod('sync_webshop.api.portal.get_dashboard_settings') }
+export function updateCustomerProfile({ profile, email, phone }) {
+  return callMethod('sync_webshop.api.portal.update_customer_profile', {
+    method: 'POST', body: { profile, email, phone },
+  })
+}
 export function requestReturn({ orderName, itemCode, qty = 1, reason, email, phone }) {
   return callMethod('sync_webshop.api.portal.request_return', {
     method: 'POST',
@@ -70,6 +76,20 @@ export function createOrder({ customer, items, payment_method, stripe_payment_in
 }
 export function createPaymentIntent(amount, currency = 'gbp') {
   return callMethod('sync_webshop.api.payment.create_payment_intent', { method: 'POST', body: { amount, currency } })
+}
+export function getPaymobSettings() { return callMethod('sync_webshop.api.paymob.get_paymob_settings') }
+export function createPaymobIntention({ amount, currency = 'EGP', customer, items, salesOrder, deliveryDate }) {
+  return callMethod('sync_webshop.api.paymob.create_payment_intention', {
+    method: 'POST',
+    body: { amount, currency, customer, items, sales_order: salesOrder, delivery_date: deliveryDate },
+  })
+}
+
+export function getAiChatSettings() { return callMethod('sync_webshop.api.ai_chat.get_ai_chat_settings') }
+export function sendAiMessage({ message, history, email }) {
+  return callMethod('sync_webshop.api.ai_chat.send_message', {
+    method: 'POST', body: { message, history, email },
+  })
 }
 
 export function getWishlist() { return callMethod('sync_webshop.api.user.get_wishlist') }

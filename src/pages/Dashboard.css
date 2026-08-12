@@ -297,3 +297,5 @@
     gap: 0.15rem;
   }
 }
+
+.portal-section-heading{display:flex;align-items:center;justify-content:space-between;gap:16px}.profile-summary{display:flex;flex-wrap:wrap;gap:14px;color:#64748b}.profile-summary strong{color:#0f172a}.profile-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.profile-form label{display:flex;flex-direction:column;gap:6px;color:#475569;font-size:13px}.profile-form input{border:1px solid #cbd5e1;border-radius:8px;padding:10px}.profile-form button{align-self:end;border:0;border-radius:8px;padding:10px 16px;background:#0f766e;color:#fff;font-weight:700;cursor:pointer}.loyalty-card{display:flex;align-items:baseline;gap:8px}.loyalty-card strong{font-size:32px;color:#0f766e}.loyalty-card span{color:#64748b}@media(max-width:720px){.profile-form{grid-template-columns:1fr}.portal-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}

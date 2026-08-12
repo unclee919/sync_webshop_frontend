@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements } from '@stripe/react-stripe-js'
-import { createOrder, getCheckoutSettings } from '../api/client'
+import { createOrder, createPaymobIntention, getCheckoutSettings } from '../api/client'
 import { useCart } from '../context/CartContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useContent } from '../context/ContentContext'
@@ -88,10 +88,40 @@ export default function Checkout() {
     }
   }
 
+  async function handlePaymobOrder() {
+    setSubmitting(true)
+    setError(null)
+    try {
+      const draft = await createOrder({
+        customer: { name, email, phone, address },
+        items: items.map((i) => ({ item_code: i.item_code, qty: i.qty })),
+        payment_method: 'paymob',
+        delivery_date: deliveryDate,
+        submit: false,
+      })
+      const paymobGateway = gatewayList.find((gateway) => gateway.name === 'paymob')
+      const intention = await createPaymobIntention({
+        amount: draft.grand_total,
+        currency: paymobGateway?.currency || draft.currency || currency,
+        customer: { name, email, phone, address },
+        items: items.map((i) => ({ item_code: i.item_code, item_name: i.item_name, qty: i.qty, price: i.price })),
+        salesOrder: draft.sales_order,
+        deliveryDate,
+      })
+      if (!intention?.checkout_url) throw new Error(lang === 'ar' ? 'تعذر فتح بوابة الدفع.' : 'Paymob did not return a checkout URL.')
+      window.location.assign(intention.checkout_url)
+    } catch (err) {
+      setError(err.message || (lang === 'ar' ? 'تعذر بدء الدفع عبر Paymob.' : 'We could not start the Paymob payment.'))
+      setSubmitting(false)
+    }
+  }
+
   async function handleSubmit(e) {
     if (e) e.preventDefault()
     if (paymentMethod === 'cod') {
       await handleConfirmOrder()
+    } else if (paymentMethod === 'paymob') {
+      await handlePaymobOrder()
     } else if (paymentMethod === 'stripe') {
       setError(lang === 'ar' ? 'يرجى استخدام زر الدفع بعد إدخال بيانات البطاقة.' : 'Use the card payment button after entering your card details.')
     }
@@ -204,9 +234,9 @@ export default function Checkout() {
             
             {error && <div className="error-message">{error}</div>}
             
-            {paymentMethod === 'cod' && (
+            {(paymentMethod === 'cod' || paymentMethod === 'paymob') && (
               <button type="submit" className="place-order-btn" disabled={submitting}>
-                {submitting ? (lang === 'ar' ? 'جاري المعالجة...' : 'Processing...') : (lang === 'ar' ? 'تأكيد الطلب' : 'Confirm Order')}
+                {submitting ? (lang === 'ar' ? 'جاري المعالجة...' : 'Processing...') : (paymentMethod === 'paymob' ? (lang === 'ar' ? 'المتابعة إلى الدفع' : 'Continue to Paymob') : (lang === 'ar' ? 'تأكيد الطلب' : 'Confirm Order'))}
               </button>
             )}
           </form>
