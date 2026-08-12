@@ -12,7 +12,7 @@ function BagIcon() { return <svg viewBox="0 0 24 24" aria-hidden="true"><path d=
 function UserIcon() { return <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3" /><path d="M5 20a7 7 0 0 1 14 0" /></svg> }
 function HeartIcon() { return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 8.8c0 5.3-8.8 10.1-8.8 10.1S3.2 14.1 3.2 8.8A4.8 4.8 0 0 1 12 6.2a4.8 4.8 0 0 1 8.8 2.6Z" /></svg> }
 
-export default function Header() {
+export default function Header({ onOpenCart }) {
   const { content } = useContent()
   const { lang, setLang, isRtl } = useLanguage()
   const { count } = useCart()
@@ -116,7 +116,7 @@ export default function Header() {
 
           <div className="header-actions">
             {content.enable_wishlist !== 0 && <Link to="/wishlist" className="header-action"><span className="action-icon"><HeartIcon /></span><span className="action-label">{t(content.wishlist_text_en, content.wishlist_text_ar, 'Wishlist')}</span></Link>}
-            <Link to="/cart" className="header-action cart-action"><span className="action-icon"><BagIcon />{count > 0 && <span className="action-count">{count}</span>}</span><span className="action-label">{t(content.cart_text_en, content.cart_text_ar, 'Cart')}</span></Link>
+            <button type="button" className="header-action cart-action" onClick={() => onOpenCart?.()} aria-label={t(content.cart_text_en, content.cart_text_ar, 'Cart')}><span className="action-icon"><BagIcon />{count > 0 && <span className="action-count">{count}</span>}</span><span className="action-label">{t(content.cart_text_en, content.cart_text_ar, 'Cart')}</span></button>
             <Link to="/dashboard" className="header-action account-action"><span className="action-icon"><UserIcon /></span><span className="action-label">{t(content.account_text_en, content.account_text_ar, 'Account')}</span></Link>
           </div>
         </div>

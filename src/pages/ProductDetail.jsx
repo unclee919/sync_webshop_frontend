@@ -21,6 +21,7 @@ export default function ProductDetail() {
   const [error, setError] = useState(null)
   const [qty, setQty] = useState(1)
   const [added, setAdded] = useState(false)
+  const [zoomed, setZoomed] = useState(false)
   const [reviewNotice, setReviewNotice] = useState(null)
   const [reviewSubmitting, setReviewSubmitting] = useState(false)
   const [reviewForm, setReviewForm] = useState({ rating: 5, reviewTitle: '', reviewText: '', displayName: '' })
@@ -80,7 +81,7 @@ export default function ProductDetail() {
       <SEOHead title={item.item_name} description={item.description || item.item_name} image={item.image} type="product" />
       <div className="breadcrumb"><Link to="/">{isArabic ? 'الرئيسية' : 'Home'}</Link><span>/</span><Link to="/products">{isArabic ? 'المنتجات' : 'Products'}</Link><span>/</span><span>{item.item_name}</span></div>
       <div className="product-detail-layout">
-        <div className="product-gallery">{item.image ? <img src={item.image} alt={item.item_name} className="main-image" /> : <div className="no-image-large">{isArabic ? 'لا توجد صورة' : 'No image'}</div>}</div>
+        <div className={`product-gallery ${zoomed ? 'is-zoomed' : ''}`} onClick={() => item.image && setZoomed((value) => !value)}>{item.image ? <><img src={item.image} alt={item.item_name} className="main-image" /><span className="zoom-hint">{zoomed ? (isArabic ? 'اضغط للتصغير' : 'Click to zoom out') : (isArabic ? 'اضغط للتكبير' : 'Click to zoom')}</span></> : <div className="no-image-large">{isArabic ? 'لا توجد صورة' : 'No image'}</div>}</div>
         <div className="product-info">
           <span className="product-cat">{item.item_group}</span>
           <h1>{item.item_name}</h1>
@@ -93,6 +94,7 @@ export default function ProductDetail() {
           <div className="detail-actions"><div className="qty-input"><button className="qty-btn" onClick={() => setQty((value) => Math.max(1, value - 1))}>−</button><input type="number" min="1" max={maxQty} value={qty} onChange={(e) => setQty(Math.min(maxQty, Math.max(1, parseInt(e.target.value, 10) || 1)))} /><button className="qty-btn" onClick={() => setQty((value) => Math.min(maxQty, value + 1))}>+</button></div><button className={`add-cart-large ${added ? 'added' : ''}`} disabled={!isInStock} onClick={handleAdd}>{added ? (isArabic ? (c.added_text_ar || 'تمت الإضافة') : (c.added_text_en || 'Added')) : (isArabic ? (c.add_to_cart_text_ar || 'أضف إلى السلة') : (c.add_to_cart_text_en || 'Add to Cart'))}</button></div>
         </div>
       </div>
+      <div className="mobile-sticky-buy"><div><strong>{Number(item.price || 0).toFixed(2)} {item.currency}</strong><span>{isInStock ? (isArabic ? 'متوفر الآن' : 'Available now') : (isArabic ? 'غير متوفر' : 'Unavailable')}</span></div><button type="button" disabled={!isInStock} onClick={handleAdd}>{added ? (isArabic ? 'تمت الإضافة' : 'Added') : (isArabic ? 'أضف إلى السلة' : 'Add to cart')}</button></div>
       {productSettings.reviews_enabled !== 0 && <section className="reviews-section">
         <div className="section-heading"><h2>{reviewTitle}</h2></div>
         <div className="reviews-summary"><strong>{Number(reviewStats.average || 0).toFixed(1)}</strong><span>★★★★★</span><small>{reviewStats.count || 0} {isArabic ? 'تقييم' : 'reviews'}</small></div>
