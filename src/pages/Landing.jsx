@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { getCatalog, getRecommendations } from '../api/client'
+import { getCatalog, getItem, getRecommendations } from '../api/client'
 import { useCart } from '../context/CartContext'
 import { useContent } from '../context/ContentContext'
 import { useLanguage } from '../context/LanguageContext'
@@ -62,6 +62,7 @@ export default function Landing() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [fallbackItems, setFallbackItems] = useState([])
   const [recommendations, setRecommendations] = useState([])
+  const [recentlyViewed, setRecentlyViewed] = useState([])
   const [quickViewCode, setQuickViewCode] = useState(null)
 
   const isArabic = lang === 'ar'
@@ -87,6 +88,15 @@ export default function Landing() {
     if (content?.recommendations_enabled === 0) return
     getRecommendations({ limit: 8 }).then(setRecommendations).catch(() => {})
   }, [content?.recommendations_enabled])
+
+  useEffect(() => {
+    const settings = content?.product_settings || {}
+    if (settings.enable_recently_viewed === 0) return
+    try {
+      const codes = JSON.parse(localStorage.getItem('sync_webshop_recently_viewed') || '[]').slice(0, Number(settings.recently_viewed_limit) || 8)
+      Promise.all(codes.map((code) => getItem(code).catch(() => null))).then((items) => setRecentlyViewed(items.filter(Boolean)))
+    } catch { setRecentlyViewed([]) }
+  }, [content?.product_settings?.enable_recently_viewed, content?.product_settings?.recently_viewed_limit])
 
   const sections = useMemo(() => configuredSections.length ? configuredSections : (fallbackItems.length ? [{ title_en: 'New arrivals', title_ar: 'وصل حديثاً', items: fallbackItems }] : []), [configuredSections, fallbackItems])
   const hero = banners[currentSlide]
@@ -117,6 +127,8 @@ export default function Landing() {
       </section>}
 
       {content?.recommendations_enabled !== 0 && recommendations.length > 0 && <section className="home-section smart-recommendations"><div className="container"><div className="home-section-heading"><div><span className="section-kicker">{t('Smart selection', 'اختيار ذكي')}</span><h2>{t(content?.recommendations_title_en, content?.recommendations_title_ar, 'Picked for you')}</h2></div><Link to="/products" className="section-view-all">{t(content?.view_all_text_en, content?.view_all_text_ar, 'View All')}<ArrowIcon /></Link></div><div className="home-product-grid">{recommendations.map(item => <ProductCard key={item.item_code} item={item} content={content} lang={lang} onAdd={addItem} onQuickView={setQuickViewCode} />)}</div></div></section>}
+
+      {content?.product_settings?.enable_recently_viewed !== 0 && recentlyViewed.length > 0 && <section className="home-section recently-viewed-section"><div className="container"><div className="home-section-heading"><div><h2>{t(content?.product_settings?.recently_viewed_title_en, content?.product_settings?.recently_viewed_title_ar, 'Recently viewed')}</h2></div></div><div className="home-product-grid">{recentlyViewed.map(item => <ProductCard key={item.item_code} item={item} content={content} lang={lang} onAdd={addItem} onQuickView={setQuickViewCode} />)}</div></div></section>}
 
       {sections.map((s, i) => <section key={i} className={`home-section ${i % 2 ? 'soft-section' : ''}`}>
 <div className="container"><div className="home-section-heading"><div><h2>{t(s.title_en, s.title_ar)}</h2></div><Link to="/products" className="section-view-all">{t(content?.view_all_text_en, content?.view_all_text_ar, 'View All')}<ArrowIcon /></Link></div><div className="home-product-grid">{s.items?.map(item => <ProductCard key={item.item_code} item={item} content={content} lang={lang} onAdd={addItem} onQuickView={setQuickViewCode} />)}</div></div></section>)}

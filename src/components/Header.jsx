@@ -29,6 +29,14 @@ export default function Header() {
   const t = (en, ar, fallback = '') => (isArabic ? (ar || en || fallback) : (en || ar || fallback))
   const navLinks = (content?.nav_links || []).filter((link) => link.show_in_navbar !== 0)
   const logo = content?.theme?.logo
+  const menuMax = Math.max(1, Number(content?.mega_menu_max_categories) || 12)
+  const menuTitle = t(content?.mega_menu_title_en, content?.mega_menu_title_ar, 'Browse categories')
+  const renderCategoryTree = (items = [], depth = 0) => items.map((cat) => (
+    <div className={`mega-menu-category depth-${depth}`} key={cat.name}>
+      <Link to={`/products?category=${encodeURIComponent(cat.name)}`} onClick={() => setShowCategories(false)}>{cat.label || cat.name}</Link>
+      {cat.children?.length > 0 && <div className="mega-menu-children">{renderCategoryTree(cat.children, depth + 1)}</div>}
+    </div>
+  ))
   const siteName = t(content?.site_name_en, content?.site_name_ar, content?.site_name || 'Sync Webshop')
 
   useEffect(() => {
@@ -114,29 +122,27 @@ export default function Header() {
 
       <nav className={`store-nav ${mobileOpen ? 'open' : ''}`}>
         <div className="container nav-inner">
-          <div className="category-menu-wrap">
+          {content?.mega_menu_enabled !== 0 && <div className="category-menu-wrap">
             <button type="button" className="category-menu-trigger" onClick={() => setShowCategories(!showCategories)}>
               <span className="category-grid-icon"><i /><i /><i /><i /></span>
-              {t(content.browse_categories_text_en, content.browse_categories_text_ar, 'Browse categories')}
+              {menuTitle}
               <span className="chevron">⌄</span>
             </button>
             {showCategories && <div className="mega-menu-dropdown">
               <div className="mega-menu-grid">
-                <div className="mega-menu-list">
-                  {categories.slice(0, 12).map((cat) => <Link key={cat.name} to={`/products?category=${encodeURIComponent(cat.name)}`}>{cat.label || cat.name}</Link>)}
-                </div>
-                <div className="mega-menu-featured">
+                <div className="mega-menu-list">{renderCategoryTree(categories.slice(0, menuMax))}</div>
+                {(content?.mega_menu_featured_image || content?.mega_menu_featured_title_en || content?.mega_menu_featured_title_ar) && <div className="mega-menu-featured">
                   <div className="mega-featured-card">
-                    <img src={categories[0]?.image || '/placeholder.jpg'} alt="" />
+                    {content?.mega_menu_featured_image && <img src={content.mega_menu_featured_image} alt={t(content.mega_menu_featured_title_en, content.mega_menu_featured_title_ar, menuTitle)} />}
                     <div className="mega-featured-copy">
-                      <h4>{t('New Season', 'موسم جديد')}</h4>
-                      <Link to="/products">{t('Shop Now', 'تسوق الآن')} →</Link>
+                      <h4>{t(content.mega_menu_featured_title_en, content.mega_menu_featured_title_ar, menuTitle)}</h4>
+                      {content?.mega_menu_featured_url && <Link to={content.mega_menu_featured_url} onClick={() => setShowCategories(false)}>{t(content.shop_now_text_en, content.shop_now_text_ar, 'Shop now')} →</Link>}
                     </div>
                   </div>
-                </div>
+                </div>}
               </div>
             </div>}
-          </div>
+          </div>}
           <div className="nav-links">
             <Link to="/" className={location.pathname === '/' ? 'active' : ''}>{t(content?.home_text_en, content?.home_text_ar, 'Home')}</Link>
             <Link to="/products" className={location.pathname.startsWith('/products') ? 'active' : ''}>{t(content?.all_products_text_en, content?.all_products_text_ar, 'All products')}</Link>

@@ -41,7 +41,19 @@ export function getCategories() { return callMethod('sync_webshop.api.catalog.ge
 export function getSearchSuggestions(search) { return callMethod('sync_webshop.api.catalog.get_search_suggestions', { params: { search } }) }
 export function getItem(itemCode) { return callMethod('sync_webshop.api.catalog.get_item', { params: { item_code: itemCode } }) }
 export function getStock(itemCode) { return callMethod('sync_webshop.api.catalog.get_stock', { params: { item_code: itemCode } }) }
-export function getRecommendations({ itemCode, itemGroup, limit = 8 } = {}) { return callMethod('sync_webshop.api.catalog.get_recommendations', { params: { item_code: itemCode, item_group: itemGroup, limit } }) }
+export function getRecommendations({ itemCode, itemGroup, limit = 8 } = {}) {
+  return callMethod('sync_webshop.api.catalog.get_recommendations', { params: { item_code: itemCode, item_group: itemGroup, limit } })
+}
+export function getProductReviews({ itemCode, page = 1, pageSize = 10 }) {
+  return callMethod('sync_webshop.api.reviews.get_product_reviews', { params: { item_code: itemCode, page, page_size: pageSize } })
+}
+export function submitProductReview({ itemCode, rating, reviewTitle, reviewText, displayName, orderName, email, phone }) {
+  return callMethod('sync_webshop.api.reviews.submit_review', {
+    method: 'POST',
+    body: { item_code: itemCode, rating, review_title: reviewTitle, review_text: reviewText, display_name: displayName, order_name: orderName, email, phone },
+  })
+}
+
 
 export function getMyOrders({ email, phone } = {}) {
   return callMethod('sync_webshop.api.orders.list_my_orders', { params: { email, phone } })
@@ -56,6 +68,16 @@ export function getDashboardSettings() { return callMethod('sync_webshop.api.por
 export function updateCustomerProfile({ profile, email, phone }) {
   return callMethod('sync_webshop.api.portal.update_customer_profile', {
     method: 'POST', body: { profile, email, phone },
+  })
+}
+export function saveCustomerAddress({ address, addressName, email, phone }) {
+  return callMethod('sync_webshop.api.portal.save_customer_address', {
+    method: 'POST', body: { address, address_name: addressName, email, phone },
+  })
+}
+export function deleteCustomerAddress({ addressName, email, phone }) {
+  return callMethod('sync_webshop.api.portal.delete_customer_address', {
+    method: 'POST', body: { address_name: addressName, email, phone },
   })
 }
 export function requestReturn({ orderName, itemCode, qty = 1, reason, email, phone }) {

@@ -26,8 +26,11 @@ export default function ProductList() {
   
   // Faceted Filter state
   const [priceRange, setPriceRange] = useState({ min_price: 0, max_price: 1000 })
-  const [minPrice, setMinPrice] = useState(0)
-  const [maxPrice, setMaxPrice] = useState(1000)
+  const [minPrice, setMinPrice] = useState(undefined)
+  const [maxPrice, setMaxPrice] = useState(undefined)
+  const [draftMinPrice, setDraftMinPrice] = useState('')
+  const [draftMaxPrice, setDraftMaxPrice] = useState('')
+  const [filtersInitialized, setFiltersInitialized] = useState(false)
   const [selectedAttrs, setSelectedAttrs] = useState({})
   const [quickViewCode, setQuickViewCode] = useState(null)
 
@@ -51,7 +54,13 @@ export default function ProductList() {
         })
         if (isMounted) {
           setCatalog(catalogData || { items: [], total_count: 0 })
-          if (catalogData?.price_range) setPriceRange(catalogData.price_range)
+          if (catalogData?.price_range) {
+            setPriceRange(catalogData.price_range)
+            if (!filtersInitialized) {
+              setDraftMinPrice(String(catalogData.price_range.min_price ?? ''))
+              setDraftMaxPrice(String(catalogData.price_range.max_price ?? ''))
+            }
+          }
           setLoading(false)
         }
       } catch (err) {
@@ -64,7 +73,7 @@ export default function ProductList() {
 
     fetchCatalog()
     return () => { isMounted = false }
-  }, [category, search, page, minPrice, maxPrice, selectedAttrs])
+  }, [category, search, page, minPrice, maxPrice, selectedAttrs, filtersInitialized])
 
   useEffect(() => {
     getCategories().then(setCategories).catch(console.error)
@@ -90,6 +99,7 @@ export default function ProductList() {
   const showSidebar = content?.show_category_sidebar ?? true
   const sidebarWidth = content?.sidebar_width || 250
   const totalPages = catalog ? Math.ceil(catalog.total_count / PAGE_SIZE) : 1
+  const renderCategoryOptions = (items = [], depth = 0) => items.map((cat) => <li key={cat.name} className={category === cat.name ? 'active' : ''}><button style={{ paddingInlineStart: `${0.55 + depth * 0.8}rem` }} onClick={() => { const n = new URLSearchParams(searchParams); n.set('category', cat.name); n.set('page', 1); setSearchParams(n) }}>{cat.label || cat.name}</button>{cat.children?.length > 0 && <ul className="category-list nested-category-list">{renderCategoryOptions(cat.children, depth + 1)}</ul>}</li>)
 
   return (
     <div className={`products-page container ${isRtl ? 'rtl' : 'ltr'}`}>
@@ -109,8 +119,17 @@ export default function ProductList() {
               <h3 className="widget-title">{t('Categories', 'الفئات')}</h3>
               <ul className="category-list">
                 <li className={!category ? 'active' : ''}><button onClick={() => { const n = new URLSearchParams(searchParams); n.delete('category'); n.set('page', 1); setSearchParams(n) }}>{t(content?.all_categories_text_en, content?.all_categories_text_ar, 'All Categories')}</button></li>
-                {categories.map(cat => <li key={cat.name} className={category === cat.name ? 'active' : ''}><button onClick={() => { const n = new URLSearchParams(searchParams); n.set('category', cat.name); n.set('page', 1); setSearchParams(n) }}>{cat.label || cat.name}</button></li>)}
+                {renderCategoryOptions(categories)}
               </ul>
+            </div>
+
+            <div className="sidebar-widget">
+              <h3 className="widget-title">{t(content?.price_filter_title_en, content?.price_filter_title_ar, 'Filter by price')}</h3>
+              <div className="price-inputs">
+                <div className="price-input-group"><label>{t('Min', 'من')}</label><input className="price-input" type="number" min="0" value={draftMinPrice} onChange={(e) => setDraftMinPrice(e.target.value)} /></div>
+                <div className="price-input-group"><label>{t('Max', 'إلى')}</label><input className="price-input" type="number" min="0" value={draftMaxPrice} onChange={(e) => setDraftMaxPrice(e.target.value)} /></div>
+              </div>
+              <div className="price-filter-actions"><button type="button" className="price-filter-btn" onClick={() => { setMinPrice(draftMinPrice === '' ? undefined : Number(draftMinPrice)); setMaxPrice(draftMaxPrice === '' ? undefined : Number(draftMaxPrice)); setFiltersInitialized(true); const next = new URLSearchParams(searchParams); next.set('page', 1); setSearchParams(next) }}>{t(content?.apply_filter_text_en, content?.apply_filter_text_ar, 'Apply')}</button><button type="button" className="price-reset-btn" onClick={() => { setDraftMinPrice(String(priceRange.min_price ?? '')); setDraftMaxPrice(String(priceRange.max_price ?? '')); setMinPrice(undefined); setMaxPrice(undefined); setFiltersInitialized(true) }}>{t(content?.reset_filter_text_en, content?.reset_filter_text_ar, 'Reset')}</button></div>
             </div>
 
             {catalog?.available_attributes && Object.keys(catalog.available_attributes).length > 0 && (

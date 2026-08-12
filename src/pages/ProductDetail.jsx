@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { getItem } from '../api/client'
+import { getItem, getProductReviews, submitProductReview } from '../api/client'
 import { useCart } from '../context/CartContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useContent } from '../context/ContentContext'
@@ -11,20 +11,38 @@ export default function ProductDetail() {
   const { itemCode } = useParams()
   const { lang, isRtl } = useLanguage()
   const { content } = useContent()
+  const { addItem } = useCart()
+  const isArabic = lang === 'ar'
   const c = content || {}
+  const productSettings = c.product_settings || {}
+  const reviewTitle = isArabic ? (productSettings.reviews_title_ar || 'آراء العملاء') : (productSettings.reviews_title_en || 'Customer reviews')
   const [item, setItem] = useState(null)
+  const [reviews, setReviews] = useState(null)
   const [error, setError] = useState(null)
   const [qty, setQty] = useState(1)
   const [added, setAdded] = useState(false)
-  const { addItem } = useCart()
-  const isArabic = lang === 'ar'
+  const [reviewNotice, setReviewNotice] = useState(null)
+  const [reviewSubmitting, setReviewSubmitting] = useState(false)
+  const [reviewForm, setReviewForm] = useState({ rating: 5, reviewTitle: '', reviewText: '', displayName: '' })
 
   useEffect(() => {
     setItem(null)
+    setReviews(null)
     setError(null)
     setAdded(false)
+    setReviewNotice(null)
     getItem(itemCode).then(setItem).catch((err) => setError(err.message))
-  }, [itemCode])
+    if (productSettings.reviews_enabled !== 0) {
+      getProductReviews({ itemCode }).then(setReviews).catch(() => setReviews(null))
+    }
+    if (productSettings.enable_recently_viewed !== 0) {
+      try {
+        const limit = Math.max(1, Number(productSettings.recently_viewed_limit) || 8)
+        const previous = JSON.parse(localStorage.getItem('sync_webshop_recently_viewed') || '[]').filter((value) => value !== itemCode)
+        localStorage.setItem('sync_webshop_recently_viewed', JSON.stringify([itemCode, ...previous].slice(0, limit)))
+      } catch { /* local storage may be unavailable */ }
+    }
+  }, [itemCode, productSettings.enable_recently_viewed, productSettings.recently_viewed_limit, productSettings.reviews_enabled])
 
   if (error) return <div className={`products-page container ${isRtl ? 'rtl' : 'ltr'}`}><p className="error-box">{isArabic ? 'تعذر تحميل المنتج' : 'Could not load this item'}: {error}</p></div>
   if (!item) return <div className={`products-page container ${isRtl ? 'rtl' : 'ltr'}`}><p className="loading-state">{isArabic ? 'جارٍ التحميل...' : 'Loading...'}</p></div>
@@ -32,6 +50,7 @@ export default function ProductDetail() {
   const availableQty = Number(item.stock?.available_qty || 0)
   const isInStock = item.stock?.in_stock || availableQty > 0
   const maxQty = availableQty > 0 ? Math.max(1, Math.floor(availableQty)) : 1
+  const reviewStats = reviews?.stats || { average: item.rating || 0, count: item.review_count || 0 }
 
   function handleAdd() {
     if (!isInStock) return
@@ -40,18 +59,32 @@ export default function ProductDetail() {
     setTimeout(() => setAdded(false), 2000)
   }
 
+  async function handleReviewSubmit(event) {
+    event.preventDefault()
+    setReviewSubmitting(true)
+    setReviewNotice(null)
+    try {
+      const response = await submitProductReview({ itemCode: item.item_code, ...reviewForm })
+      setReviewNotice(response.pending ? (isArabic ? 'تم إرسال تقييمك للمراجعة.' : 'Your review was submitted for approval.') : (isArabic ? 'شكراً لتقييمك.' : 'Thank you for your review.'))
+      setReviewForm({ rating: 5, reviewTitle: '', reviewText: '', displayName: '' })
+      if (!response.pending) setReviews((current) => current ? { ...current, stats: response.stats, reviews: [response.review, ...(current.reviews || [])] } : current)
+    } catch (err) {
+      setReviewNotice(err.message)
+    } finally {
+      setReviewSubmitting(false)
+    }
+  }
+
   return (
     <div className={`products-page container ${isRtl ? 'rtl' : 'ltr'}`}>
       <SEOHead title={item.item_name} description={item.description || item.item_name} image={item.image} type="product" />
       <div className="breadcrumb"><Link to="/">{isArabic ? 'الرئيسية' : 'Home'}</Link><span>/</span><Link to="/products">{isArabic ? 'المنتجات' : 'Products'}</Link><span>/</span><span>{item.item_name}</span></div>
       <div className="product-detail-layout">
-        <div className="product-gallery">
-          {item.image ? <img src={item.image} alt={item.item_name} className="main-image" /> : <div className="no-image-large">{isArabic ? 'لا توجد صورة' : 'No image'}</div>}
-        </div>
+        <div className="product-gallery">{item.image ? <img src={item.image} alt={item.item_name} className="main-image" /> : <div className="no-image-large">{isArabic ? 'لا توجد صورة' : 'No image'}</div>}</div>
         <div className="product-info">
           <span className="product-cat">{item.item_group}</span>
           <h1>{item.item_name}</h1>
-          <div className="product-rate-feedback"><div className="star-rating"><div className="stars-outer">★★★★★<div className="stars-inner" style={{ width: `${(item.rating || 4.5) * 20}%` }}>★★★★★</div></div></div><span className="rating-count">({item.review_count || 0} {isArabic ? 'تقييم' : 'reviews'})</span></div>
+          <div className="product-rate-feedback"><div className="star-rating"><div className="stars-outer">★★★★★<div className="stars-inner" style={{ width: `${Number(reviewStats.average || 0) * 20}%` }}>★★★★★</div></div></div><span className="rating-count">({reviewStats.count || 0} {isArabic ? 'تقييم' : 'reviews'})</span></div>
           <div className="detail-price">{item.price != null ? <span className="current-price">{Number(item.price).toFixed(2)} {item.currency}</span> : <span className="price-empty">{isArabic ? 'السعر عند الطلب' : 'Price on request'}</span>}</div>
           <div className={`stock-message ${isInStock ? 'stock-ok' : 'stock-out'}`}>{isInStock ? `${isArabic ? 'متوفر' : 'In stock'}${availableQty ? ` · ${availableQty} ${isArabic ? 'متاح' : 'available'}` : ''}` : (isArabic ? 'غير متوفر حالياً' : 'Currently unavailable')}</div>
           {item.attributes?.length > 0 && <div className="variant-attributes"><h3>{isArabic ? 'المواصفات' : 'Available options'}</h3>{item.attributes.map((attribute) => <span className="variant-chip" key={`${attribute.attribute}-${attribute.value}`}>{attribute.attribute}: {attribute.value}</span>)}</div>}
@@ -60,6 +93,27 @@ export default function ProductDetail() {
           <div className="detail-actions"><div className="qty-input"><button className="qty-btn" onClick={() => setQty((value) => Math.max(1, value - 1))}>−</button><input type="number" min="1" max={maxQty} value={qty} onChange={(e) => setQty(Math.min(maxQty, Math.max(1, parseInt(e.target.value, 10) || 1)))} /><button className="qty-btn" onClick={() => setQty((value) => Math.min(maxQty, value + 1))}>+</button></div><button className={`add-cart-large ${added ? 'added' : ''}`} disabled={!isInStock} onClick={handleAdd}>{added ? (isArabic ? (c.added_text_ar || 'تمت الإضافة') : (c.added_text_en || 'Added')) : (isArabic ? (c.add_to_cart_text_ar || 'أضف إلى السلة') : (c.add_to_cart_text_en || 'Add to Cart'))}</button></div>
         </div>
       </div>
+      {productSettings.reviews_enabled !== 0 && <section className="reviews-section">
+        <div className="section-heading"><h2>{reviewTitle}</h2></div>
+        <div className="reviews-summary"><strong>{Number(reviewStats.average || 0).toFixed(1)}</strong><span>★★★★★</span><small>{reviewStats.count || 0} {isArabic ? 'تقييم' : 'reviews'}</small></div>
+        {reviews?.reviews?.length > 0 ? <div className="reviews-list">
+          {reviews.reviews.map((review) => <article className="review-card" key={review.name}>
+            <div><strong>{review.display_name || (isArabic ? 'عميل' : 'Customer')}</strong>{review.verified_purchase ? <small>{isArabic ? 'شراء موثق' : 'Verified purchase'}</small> : null}</div>
+            <span className="review-stars">{'★'.repeat(Number(review.rating || 0))}{'☆'.repeat(Math.max(0, 5 - Number(review.rating || 0)))}</span>
+            {review.review_title && <h3>{review.review_title}</h3>}
+            <p>{review.review_text}</p>
+          </article>)}
+        </div> : <p className="dashboard-empty">{isArabic ? 'كن أول من يشارك رأيه.' : 'Be the first to review this product.'}</p>}
+        <form className="review-form" onSubmit={handleReviewSubmit}>
+          <h3>{isArabic ? 'شارك رأيك' : 'Share your review'}</h3>
+          <label>{isArabic ? 'التقييم' : 'Rating'}<select value={reviewForm.rating} onChange={(e) => setReviewForm({ ...reviewForm, rating: Number(e.target.value) })}>{[5, 4, 3, 2, 1].map((value) => <option value={value} key={value}>{value} ★</option>)}</select></label>
+          <label>{isArabic ? 'العنوان' : 'Title'}<input value={reviewForm.reviewTitle} onChange={(e) => setReviewForm({ ...reviewForm, reviewTitle: e.target.value })} /></label>
+          <label>{isArabic ? 'التعليق' : 'Review'}<textarea required value={reviewForm.reviewText} onChange={(e) => setReviewForm({ ...reviewForm, reviewText: e.target.value })} /></label>
+          <label>{isArabic ? 'الاسم الظاهر' : 'Display name'}<input value={reviewForm.displayName} onChange={(e) => setReviewForm({ ...reviewForm, displayName: e.target.value })} /></label>
+          {reviewNotice && <p className="dashboard-notice">{reviewNotice}</p>}
+          <button type="submit" disabled={reviewSubmitting}>{reviewSubmitting ? (isArabic ? 'جارٍ الإرسال...' : 'Submitting...') : (isArabic ? 'إرسال التقييم' : 'Submit review')}</button>
+        </form>
+      </section>}
       {item.recommendations?.length > 0 && <section className="related-products"><div className="section-heading"><h2>{isArabic ? (c.related_products_title_ar || 'قد يعجبك أيضاً') : (c.related_products_title_en || 'You may also like')}</h2></div><div className="product-grid">{item.recommendations.map((product) => <Link className="product-card" to={`/products/${encodeURIComponent(product.item_code)}`} key={product.item_code}><div className="product-card-image">{product.image ? <img src={product.image} alt={product.item_name} /> : <div className="no-image">{isArabic ? 'لا توجد صورة' : 'No image'}</div>}</div><div className="product-card-body"><h3>{product.item_name}</h3>{product.price != null && <p className="card-price">{Number(product.price).toFixed(2)} {product.currency}</p>}</div></Link>)}</div></section>}
     </div>
   )
