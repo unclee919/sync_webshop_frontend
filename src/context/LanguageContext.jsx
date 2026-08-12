@@ -6,9 +6,15 @@ export function LanguageProvider({ children }) {
   const [lang, setLang] = useState(localStorage.getItem('lang') || 'en')
 
   useEffect(() => {
-    localStorage.setItem('lang', lang)
-    document.documentElement.lang = lang
-    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'
+    const currentLang = localStorage.getItem('lang')
+    if (currentLang && currentLang !== lang) {
+      localStorage.setItem('lang', lang)
+      window.location.reload()
+    } else {
+      localStorage.setItem('lang', lang)
+      document.documentElement.lang = lang
+      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'
+    }
   }, [lang])
 
   const toggleLang = () => setLang((l) => (l === 'en' ? 'ar' : 'en'))

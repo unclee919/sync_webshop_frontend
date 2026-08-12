@@ -4,6 +4,7 @@ import { useContent } from '../context/ContentContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useCart } from '../context/CartContext'
 import { getCategories, getSearchSuggestions } from '../api/client'
+import VoiceSearch from './VoiceSearch'
 import './Header.css'
 
 function SearchIcon() { return <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></svg> }
@@ -97,9 +98,10 @@ export default function Header() {
           <div className="header-search" ref={searchRef}>
             <form className="search-form" onSubmit={handleSearch}>
               <span className="search-leading"><SearchIcon /></span>
-              <input value={search} onChange={(e) => { setSearch(e.target.value); setShowSuggestions(true) }} onFocus={() => setShowSuggestions(true)} placeholder={t(content.search_placeholder_en, content.search_placeholder_ar, 'Search products, categories and more')} />
-              <button type="submit">{t(content?.search_button_text_en, content?.search_button_text_ar, 'Search')}</button>
-            </form>
+<input value={search} onChange={(e) => { setSearch(e.target.value); setShowSuggestions(true) }} onFocus={() => setShowSuggestions(true)} placeholder={t(content.search_placeholder_en, content.search_placeholder_ar, 'Search products, categories and more')} />
+	              <VoiceSearch onResult={(text) => { setSearch(text); navigate(`/products?search=${encodeURIComponent(text)}`); setShowSuggestions(false); }} />
+	              <button type="submit">{t(content?.search_button_text_en, content?.search_button_text_ar, 'Search')}</button>
+	            </form>
             {showSuggestions && suggestions.length > 0 && (
               <div className="search-suggestions">
                 {suggestions.slice(0, 6).map((s, i) => (
