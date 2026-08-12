@@ -135,7 +135,7 @@ export default function Landing() {
 
       {trustBadges.length > 0 && <section className="benefits-section"><div className="container benefits-grid">{trustBadges.slice(0, 4).map((b, i) => <div className="benefit-item" key={i}><div className="benefit-icon" dangerouslySetInnerHTML={{ __html: b.icon }} /><div><h3>{t(b.label_en, b.label_ar)}</h3><p>{t(b.description_en, b.description_ar)}</p></div></div>)}</div></section>}
 
-      {testimonials.length > 0 && <section className="home-section container"><div className="home-section-heading"><div><h2>{t('What our customers say', 'ماذا يقول عملاؤنا')}</h2></div></div><div className="testimonial-grid">{testimonials.slice(0, 3).map((t, i) => <article className="testimonial-card" key={i}><blockquote>“{t(t.quote_en, t.quote_ar)}”</blockquote><footer><strong>{t.author}</strong><span>{t.author_title}</span></footer></article>)}</div></section>}
+      {testimonials.length > 0 && <section className="home-section container"><div className="home-section-heading"><div><h2>{t('What our customers say', 'ماذا يقول عملاؤنا')}</h2></div></div><div className="testimonial-grid">{testimonials.slice(0, 3).map((item, index) => <article className="testimonial-card" key={index}><blockquote>“{t(item.quote_en, item.quote_ar)}”</blockquote><footer><strong>{item.author}</strong><span>{item.author_title}</span></footer></article>)}</div></section>}
       
       {quickViewCode && <QuickView itemCode={quickViewCode} onClose={() => setQuickViewCode(null)} />}
     </div>
