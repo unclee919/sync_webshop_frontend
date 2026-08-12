@@ -55,9 +55,17 @@ export function getContent() {
   return callMethod('sync_webshop.api.content.get_content')
 }
 
-export function getCatalog({ itemGroup, search, page = 1, pageSize = 20, minPrice, maxPrice } = {}) {
+export function getCatalog({ itemGroup, search, page = 1, pageSize = 20, minPrice, maxPrice, attributes } = {}) {
   return callMethod('sync_webshop.api.catalog.get_catalog', {
-    params: { item_group: itemGroup, search, page, page_size: pageSize, min_price: minPrice, max_price: maxPrice },
+    params: { 
+      item_group: itemGroup, 
+      search, 
+      page, 
+      page_size: pageSize, 
+      min_price: minPrice, 
+      max_price: maxPrice,
+      attributes: attributes ? JSON.stringify(attributes) : undefined
+    },
   })
 }
 
