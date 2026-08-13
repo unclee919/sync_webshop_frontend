@@ -38,6 +38,12 @@ export function getStorefrontProfiles() { return callMethod('sync_webshop.api.el
 export function getLoyaltyTiers() { return callMethod('sync_webshop.api.elite.get_loyalty_tiers') }
 export function getShopTheLook(itemCode, limit = 6) { return callMethod('sync_webshop.api.elite.get_shop_the_look', { params: { item_code: itemCode, limit } }) }
 export function getRegionalPaymentOptions() { return callMethod('sync_webshop.api.elite.get_regional_payment_options') }
+export function getMasterClassSettings() { return callMethod('sync_webshop.api.master_class.get_master_class_settings') }
+export function getSocialFeed(limit = 12) { return callMethod('sync_webshop.api.master_class.get_social_feed', { params: { limit } }) }
+export function getPersonalizedLanding(styleProfile, limit = 8) { return callMethod('sync_webshop.api.master_class.get_personalized_landing', { params: { style_profile: styleProfile, limit } }) }
+export function createSubscription({ customerEmail, itemCode, interval }) { return callMethod('sync_webshop.api.master_class.create_subscription', { method: 'POST', body: { customer_email: customerEmail, item_code: itemCode, interval } }) }
+export function getCustomerSubscriptions(customerEmail) { return callMethod('sync_webshop.api.master_class.get_customer_subscriptions', { params: { customer_email: customerEmail } }) }
+export function prepareCourierWaybill(orderName) { return callMethod('sync_webshop.api.master_class.prepare_courier_waybill', { method: 'POST', body: { order_name: orderName } }) }
 export function createRegionalPaymentSession({ gateway, amount, currency, orderReference }) { return callMethod('sync_webshop.api.elite.create_regional_payment_session', { method: 'POST', body: { gateway, amount, currency, order_reference: orderReference } }) }
 
 export function getCatalog({ itemGroup, search, page = 1, pageSize = 20, minPrice, maxPrice, attributes, styleProfile } = {}) {

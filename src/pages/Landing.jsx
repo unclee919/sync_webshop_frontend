@@ -13,6 +13,7 @@ import EliteStories from '../components/EliteStories'
 import EditorialCollectionRail from '../components/EditorialCollectionRail'
 import StyleQuiz from '../components/StyleQuiz'
 import './Landing.css'
+import { formatStorefrontPrice } from '../utils/currency'
 
 function ArrowIcon() { return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13" /><path d="m13 6 6 6-6 6" /></svg> }
 function PlusIcon() { return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg> }
@@ -63,7 +64,7 @@ function ProductCard({ item, content, lang, onAdd, onQuickView }) {
         <div className="product-rating"><span>★★★★★</span><small>({item.review_count || 0})</small></div>
         <div className="home-product-footer">
           <div className="home-product-price">
-            {price > 0 ? <><strong>{price.toFixed(2)} {item.currency}</strong>{oldPrice > price && <del>{oldPrice.toFixed(2)} {item.currency}</del>}</> : <strong>{t('On request', 'حسب الطلب')}</strong>}
+            {price > 0 ? <><strong>{formatStorefrontPrice(price, undefined, content)}</strong>{oldPrice > price && <del>{formatStorefrontPrice(oldPrice, undefined, content)}</del>}</> : <strong>{t('On request', 'حسب الطلب')}</strong>}
           </div>
           <button type="button" className="add-product-button" onClick={() => onAdd(item)} disabled={isUnavailable}>
             <PlusIcon /><span>{isUnavailable ? t('Unavailable', 'غير متوفر') : t(content.add_to_cart_text_en, content.add_to_cart_text_ar, 'Add')}</span>
@@ -95,6 +96,7 @@ export default function Landing() {
   const configuredSections = content?.landing_sections || []
   const trustBadges = content?.trust_badges || []
   const testimonials = content?.testimonials || []
+  const landingBuilder = content?.master_settings?.landing || {}
 
   useEffect(() => {
     if (banners.length <= 1) return
@@ -123,7 +125,7 @@ export default function Landing() {
 
   const sections = useMemo(() => configuredSections.length ? configuredSections : (fallbackItems.length ? [{ title_en: 'New arrivals', title_ar: 'وصل حديثاً', items: fallbackItems }] : []), [configuredSections, fallbackItems])
   const hero = banners[currentSlide]
-  const heroTitle = hero ? t(hero.title, hero.title_ar) : t(content?.hero_quote_en, content?.hero_quote_ar, 'Sync Webshop, made for everyday living.')
+  const heroTitle = hero ? t(hero.title, hero.title_ar) : (landingBuilder.enabled ? t(landingBuilder.hero_heading_en, landingBuilder.hero_heading_ar, t(content?.hero_quote_en, content?.hero_quote_ar, 'Sync Webshop, made for everyday living.')) : t(content?.hero_quote_en, content?.hero_quote_ar, 'Sync Webshop, made for everyday living.'))
   const heroSubtitle = hero ? t(hero.subtitle, hero.subtitle_ar) : t(content?.tagline_en, content?.tagline_ar, 'Everyday essentials, thoughtfully selected.')
 
   if (loading && !content) return <div className="landing-loading"><div className="loading-block loading-hero" /><div className="container loading-line" /><div className="container loading-grid" /></div>
@@ -150,7 +152,7 @@ export default function Landing() {
       <StyleQuiz />
 
             {categories.length > 0 && <section className="home-section container">
-        <div className="home-section-heading"><div><h2>{t(content?.best_categories_text_en, content?.best_categories_text_ar, 'Best Categories')}</h2></div><Link to="/products" className="section-view-all">{t(content?.view_all_text_en, content?.view_all_text_ar, 'View All')}<ArrowIcon /></Link></div>
+        <div className="home-section-heading"><div><h2>{landingBuilder.enabled ? t(landingBuilder.featured_grid_title_en, landingBuilder.featured_grid_title_ar, t(content?.best_categories_text_en, content?.best_categories_text_ar, 'Best Categories')) : t(content?.best_categories_text_en, content?.best_categories_text_ar, 'Best Categories')}</h2></div><Link to="/products" className="section-view-all">{t(content?.view_all_text_en, content?.view_all_text_ar, 'View All')}<ArrowIcon /></Link></div>
         <div className="category-rail">{categories.slice(0, 8).map((cat, i) => <Link key={i} to={`/products?category=${encodeURIComponent(cat.item_group)}`} className="category-tile"><div className="category-tile-image">{cat.image ? <img src={cat.image} alt="" /> : <span>{i+1}</span>}</div><div className="category-tile-copy"><h3>{t(cat.label_en, cat.label_ar, cat.item_group)}</h3><span>{t('Explore collection', 'استكشف المجموعة')} →</span></div></Link>)}</div>
       </section>}
 

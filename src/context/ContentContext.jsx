@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { getContent, getEliteSettings, getStorefrontProfiles } from '../api/client'
+import { getContent, getEliteSettings, getStorefrontProfiles, getMasterClassSettings } from '../api/client'
 
 const ContentContext = createContext(null)
 
@@ -14,6 +14,8 @@ const FONT_STACKS = {
 export const DEFAULT_CONTENT = {
   site_name: 'Sync Webshop',
   storefront_brands: [],
+  master_settings: { landing: { enabled: 0 }, subscriptions: { enabled: 0, discount_percent: 0, intervals: [] }, courier: { provider: 'Manual', auto_waybill: 0 }, returns: { allowed_days: 14 }, currencies: { auto_detect: 1, supported: ['SAR'], rates: {} }, social_feed: [] },
+  social_feed_items: [],
   business_profile: { vertical: 'General Retail', vertical_label_en: 'Thoughtfully selected', vertical_label_ar: 'مختارات بعناية', intro_en: 'Everyday essentials, thoughtfully selected.', intro_ar: 'احتياجاتك اليومية، مختارة بعناية.', unit_label_en: 'item', unit_label_ar: 'منتج' },
   elite_settings: { ai_vision: { visual_search_enabled: 1, auto_tagging_enabled: 1, nlp_enabled: 1 }, marketplaces: { amazon_sa_enabled: 0, noon_enabled: 0, sync_interval_minutes: 30 }, regional_payments: { tabby_enabled: 1, tamara_enabled: 1, mada_enabled: 1, apple_pay_enabled: 1 }, pwa: { pwa_enabled: 1, app_short_name: 'Sync Webshop', theme_color: '#173F3A', offline_message_en: 'You are currently offline.', offline_message_ar: 'أنت غير متصل بالإنترنت حالياً.' } },
   site_name_en: 'Sync Webshop',
@@ -106,6 +108,8 @@ function mergeContent(data) {
     experience_settings: { ...DEFAULT_CONTENT.experience_settings, ...(source.experience_settings || {}) },
     business_profile: { ...DEFAULT_CONTENT.business_profile, ...(source.business_profile || {}) },
     storefront_brands: Array.isArray(source.storefront_brands) ? source.storefront_brands : DEFAULT_CONTENT.storefront_brands,
+    master_settings: { ...DEFAULT_CONTENT.master_settings, ...(source.master_settings || {}), landing: { ...DEFAULT_CONTENT.master_settings.landing, ...(source.master_settings?.landing || {}) }, subscriptions: { ...DEFAULT_CONTENT.master_settings.subscriptions, ...(source.master_settings?.subscriptions || {}) }, courier: { ...DEFAULT_CONTENT.master_settings.courier, ...(source.master_settings?.courier || {}) }, returns: { ...DEFAULT_CONTENT.master_settings.returns, ...(source.master_settings?.returns || {}) }, currencies: { ...DEFAULT_CONTENT.master_settings.currencies, ...(source.master_settings?.currencies || {}) } },
+    social_feed_items: Array.isArray(source.social_feed_items) ? source.social_feed_items : DEFAULT_CONTENT.social_feed_items,
     elite_settings: {
       ...DEFAULT_CONTENT.elite_settings,
       ...(source.elite_settings || {}),
@@ -152,8 +156,8 @@ export function ContentProvider({ children }) {
   const loadContent = async () => {
     try {
       setLoading(true)
-      const [data, eliteSettings, storefrontProfiles] = await Promise.all([getContent(), getEliteSettings().catch(() => null), getStorefrontProfiles().catch(() => [])])
-      const nextContent = mergeContent({ ...data, elite_settings: eliteSettings || data?.elite_settings, storefront_brands: storefrontProfiles || data?.storefront_brands })
+      const [data, eliteSettings, storefrontProfiles, masterSettings] = await Promise.all([getContent(), getEliteSettings().catch(() => null), getStorefrontProfiles().catch(() => []), getMasterClassSettings().catch(() => null)])
+      const nextContent = mergeContent({ ...data, elite_settings: eliteSettings || data?.elite_settings, storefront_brands: storefrontProfiles || data?.storefront_brands, master_settings: masterSettings || data?.master_settings, social_feed_items: masterSettings?.social_feed || data?.social_feed_items })
       setContent(nextContent)
       applyThemeToDocument(nextContent.theme)
       setError(null)
