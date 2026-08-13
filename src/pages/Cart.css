@@ -133,6 +133,9 @@
 }
 
 /* Checkout Styles */
+.express-checkout-banner { display: flex; align-items: center; gap: .65rem; margin: 0 0 1.15rem; padding: .75rem 1rem; border: 1px solid color-mix(in srgb, var(--color-secondary) 35%, var(--color-border)); border-radius: var(--border-radius-sm); background: color-mix(in srgb, var(--color-secondary) 8%, var(--header-bg)); color: var(--color-primary); }
+.express-checkout-banner strong { font-size: .76rem; }
+.express-checkout-banner span { color: var(--color-text-muted); font-size: .7rem; }
 .checkout-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 400px);

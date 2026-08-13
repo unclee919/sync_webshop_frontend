@@ -1,9 +1,11 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { getCatalog, getItem, getRecommendations } from '../api/client'
 import { useCart } from '../context/CartContext'
 import { useContent } from '../context/ContentContext'
 import { useLanguage } from '../context/LanguageContext'
+import { useComparison } from '../context/ComparisonContext'
 import QuickView from '../components/QuickView'
 import SocialProof from '../components/SocialProof'
 import './Landing.css'
@@ -14,6 +16,7 @@ function HeartIcon() { return <svg viewBox="0 0 24 24" aria-hidden="true"><path 
 
 function ProductCard({ item, content, lang, onAdd, onQuickView }) {
   const isArabic = lang === 'ar'
+  const { add: addToCompare, remove: removeFromCompare, isCompared } = useComparison()
   const t = (en, ar, fallback = '') => (isArabic ? (ar || en || fallback) : (en || ar || fallback))
   const oldPrice = Number(item.old_price || 0)
   const price = Number(item.price || 0)
@@ -32,6 +35,7 @@ function ProductCard({ item, content, lang, onAdd, onQuickView }) {
         <div className="product-action-overlay">
           <button type="button" className="action-btn" onClick={() => onQuickView(item.item_code)}>👁</button>
         </div>
+        <button type="button" className={`product-compare-button ${isCompared(item.item_code) ? 'active' : ''}`} onClick={() => isCompared(item.item_code) ? removeFromCompare(item.item_code) : addToCompare(item)} aria-label={t('Compare product', 'مقارنة المنتج')}>⇄</button>
         <button type="button" className="product-favorite" onClick={() => {
           const saved = JSON.parse(localStorage.getItem('sync_webshop_wishlist') || '[]')
           const next = saved.some(s => s.item_code === item.item_code) ? saved.filter(s => s.item_code !== item.item_code) : [...saved, item]
@@ -65,6 +69,10 @@ export default function Landing() {
   const [recommendations, setRecommendations] = useState([])
   const [recentlyViewed, setRecentlyViewed] = useState([])
   const [quickViewCode, setQuickViewCode] = useState(null)
+  const heroRef = useRef(null)
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
+  const heroParallaxY = useTransform(scrollYProgress, [0, 1], [0, 80])
+  const heroCopyY = useTransform(scrollYProgress, [0, 1], [0, -24])
 
   const isArabic = lang === 'ar'
   const t = (en, ar, fallback = '') => (isArabic ? (ar || en || fallback) : (en || ar || fallback))
@@ -108,9 +116,10 @@ export default function Landing() {
 
   return (
     <div className={`landing-page ${isRtl ? 'rtl' : 'ltr'}`}>
-      <section className="home-hero" style={hero?.image ? { backgroundImage: `linear-gradient(90deg, rgba(10, 39, 34, 0.8) 0%, rgba(10, 39, 34, 0.4) 100%), url(${hero.image})` } : undefined}>
+      <motion.section ref={heroRef} className="home-hero" style={hero?.image ? { backgroundImage: 'none' } : undefined}>
+        {hero?.image && <motion.div className="hero-parallax-media" style={{ y: heroParallaxY, backgroundImage: `linear-gradient(90deg, rgba(10, 39, 34, 0.8) 0%, rgba(10, 39, 34, 0.4) 100%), url(${hero.image})` }} />}
         <div className="container hero-inner">
-          <div className="hero-copy">
+          <motion.div className="hero-copy" style={{ y: heroCopyY }}>
             <span className="hero-eyebrow">{t('Thoughtfully selected', 'مختارات بعناية')}</span>
             <h1>{heroTitle}</h1>
             <p>{heroSubtitle}</p>
@@ -118,9 +127,9 @@ export default function Landing() {
               <Link className="primary-button" to={hero?.link_url || '/products'}>{t(content?.shop_now_text_en, content?.shop_now_text_ar, 'Shop now')} <ArrowIcon /></Link>
               <Link className="text-button" to="/products">{t(content?.all_products_text_en, content?.all_products_text_ar, 'Explore all products')} <ArrowIcon /></Link>
             </div>
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
             {categories.length > 0 && <section className="home-section container">
         <div className="home-section-heading"><div><h2>{t(content?.best_categories_text_en, content?.best_categories_text_ar, 'Best Categories')}</h2></div><Link to="/products" className="section-view-all">{t(content?.view_all_text_en, content?.view_all_text_ar, 'View All')}<ArrowIcon /></Link></div>

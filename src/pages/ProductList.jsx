@@ -4,6 +4,7 @@ import { getCatalog, getCategories } from '../api/client'
 import { useLanguage } from '../context/LanguageContext'
 import { useCart } from '../context/CartContext'
 import { useContent } from '../context/ContentContext'
+import { useComparison } from '../context/ComparisonContext'
 import SEOHead from '../components/SEOHead'
 import QuickView from '../components/QuickView'
 import './Products.css'
@@ -14,6 +15,7 @@ export default function ProductList() {
   const { lang, isRtl } = useLanguage()
   const { addItem } = useCart()
   const { content } = useContent()
+  const { add: addToCompare, remove: removeFromCompare, isCompared } = useComparison()
   const [searchParams, setSearchParams] = useSearchParams()
   const category = searchParams.get('category') || undefined
   const page = Number(searchParams.get('page') || 1)
@@ -165,7 +167,7 @@ export default function ProductList() {
                       {item.image ? <img src={item.image} alt={item.item_name} /> : <div className="no-image-placeholder">{item.item_name?.slice(0, 1)}</div>}
                     </Link>
                     <div className="product-action-overlay">
-                      <button type="button" className="action-btn" onClick={() => setQuickViewCode(item.item_code)} aria-label={t('Quick View', 'عرض سريع')}>👁</button>
+                      <button type="button" className="action-btn" onClick={() => setQuickViewCode(item.item_code)} aria-label={t('Quick View', 'عرض سريع')}>👁</button><button type="button" className={`action-btn compare-action ${isCompared(item.item_code) ? 'active' : ''}`} onClick={() => isCompared(item.item_code) ? removeFromCompare(item.item_code) : addToCompare(item)} aria-label={t('Compare', 'مقارنة')}>⇄</button>
                     </div>
                   </div>
                   <div className="product-content-wrap">

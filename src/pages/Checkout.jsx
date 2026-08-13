@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements } from '@stripe/react-stripe-js'
 import { createOrder, createPaymobIntention, getCheckoutSettings, getTerritories, validateCoupon } from '../api/client'
@@ -13,6 +13,8 @@ export default function Checkout() {
   const { items, clear, total } = useCart()
   const { lang, isRtl } = useLanguage()
   const { content } = useContent()
+  const routerLocation = useLocation()
+  const isExpress = new URLSearchParams(routerLocation.search).get('express') === '1'
   const c = content || {}
 
   const [name, setName] = useState('')
@@ -48,6 +50,24 @@ export default function Checkout() {
   const shippingCost = shippingRule && total < Number(shippingRule.free_shipping_threshold || 0) ? Number(shippingRule.shipping_cost || 0) : 0
   const discount = Math.min(Number(coupon?.discount_amount || 0), total)
   const grandTotal = Math.max(0, total - discount) + shippingCost
+
+  useEffect(() => {
+    if (!isExpress) return
+    try {
+      const customer = JSON.parse(localStorage.getItem('sync_webshop_customer') || 'null')
+      const profile = customer?.customer || customer?.profile || customer
+      if (profile) {
+        setName(profile.full_name || profile.customer_name || profile.name || '')
+        setEmail(profile.email || profile.email_id || '')
+        setPhone(profile.phone || profile.mobile_no || '')
+        setSecondPhone(profile.second_phone || profile.secondary_phone || '')
+        setAddress(profile.address || profile.address_line1 || '')
+        setGovernorate(profile.governorate || profile.state || '')
+        setCity(profile.city || '')
+        setLocation(profile.location || profile.location_address || '')
+      }
+    } catch { /* ignore unavailable session data */ }
+  }, [isExpress])
 
   useEffect(() => {
     Promise.all([getCheckoutSettings(), getTerritories()]).then(([data, territoryRows]) => {
@@ -164,6 +184,7 @@ export default function Checkout() {
   return (
     <div className={`checkout-page container ${isRtl ? 'rtl' : 'ltr'}`}>
       <h1 className="page-title">{lang === 'ar' ? (c.checkout_title_ar || 'الدفع') : (c.checkout_title_en || 'Checkout')}</h1>
+      {isExpress && <div className="express-checkout-banner"><strong>{lang === 'ar' ? 'تجربة شراء سريعة' : 'Express checkout'}</strong><span>{lang === 'ar' ? 'تم تحميل بيانات حسابك المحفوظة لتسريع الطلب.' : 'Your saved account details are loaded to speed up this order.'}</span></div>}
       {settingsError && <div className="error-message" role="alert">{settingsError}</div>}
       <div className="checkout-grid">
         <div className="checkout-form-container">

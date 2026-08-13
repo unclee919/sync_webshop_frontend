@@ -11,6 +11,9 @@
   color: #fff;
 }
 .home-hero::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 80% 20%, rgba(230,184,92,0.2), transparent 28%); pointer-events: none; }
+.hero-parallax-media { position: absolute; inset: -7% 0; background-position: center; background-size: cover; will-change: transform; }
+.hero-parallax-media::after { content: ''; position: absolute; inset: 0; background: linear-gradient(115deg, rgba(3, 24, 20, .12), transparent 60%); }
+@media (prefers-reduced-motion: reduce) { .hero-parallax-media { transform: none !important; } }
 .hero-inner { position: relative; z-index: 1; min-height: var(--hero-height); display: flex; align-items: center; justify-content: space-between; gap: 3rem; padding-top: 4rem; padding-bottom: 4rem; }
 .hero-copy { max-width: 650px; }
 .hero-eyebrow { display: inline-flex; align-items: center; gap: 0.55rem; color: var(--color-accent); font-size: 0.74rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
@@ -75,6 +78,8 @@
 .sale-badge { background: var(--color-danger); color: #fff; }
 .new-badge { background: var(--color-accent); color: var(--color-primary); }
 .product-favorite { position: absolute; top: 0.65rem; inset-inline-end: 0.65rem; width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--color-border); border-radius: 50%; background: color-mix(in srgb, var(--header-bg) 88%, transparent); color: var(--color-primary); }
+.product-compare-button { position: absolute; inset-inline-start: 0.65rem; bottom: 0.65rem; z-index: 3; display: grid; width: 30px; height: 30px; place-items: center; border: 1px solid color-mix(in srgb, var(--color-border) 76%, transparent); border-radius: 50%; background: color-mix(in srgb, var(--header-bg) 88%, transparent); color: var(--color-primary); font-size: 0.9rem; font-weight: 900; box-shadow: var(--shadow-sm); transition: background var(--transition-base), color var(--transition-base), transform var(--transition-base); }
+.product-compare-button:hover, .product-compare-button.active { background: var(--color-secondary); color: #fff; transform: translateY(-2px); }
 .product-favorite:hover { background: var(--color-primary); color: #fff; }
 .product-favorite svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.55; stroke-linecap: round; stroke-linejoin: round; }
 .home-product-body { display: flex; flex: 1; flex-direction: column; padding: 0.95rem; }

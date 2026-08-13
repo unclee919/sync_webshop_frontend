@@ -5,6 +5,7 @@ import App from './App'
 import { CartProvider } from './context/CartContext'
 import { LanguageProvider } from './context/LanguageContext'
 import { ContentProvider } from './context/ContentContext'
+import { ComparisonProvider } from './context/ComparisonContext'
 import './index.css'
 
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
@@ -18,9 +19,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <LanguageProvider>
       <ContentProvider>
         <CartProvider>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
+          <ComparisonProvider>
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
+          </ComparisonProvider>
         </CartProvider>
       </ContentProvider>
     </LanguageProvider>

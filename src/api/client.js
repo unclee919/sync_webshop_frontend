@@ -29,6 +29,8 @@ async function callMethod(path, { method = 'GET', params, body, apiKey, apiSecre
   return data?.message
 }
 
+export function apiCall(path, body = {}) { return callMethod(path, { method: 'POST', body }) }
+
 export function getTheme() { return callMethod('sync_webshop.api.theme.get_theme') }
 export function getContent() { return callMethod('sync_webshop.api.content.get_content') }
 

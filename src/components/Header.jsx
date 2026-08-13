@@ -5,6 +5,7 @@ import { useLanguage } from '../context/LanguageContext'
 import { useCart } from '../context/CartContext'
 import { getCategories, getSearchSuggestions } from '../api/client'
 import VoiceSearch from './VoiceSearch'
+import BrandSwitcher from './BrandSwitcher'
 import './Header.css'
 
 function SearchIcon() { return <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></svg> }
@@ -94,6 +95,7 @@ export default function Header({ onOpenCart }) {
           <Link to="/" className="brand-mark">
             {logo ? <img src={logo} alt={siteName} /> : <><span className="brand-symbol">S</span><span className="brand-copy"><strong>{siteName}</strong><small>{t(content.tagline_en, content.tagline_ar, 'Everyday essentials, thoughtfully selected.')}</small></span></>}
           </Link>
+          <BrandSwitcher />
 
           <div className="header-search" ref={searchRef}>
             <form className="search-form" onSubmit={handleSearch}>
