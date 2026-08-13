@@ -13,6 +13,7 @@ import EliteStories from '../components/EliteStories'
 import EditorialCollectionRail from '../components/EditorialCollectionRail'
 import StyleQuiz from '../components/StyleQuiz'
 import EnterpriseExperience from '../components/EnterpriseExperience'
+import AutonomousEcosystem from '../components/AutonomousEcosystem'
 import './Landing.css'
 import { formatStorefrontPrice } from '../utils/currency'
 
@@ -152,6 +153,7 @@ export default function Landing() {
       <EditorialCollectionRail collections={content?.editorial_collections || []} />
       <StyleQuiz />
       <EnterpriseExperience />
+      <AutonomousEcosystem />
 
             {categories.length > 0 && <section className="home-section container">
         <div className="home-section-heading"><div><h2>{landingBuilder.enabled ? t(landingBuilder.featured_grid_title_en, landingBuilder.featured_grid_title_ar, t(content?.best_categories_text_en, content?.best_categories_text_ar, 'Best Categories')) : t(content?.best_categories_text_en, content?.best_categories_text_ar, 'Best Categories')}</h2></div><Link to="/products" className="section-view-all">{t(content?.view_all_text_en, content?.view_all_text_ar, 'View All')}<ArrowIcon /></Link></div>

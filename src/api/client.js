@@ -48,6 +48,10 @@ export function getFlashSaleItems(limit = 12) { return callMethod('sync_webshop.
 export function getFitPrediction({ itemCode, height, weight, roomWidth, roomDepth }) { return callMethod('sync_webshop.api.enterprise.get_fit_prediction', { params: { item_code: itemCode, height, weight, room_width: roomWidth, room_depth: roomDepth } }) }
 export function getEnterpriseAnalytics() { return callMethod('sync_webshop.api.enterprise.get_enterprise_analytics') }
 export function evaluateOrderRisk({ orderName, amount, paymentAttempts }) { return callMethod('sync_webshop.api.enterprise.evaluate_order_risk', { method: 'POST', body: { order_name: orderName, amount, payment_attempts: paymentAttempts } }) }
+export function getEcosystemSettings() { return callMethod('sync_webshop.api.ecosystem.get_ecosystem_settings') }
+export function ragSupportQuery(question) { return callMethod('sync_webshop.api.ecosystem.rag_support_query', { params: { question } }) }
+export function getBranches() { return callMethod('sync_webshop.api.ecosystem.get_branches') }
+export function redeemGiftCard(code) { return callMethod('sync_webshop.api.ecosystem.redeem_gift_card', { method: 'POST', body: { code } }) }
 export function getMasterClassSettings() { return callMethod('sync_webshop.api.master_class.get_master_class_settings') }
 export function getSocialFeed(limit = 12) { return callMethod('sync_webshop.api.master_class.get_social_feed', { params: { limit } }) }
 export function getPersonalizedLanding(styleProfile, limit = 8) { return callMethod('sync_webshop.api.master_class.get_personalized_landing', { params: { style_profile: styleProfile, limit } }) }
