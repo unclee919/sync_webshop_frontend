@@ -3,18 +3,12 @@ import { createContext, useContext, useState, useEffect } from 'react'
 const LanguageContext = createContext(null)
 
 export function LanguageProvider({ children }) {
-  const [lang, setLang] = useState(localStorage.getItem('lang') || 'en')
+  const [lang, setLang] = useState(() => localStorage.getItem('lang') || 'en')
 
   useEffect(() => {
-    const currentLang = localStorage.getItem('lang')
-    if (currentLang && currentLang !== lang) {
-      localStorage.setItem('lang', lang)
-      window.location.reload()
-    } else {
-      localStorage.setItem('lang', lang)
-      document.documentElement.lang = lang
-      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'
-    }
+    localStorage.setItem('lang', lang)
+    document.documentElement.lang = lang
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'
   }, [lang])
 
   const toggleLang = () => setLang((l) => (l === 'en' ? 'ar' : 'en'))

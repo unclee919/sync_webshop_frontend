@@ -57,3 +57,7 @@
   color: #F8FAFC !important;
   border-color: #334155 !important;
 }
+
+@media (max-width: 768px) {
+  .dark-mode-float { display: none; }
+}

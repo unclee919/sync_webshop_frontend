@@ -28,6 +28,12 @@ export default function AiChatWidget() {
   }), [isArabic])
 
   useEffect(() => {
+    function handleOpenRequest() { setOpen(true) }
+    window.addEventListener('sync:open-ai-chat', handleOpenRequest)
+    return () => window.removeEventListener('sync:open-ai-chat', handleOpenRequest)
+  }, [])
+
+  useEffect(() => {
     getAiChatSettings().then((data) => {
       setSettings(data)
       const deskGreeting = lang === 'ar' ? eliteNlp.welcome_message_ar : eliteNlp.welcome_message_en

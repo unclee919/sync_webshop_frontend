@@ -67,6 +67,7 @@
 
 /* Mobile adjustments */
 @media (max-width: 768px) {
+  .floating-buttons { display: none; }
   .floating-buttons {
     bottom: 16px;
     right: 16px;

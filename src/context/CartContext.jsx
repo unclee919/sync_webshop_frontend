@@ -2,18 +2,44 @@ import { createContext, useContext, useMemo, useState, useEffect } from 'react'
 
 const CartContext = createContext(null)
 
+function isPurchasable(item) {
+  const price = Number(item?.price)
+  return Boolean(item?.item_code) && Number.isFinite(price) && price > 0 && Number(item?.qty || 0) > 0
+}
+
+function normalizeCart(items) {
+  if (!Array.isArray(items)) return []
+  return items
+    .filter(isPurchasable)
+    .map((item) => ({ ...item, price: Number(item.price), qty: Math.max(1, Number(item.qty) || 1) }))
+}
+
 export function CartProvider({ children }) {
   const [toast, setToast] = useState(null)
   const [items, setItems] = useState(() => {
     const saved = localStorage.getItem('sync_webshop_cart')
-    return saved ? JSON.parse(saved) : []
+    try {
+      return normalizeCart(saved ? JSON.parse(saved) : [])
+    } catch {
+      return []
+    }
   })
 
   useEffect(() => {
-    localStorage.setItem('sync_webshop_cart', JSON.stringify(items))
+    const normalized = normalizeCart(items)
+    if (normalized.length !== items.length || normalized.some((item, index) => item.item_code !== items[index]?.item_code || item.qty !== items[index]?.qty)) {
+      setItems(normalized)
+      return
+    }
+    localStorage.setItem('sync_webshop_cart', JSON.stringify(normalized))
   }, [items])
 
   function addItem(item, qty = 1) {
+    if (!isPurchasable({ ...item, qty })) {
+      setToast({ message: 'This item is not currently available for purchase.', type: 'error' })
+      setTimeout(() => setToast(null), 3000)
+      return
+    }
     setItems((prev) => {
       const existing = prev.find((i) => i.item_code === item.item_code)
       if (existing) {
@@ -21,9 +47,9 @@ export function CartProvider({ children }) {
           i.item_code === item.item_code ? { ...i, qty: i.qty + qty } : i
         )
       }
-      return [...prev, { ...item, qty }]
+      return [...prev, { ...item, price: Number(item.price), qty: Math.max(1, Number(qty) || 1) }]
     })
-    setToast({ message: `${item.item_name} added to cart`, type: "success" })
+    setToast({ message: `${item.item_name} added to cart`, type: 'success' })
     setTimeout(() => setToast(null), 3000)
   }
 

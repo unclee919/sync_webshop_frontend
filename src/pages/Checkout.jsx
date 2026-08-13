@@ -9,7 +9,11 @@ import { useContent } from '../context/ContentContext'
 import StripePaymentForm from '../components/StripePaymentForm'
 import GiftOptions from '../components/GiftOptions'
 import { formatStorefrontPrice } from '../utils/currency'
+import SearchableSelect from '../components/SearchableSelect'
 import './Cart.css'
+
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const phonePattern = /^[+0-9 ()-]{7,}$/
 
 export default function Checkout() {
   const { items, clear, total } = useCart()
@@ -44,6 +48,7 @@ export default function Checkout() {
   const [submitting, setSubmitting] = useState(false)
   const [loading, setLoading] = useState(true)
   const [settingsError, setSettingsError] = useState(null)
+  const [contactTouched, setContactTouched] = useState(false)
   const [giftOptions, setGiftOptions] = useState({ wrap: false, message: '' })
   const [regionalPaymentOptions, setRegionalPaymentOptions] = useState([])
 
@@ -58,6 +63,9 @@ export default function Checkout() {
   const shippingCost = shippingRule && total < Number(shippingRule.free_shipping_threshold || 0) ? Number(shippingRule.shipping_cost || 0) : 0
   const discount = Math.min(Number(coupon?.discount_amount || 0), total)
   const grandTotal = Math.max(0, total - discount) + shippingCost
+  const emailIsValid = emailPattern.test(email.trim())
+  const phoneIsValid = phonePattern.test(phone.trim())
+  const secondPhoneIsValid = !requireSecondPhone || phonePattern.test(secondPhone.trim())
 
   useEffect(() => {
     if (!isExpress) return
@@ -172,6 +180,15 @@ export default function Checkout() {
 
   async function handleSubmit(event) {
     event?.preventDefault()
+    setContactTouched(true)
+    if (!emailIsValid || !phoneIsValid || !secondPhoneIsValid) {
+      setError(lang === 'ar' ? 'يرجى إدخال بريد إلكتروني ورقم هاتف صالحين.' : 'Please enter a valid email address and phone number.')
+      return
+    }
+    if (requireTerritory && (!governorate || !city)) {
+      setError(lang === 'ar' ? 'يرجى اختيار المحافظة والمدينة.' : 'Please select a governorate and city.')
+      return
+    }
     if (paymentMethod === 'cod') await handleConfirmOrder()
     else if (paymentMethod === 'paymob') await handlePaymobOrder()
     else if (paymentMethod === 'stripe') setError(lang === 'ar' ? 'يرجى استخدام زر الدفع بعد إدخال بيانات البطاقة.' : 'Use the card payment button after entering your card details.')
@@ -205,9 +222,9 @@ export default function Checkout() {
             <section className="checkout-section">
               <h2 className="section-title-small">{lang === 'ar' ? 'معلومات الشحن' : 'Shipping Information'}</h2>
               <div className="form-group"><label>{lang === 'ar' ? 'الاسم الكامل' : 'Full Name'}</label><input required value={name} onChange={(event) => setName(event.target.value)} /></div>
-              <div className="form-row"><div className="form-group"><label>{lang === 'ar' ? 'البريد الإلكتروني' : 'Email'}</label><input type="email" required value={email} onChange={(event) => setEmail(event.target.value)} /></div><div className="form-group"><label>{lang === 'ar' ? 'رقم الهاتف الأساسي' : 'Primary Phone'}</label><input required value={phone} onChange={(event) => setPhone(event.target.value)} /></div></div>
-              <div className="form-group"><label>{lang === 'ar' ? 'رقم هاتف إضافي' : 'Second Phone Number'}{requireSecondPhone ? ' *' : ''}</label><input required={requireSecondPhone} value={secondPhone} onChange={(event) => setSecondPhone(event.target.value)} /></div>
-              <div className="form-row"><div className="form-group"><label>{lang === 'ar' ? 'المحافظة' : 'Governorate'}{requireTerritory ? ' *' : ''}</label><select required={requireTerritory} value={governorate} onChange={(event) => { setGovernorate(event.target.value); setCity('') }}><option value="">{lang === 'ar' ? 'اختر المحافظة' : 'Select governorate'}</option>{territories.map((row) => <option key={row.governorate} value={row.governorate}>{row.governorate}</option>)}</select></div><div className="form-group"><label>{lang === 'ar' ? 'المدينة' : 'City'}{requireTerritory ? ' *' : ''}</label><select required={requireTerritory} value={city} onChange={(event) => setCity(event.target.value)} disabled={!governorate}><option value="">{lang === 'ar' ? 'اختر المدينة' : 'Select city'}</option>{cities.map((cityName) => <option key={cityName} value={cityName}>{cityName}</option>)}</select></div></div>
+              <div className="form-row"><div className="form-group"><label>{lang === 'ar' ? 'البريد الإلكتروني' : 'Email'}</label><input type="email" required inputMode="email" value={email} onChange={(event) => setEmail(event.target.value)} onBlur={() => setContactTouched(true)} aria-invalid={contactTouched && !emailIsValid} />{contactTouched && !emailIsValid && <p className="field-error">{lang === 'ar' ? 'أدخل بريداً إلكترونياً صالحاً.' : 'Enter a valid email address.'}</p>}</div><div className="form-group"><label>{lang === 'ar' ? 'رقم الهاتف الأساسي' : 'Primary Phone'}</label><input required pattern="[+0-9 ()-]{7,}" inputMode="tel" value={phone} onChange={(event) => setPhone(event.target.value)} onBlur={() => setContactTouched(true)} aria-invalid={contactTouched && !phoneIsValid} />{contactTouched && !phoneIsValid && <p className="field-error">{lang === 'ar' ? 'أدخل رقم هاتف صالحاً.' : 'Enter a valid phone number.'}</p>}</div></div>
+              <div className="form-group"><label>{lang === 'ar' ? 'رقم هاتف إضافي' : 'Second Phone Number'}{requireSecondPhone ? ' *' : ''}</label><input required={requireSecondPhone} pattern="[+0-9 ()-]{7,}" inputMode="tel" value={secondPhone} onChange={(event) => setSecondPhone(event.target.value)} onBlur={() => setContactTouched(true)} aria-invalid={contactTouched && !secondPhoneIsValid} />{contactTouched && !secondPhoneIsValid && <p className="field-error">{lang === 'ar' ? 'أدخل رقم الهاتف الإضافي.' : 'Enter the second phone number.'}</p>}</div>
+              <div className="form-row"><div className="form-group"><SearchableSelect label={lang === 'ar' ? 'المحافظة' : 'Governorate'} value={governorate} options={territories.map((row) => row.governorate)} placeholder={lang === 'ar' ? 'اختر المحافظة' : 'Select governorate'} required={requireTerritory} isRtl={isRtl} onChange={(value) => { setGovernorate(value); setCity('') }} /></div><div className="form-group"><SearchableSelect label={lang === 'ar' ? 'المدينة' : 'City'} value={city} options={cities} placeholder={lang === 'ar' ? 'اختر المدينة' : 'Select city'} required={requireTerritory} disabled={!governorate} isRtl={isRtl} onChange={setCity} /></div></div>
               <div className="form-group"><label>{lang === 'ar' ? 'العنوان بالتفصيل' : 'Detailed Address'}</label><textarea required value={address} onChange={(event) => setAddress(event.target.value)} rows="2" /></div>
               <div className="form-group"><label>{lang === 'ar' ? 'موقع إضافي (اختياري)' : 'Optional Location'}</label><input value={location} onChange={(event) => setLocation(event.target.value)} placeholder={lang === 'ar' ? 'رابط خرائط أو علامة مميزة' : 'Map link or nearby landmark'} /></div>
             </section>
