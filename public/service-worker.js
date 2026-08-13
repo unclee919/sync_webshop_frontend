@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sync-webshop-static-v1'
+const CACHE_NAME = 'sync-webshop-static-v2'
 const STATIC_ASSETS = ['/', '/manifest.webmanifest']
 
 self.addEventListener('install', (event) => {
@@ -14,13 +14,22 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url)
   if (request.method !== 'GET' || url.pathname.startsWith('/api/') || url.pathname.startsWith('/files/')) return
 
-  event.respondWith(
-    caches.match(request).then((cached) => cached || fetch(request).then((response) => {
+  if (request.mode === 'navigate') {
+    event.respondWith(fetch(request).then((response) => {
       if (response.ok && url.origin === self.location.origin) {
         const copy = response.clone()
-        caches.open(CACHE_NAME).then((cache) => cache.put(request, copy))
+        caches.open(CACHE_NAME).then((cache) => cache.put('/', copy))
       }
       return response
-    }).catch(() => caches.match('/'))),
-  )
+    }).catch(() => caches.match('/')))
+    return
+  }
+
+  event.respondWith(caches.match(request).then((cached) => cached || fetch(request).then((response) => {
+    if (response.ok && url.origin === self.location.origin) {
+      const copy = response.clone()
+      caches.open(CACHE_NAME).then((cache) => cache.put(request, copy))
+    }
+    return response
+  }).catch(() => caches.match('/'))))
 })
