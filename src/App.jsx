@@ -38,13 +38,16 @@ export default function App() {
 
   useEffect(() => {
     const enableEnhancements = () => setEnhancementsReady(true)
-    if ('requestIdleCallback' in window) {
-      const id = window.requestIdleCallback(enableEnhancements, { timeout: 3000 })
-      return () => window.cancelIdleCallback?.(id)
+    const timer = window.setTimeout(enableEnhancements, 5000)
+    const onInteraction = () => enableEnhancements()
+    window.addEventListener('pointerdown', onInteraction, { once: true, passive: true })
+    window.addEventListener('keydown', onInteraction, { once: true })
+    return () => {
+      window.clearTimeout(timer)
+      window.removeEventListener('pointerdown', onInteraction)
+      window.removeEventListener('keydown', onInteraction)
     }
-    const timer = window.setTimeout(enableEnhancements, 2200)
-    return () => window.clearTimeout(timer)
   }, [])
 
-  return <div className="app-wrapper"><SEOHead /><Header onOpenCart={() => setMiniCartOpen(true)} /><main className="main-content page-transition"><Suspense fallback={<div className="container route-loading" role="status">Loading…</div>}><Routes><Route path="/" element={<Landing />} /><Route path="/products" element={<ProductList />} /><Route path="/products/:itemCode" element={<ProductDetail />} /><Route path="/wishlist" element={<Wishlist />} /><Route path="/contact-us" element={<SiteInfo />} /><Route path="/cart" element={<Cart />} /><Route path="/checkout" element={<Checkout />} /><Route path="/dashboard" element={<Dashboard />} /><Route path="/track" element={<OrderTracking />} /><Route path="/features" element={<Features />} /><Route path="/collections/:slug" element={<CollectionStoryteller />} /><Route path="/about-us" element={<AboutPage />} /><Route path="/our-policy" element={<PolicyPage />} /><Route path="/articles" element={<ArticlesPage />} /><Route path="/articles/:route" element={<ArticleDetailPage />} /><Route path="/qa" element={<QaPage />} /></Routes></Suspense></main><Footer />{enhancementsReady && <Suspense fallback={null}><FloatingButtons /><AiChatWidget /><DarkModeToggle /><MiniCart open={miniCartOpen} onClose={() => setMiniCartOpen(false)} /><SocialProof /><ComparisonTray /><MobileQuickActions onOpenCart={() => setMiniCartOpen(true)} /><UnifiedFloatingActions onOpenCart={() => setMiniCartOpen(true)} /><SharedTransitionOverlay /><MagneticCursor /><ExpressCheckoutBar /></Suspense>}</div>
+  return <div className="app-wrapper"><SEOHead /><Header onOpenCart={() => setMiniCartOpen(true)} /><main className="main-content"><Suspense fallback={<div className="container route-loading" role="status">Loading…</div>}><Routes><Route path="/" element={<Landing />} /><Route path="/products" element={<ProductList />} /><Route path="/products/:itemCode" element={<ProductDetail />} /><Route path="/wishlist" element={<Wishlist />} /><Route path="/contact-us" element={<SiteInfo />} /><Route path="/cart" element={<Cart />} /><Route path="/checkout" element={<Checkout />} /><Route path="/dashboard" element={<Dashboard />} /><Route path="/track" element={<OrderTracking />} /><Route path="/features" element={<Features />} /><Route path="/collections/:slug" element={<CollectionStoryteller />} /><Route path="/about-us" element={<AboutPage />} /><Route path="/our-policy" element={<PolicyPage />} /><Route path="/articles" element={<ArticlesPage />} /><Route path="/articles/:route" element={<ArticleDetailPage />} /><Route path="/qa" element={<QaPage />} /></Routes></Suspense></main><Footer />{enhancementsReady && <Suspense fallback={null}><FloatingButtons /><AiChatWidget /><DarkModeToggle /><MiniCart open={miniCartOpen} onClose={() => setMiniCartOpen(false)} /><SocialProof /><ComparisonTray /><MobileQuickActions onOpenCart={() => setMiniCartOpen(true)} /><UnifiedFloatingActions onOpenCart={() => setMiniCartOpen(true)} /><SharedTransitionOverlay /><MagneticCursor /><ExpressCheckoutBar /></Suspense>}</div>
 }

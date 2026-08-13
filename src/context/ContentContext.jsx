@@ -193,8 +193,7 @@ export function ContentProvider({ children }) {
         applyThemeToDocument(nextContent.theme)
       }
       const scheduleEnrichment = () => enrich().catch(() => {})
-      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) window.requestIdleCallback(scheduleEnrichment, { timeout: 1800 })
-      else window.setTimeout(scheduleEnrichment, 800)
+      if (typeof window !== 'undefined') window.setTimeout(scheduleEnrichment, 5000)
     } catch (err) {
       console.error('Failed to fetch content:', err)
       setError(err.message)

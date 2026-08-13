@@ -112,12 +112,15 @@ export default function Landing() {
 
   useEffect(() => {
     const enable = () => setBelowFoldReady(true)
-    if ('requestIdleCallback' in window) {
-      const id = window.requestIdleCallback(enable, { timeout: 1800 })
-      return () => window.cancelIdleCallback?.(id)
+    const timer = window.setTimeout(enable, 5000)
+    const onInteraction = () => enable()
+    window.addEventListener('scroll', onInteraction, { once: true, passive: true })
+    window.addEventListener('pointerdown', onInteraction, { once: true, passive: true })
+    return () => {
+      window.clearTimeout(timer)
+      window.removeEventListener('scroll', onInteraction)
+      window.removeEventListener('pointerdown', onInteraction)
     }
-    const timer = window.setTimeout(enable, 900)
-    return () => window.clearTimeout(timer)
   }, [])
 
   useEffect(() => {
