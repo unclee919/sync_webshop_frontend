@@ -139,7 +139,7 @@ export default function Header({ onOpenCart }) {
             <span /><span /><span />
           </button>
           <Link to="/" className="brand-mark">
-            {logo ? <img src={logo} alt={siteName} /> : <><span className="brand-symbol">S</span><span className="brand-copy"><strong>{siteName}</strong><small>{t(content.tagline_en, content.tagline_ar, 'Everyday essentials, thoughtfully selected.')}</small></span></>}
+            {logo ? <img src={logo} alt={siteName} width="190" height="52" decoding="async" /> : <><span className="brand-symbol">S</span><span className="brand-copy"><strong>{siteName}</strong><small>{t(content.tagline_en, content.tagline_ar, 'Everyday essentials, thoughtfully selected.')}</small></span></>}
           </Link>
           <BrandSwitcher />
 

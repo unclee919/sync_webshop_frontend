@@ -8,14 +8,14 @@ import { useContent } from '../context/ContentContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useComparison } from '../context/ComparisonContext'
 import { useUltraExperience } from '../context/UltraExperienceContext'
-import QuickView from '../components/QuickView'
-import SocialProof from '../components/SocialProof'
-import EliteStories from '../components/EliteStories'
-import EditorialCollectionRail from '../components/EditorialCollectionRail'
-import StyleQuiz from '../components/StyleQuiz'
-import MasterTierHotspots from '../components/MasterTierHotspots'
-import EnterpriseExperience from '../components/EnterpriseExperience'
-import AutonomousEcosystem from '../components/AutonomousEcosystem'
+const QuickView = lazy(() => import('../components/QuickView'))
+const SocialProof = lazy(() => import('../components/SocialProof'))
+const EliteStories = lazy(() => import('../components/EliteStories'))
+const EditorialCollectionRail = lazy(() => import('../components/EditorialCollectionRail'))
+const StyleQuiz = lazy(() => import('../components/StyleQuiz'))
+const MasterTierHotspots = lazy(() => import('../components/MasterTierHotspots'))
+const EnterpriseExperience = lazy(() => import('../components/EnterpriseExperience'))
+const AutonomousEcosystem = lazy(() => import('../components/AutonomousEcosystem'))
 const LuxuryLiveSocial = lazy(() => import('../components/LuxuryLiveSocial'))
 import './Landing.css'
 import { formatStorefrontPrice } from '../utils/currency'
@@ -93,6 +93,7 @@ export default function Landing() {
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
   const heroParallaxY = useTransform(scrollYProgress, [0, 1], [0, 80])
   const heroCopyY = useTransform(scrollYProgress, [0, 1], [0, -24])
+  const [belowFoldReady, setBelowFoldReady] = useState(false)
 
   const isArabic = lang === 'ar'
   const t = (en, ar, fallback = '') => (isArabic ? (ar || en || fallback) : (en || ar || fallback))
@@ -108,6 +109,16 @@ export default function Landing() {
     const timer = setInterval(() => setCurrentSlide(s => (s + 1) % banners.length), 5500)
     return () => clearInterval(timer)
   }, [banners.length])
+
+  useEffect(() => {
+    const enable = () => setBelowFoldReady(true)
+    if ('requestIdleCallback' in window) {
+      const id = window.requestIdleCallback(enable, { timeout: 1800 })
+      return () => window.cancelIdleCallback?.(id)
+    }
+    const timer = window.setTimeout(enable, 900)
+    return () => window.clearTimeout(timer)
+  }, [])
 
   useEffect(() => {
     if (configuredSections.length > 0) return
@@ -153,13 +164,15 @@ export default function Landing() {
         </div>
       </motion.section>
 
-      <EliteStories content={content} />
-      <EditorialCollectionRail collections={content?.editorial_collections || []} />
-      <StyleQuiz />
-      <MasterTierHotspots />
-      <EnterpriseExperience />
-      <AutonomousEcosystem />
-      <Suspense fallback={null}><LuxuryLiveSocial /></Suspense>
+      {belowFoldReady && <Suspense fallback={null}>
+        <EliteStories content={content} />
+        <EditorialCollectionRail collections={content?.editorial_collections || []} />
+        <StyleQuiz />
+        <MasterTierHotspots />
+        <EnterpriseExperience />
+        <AutonomousEcosystem />
+        <LuxuryLiveSocial />
+      </Suspense>}
 
             {categories.length > 0 && <section className="home-section container">
         <div className="home-section-heading"><div><h2>{landingBuilder.enabled ? t(landingBuilder.featured_grid_title_en, landingBuilder.featured_grid_title_ar, t(content?.best_categories_text_en, content?.best_categories_text_ar, 'Best Categories')) : t(content?.best_categories_text_en, content?.best_categories_text_ar, 'Best Categories')}</h2></div><Link to="/products" className="section-view-all">{t(content?.view_all_text_en, content?.view_all_text_ar, 'View All')}<ArrowIcon /></Link></div>
@@ -177,8 +190,8 @@ export default function Landing() {
 
       {testimonials.length > 0 && <section className="home-section container"><div className="home-section-heading"><div><h2>{t('What our customers say', 'ماذا يقول عملاؤنا')}</h2></div></div><div className="testimonial-grid">{testimonials.slice(0, 3).map((item, index) => <article className="testimonial-card" key={index}><blockquote>“{t(item.quote_en, item.quote_ar)}”</blockquote><footer><strong>{item.author}</strong><span>{item.author_title}</span></footer></article>)}</div></section>}
 
-      <SocialProof showFeed />
-      {quickViewCode && <QuickView itemCode={quickViewCode} onClose={() => setQuickViewCode(null)} />}
+      {belowFoldReady && <Suspense fallback={null}><SocialProof showFeed /></Suspense>}
+      {quickViewCode && <Suspense fallback={null}><QuickView itemCode={quickViewCode} onClose={() => setQuickViewCode(null)} /></Suspense>}
     </div>
   )
 }

@@ -14,7 +14,7 @@ const MagneticCursor = lazy(() => import('./components/MagneticCursor'))
 const ExpressCheckoutBar = lazy(() => import('./components/ExpressCheckoutBar'))
 const UnifiedFloatingActions = lazy(() => import('./components/UnifiedFloatingActions'))
 import SEOHead from './components/SEOHead'
-const Landing = lazy(() => import('./pages/Landing'))
+import Landing from './pages/Landing'
 const ProductList = lazy(() => import('./pages/ProductList'))
 const ProductDetail = lazy(() => import('./pages/ProductDetail'))
 const Cart = lazy(() => import('./pages/Cart'))

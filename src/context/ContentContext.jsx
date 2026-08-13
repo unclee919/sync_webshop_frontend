@@ -166,16 +166,38 @@ export function ContentProvider({ children }) {
   const loadContent = async () => {
     try {
       setLoading(true)
-      const [data, eliteSettings, storefrontProfiles, masterSettings, enterpriseSettings, ecosystemSettings, dynamicPages, masterTier, luxurySettings, liveSessions, socialPulse, communityWall] = await Promise.all([getContent(), getEliteSettings().catch(() => null), getStorefrontProfiles().catch(() => []), getMasterClassSettings().catch(() => null), getEnterpriseSettings().catch(() => null), getEcosystemSettings().catch(() => null), getDynamicPageSettings().catch(() => null), getMasterTierSettings().catch(() => null), getLuxurySettings().catch(() => null), getLiveSessions().catch(() => []), getSocialPulse().catch(() => []), getCommunityWall().catch(() => [])])
-      const nextContent = mergeContent({ ...data, elite_settings: eliteSettings || data?.elite_settings, storefront_brands: storefrontProfiles || data?.storefront_brands, master_settings: masterSettings || data?.master_settings, social_feed_items: masterSettings?.social_feed || data?.social_feed_items, enterprise_settings: enterpriseSettings || data?.enterprise_settings, ecosystem_settings: ecosystemSettings || data?.ecosystem_settings, dynamic_pages: dynamicPages || data?.dynamic_pages, master_tier: masterTier || data?.master_tier, luxury_tier: { ...(luxurySettings || data?.luxury_tier), live_sessions: liveSessions || [], social_pulse: socialPulse || [], community_wall: communityWall || [] } })
-      setContent(nextContent)
-      applyThemeToDocument(nextContent.theme)
+      const data = await getContent()
+      const baseContent = mergeContent(data)
+      setContent(baseContent)
+      applyThemeToDocument(baseContent.theme)
       setError(null)
+      setLoading(false)
+
+      const enrich = async () => {
+        const [eliteSettings, storefrontProfiles, masterSettings, enterpriseSettings, ecosystemSettings, dynamicPages, masterTier, luxurySettings, liveSessions, socialPulse, communityWall] = await Promise.all([
+          getEliteSettings().catch(() => null),
+          getStorefrontProfiles().catch(() => []),
+          getMasterClassSettings().catch(() => null),
+          getEnterpriseSettings().catch(() => null),
+          getEcosystemSettings().catch(() => null),
+          getDynamicPageSettings().catch(() => null),
+          getMasterTierSettings().catch(() => null),
+          getLuxurySettings().catch(() => null),
+          getLiveSessions().catch(() => []),
+          getSocialPulse().catch(() => []),
+          getCommunityWall().catch(() => []),
+        ])
+        const nextContent = mergeContent({ ...data, elite_settings: eliteSettings || data?.elite_settings, storefront_brands: storefrontProfiles || data?.storefront_brands, master_settings: masterSettings || data?.master_settings, social_feed_items: masterSettings?.social_feed || data?.social_feed_items, enterprise_settings: enterpriseSettings || data?.enterprise_settings, ecosystem_settings: ecosystemSettings || data?.ecosystem_settings, dynamic_pages: dynamicPages || data?.dynamic_pages, master_tier: masterTier || data?.master_tier, luxury_tier: { ...(luxurySettings || data?.luxury_tier), live_sessions: liveSessions || [], social_pulse: socialPulse || [], community_wall: communityWall || [] } })
+        setContent(nextContent)
+        applyThemeToDocument(nextContent.theme)
+      }
+      const scheduleEnrichment = () => enrich().catch(() => {})
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) window.requestIdleCallback(scheduleEnrichment, { timeout: 1800 })
+      else window.setTimeout(scheduleEnrichment, 800)
     } catch (err) {
       console.error('Failed to fetch content:', err)
       setError(err.message)
       applyThemeToDocument(DEFAULT_CONTENT.theme)
-    } finally {
       setLoading(false)
     }
   }
