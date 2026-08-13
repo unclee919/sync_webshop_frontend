@@ -167,7 +167,7 @@ export default function Checkout() {
     setSubmitting(true)
     setError(null)
     try {
-      const draft = await createOrder({ customer: customerPayload(), items: items.map((item) => ({ item_code: item.item_code, qty: item.qty })), payment_method: 'paymob', delivery_date: deliveryDate, fulfillment_method: fulfillmentMethod, pickup_warehouse: pickupWarehouse, coupon_code: coupon?.coupon_code, governorate, city, location, second_phone: secondPhone, gift_message: giftOptions.message, gift_wrap: giftOptions.wrap, submit: false })
+      const draft = await createOrder({ customer: customerPayload(), items: items.map((item) => ({ item_code: item.item_code, qty: item.qty })), payment_method: paymentMethod, delivery_date: deliveryDate, fulfillment_method: fulfillmentMethod, pickup_warehouse: pickupWarehouse, coupon_code: coupon?.coupon_code, governorate, city, location, second_phone: secondPhone, gift_message: giftOptions.message, gift_wrap: giftOptions.wrap, submit: false })
       const paymobGateway = gatewayList.find((gateway) => gateway.name === 'paymob')
       const intention = await createPaymobIntention({ amount: draft.grand_total, currency: paymobGateway?.currency || draft.currency || currency, customer: customerPayload(), items: items.map((item) => ({ item_code: item.item_code, item_name: item.item_name, qty: item.qty, price: item.price })), salesOrder: draft.sales_order, deliveryDate })
       if (!intention?.checkout_url) throw new Error(lang === 'ar' ? 'تعذر فتح بوابة الدفع.' : 'Paymob did not return a checkout URL.')
