@@ -15,6 +15,21 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      window.__syncContentPromise = fetch('/api/method/sync_webshop.api.content.get_content', { credentials: 'include', headers: { Accept: 'application/json' } })
+        .then(function (response) { if (!response.ok) throw new Error('content request failed'); return response.json(); })
+        .then(function (payload) {
+          var content = payload && (payload.message || payload);
+          var hero = content && Array.isArray(content.banners) && content.banners.find(function (banner) { return banner && banner.image; });
+          if (hero && hero.image) {
+            var preload = document.createElement('link');
+            preload.rel = 'preload'; preload.as = 'image'; preload.fetchPriority = 'high'; preload.href = hero.image;
+            document.head.appendChild(preload);
+          }
+          return content;
+        })
+        .catch(function () { return null; });
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

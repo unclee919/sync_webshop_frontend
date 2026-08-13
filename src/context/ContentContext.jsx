@@ -166,7 +166,8 @@ export function ContentProvider({ children }) {
   const loadContent = async () => {
     try {
       setLoading(true)
-      const data = await getContent()
+      const bootstrap = typeof window !== 'undefined' && window.__syncContentPromise ? window.__syncContentPromise : getContent()
+      const data = await bootstrap
       const baseContent = mergeContent(data)
       setContent(baseContent)
       applyThemeToDocument(baseContent.theme)
