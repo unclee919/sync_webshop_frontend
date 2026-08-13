@@ -176,3 +176,7 @@ export function getPolicyPage() { return callMethod('sync_webshop.api.dynamic_pa
 export function getArticles() { return callMethod('sync_webshop.api.dynamic_pages.get_articles') }
 export function getArticle(route) { return callMethod('sync_webshop.api.dynamic_pages.get_article', { params: { route } }) }
 export function getQaItems() { return callMethod('sync_webshop.api.dynamic_pages.get_qa_items') }
+export function getLuxurySettings() { return callMethod('sync_webshop.api.luxury_tier.get_luxury_settings') }
+export function getLiveSessions() { return callMethod('sync_webshop.api.luxury_tier.get_live_sessions') }
+export function getSocialPulse() { return callMethod('sync_webshop.api.luxury_tier.get_social_pulse') }
+export function getCommunityWall() { return callMethod('sync_webshop.api.luxury_tier.get_community_wall') }

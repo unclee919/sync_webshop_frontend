@@ -76,7 +76,18 @@ export function UltraExperienceProvider({ children }) {
   const [transition, setTransition] = useState(null)
   const [prefetchCache, setPrefetchCache] = useState(() => new Map())
   const rawSettings = content?.ultra_settings || {}
-  const settings = useMemo(() => ({ ...DEFAULT_ULTRA_SETTINGS, ...rawSettings }), [rawSettings])
+  const luxurySettings = content?.luxury_tier || {}
+  const settings = useMemo(() => {
+    const suiteEnabled = luxurySettings.enabled !== 0
+    return {
+      ...DEFAULT_ULTRA_SETTINGS,
+      ...rawSettings,
+      circadian_theme_enabled: suiteEnabled && rawSettings.circadian_theme_enabled !== 0 && luxurySettings.circadian_theme_enabled !== 0 ? 1 : 0,
+      shared_transitions_enabled: suiteEnabled && rawSettings.shared_transitions_enabled !== 0 && luxurySettings.cinematic_transitions_enabled !== 0 ? 1 : 0,
+      magnetic_cursor_enabled: suiteEnabled && rawSettings.magnetic_cursor_enabled !== 0 && luxurySettings.magnetic_cursor_enabled !== 0 ? 1 : 0,
+      predictive_prefetch_enabled: suiteEnabled && rawSettings.predictive_prefetch_enabled !== 0 && luxurySettings.predictive_prefetch_enabled !== 0 ? 1 : 0,
+    }
+  }, [rawSettings, luxurySettings])
   const circadianMode = getCircadianMode(settings)
 
   useEffect(() => {
@@ -110,11 +121,16 @@ export function UltraExperienceProvider({ children }) {
   }, [settings.shared_transitions_enabled])
 
   const prefetchProduct = useCallback(async (itemCode) => {
-    if (!itemCode || settings.predictive_prefetch_enabled === 0 || prefetchCache.has(itemCode)) return
-    try {
-      const item = await getItem(itemCode)
-      setPrefetchCache((current) => new Map(current).set(itemCode, item))
-    } catch { /* Prefetch is an enhancement and never blocks navigation. */ }
+    const connection = typeof navigator !== 'undefined' ? navigator.connection : null
+    if (!itemCode || settings.predictive_prefetch_enabled === 0 || prefetchCache.has(itemCode) || connection?.saveData || /(^|-)2g$/.test(connection?.effectiveType || '')) return
+    const run = async () => {
+      try {
+        const item = await getItem(itemCode)
+        setPrefetchCache((current) => new Map(current).set(itemCode, item))
+      } catch { /* Prefetch is an enhancement and never blocks navigation. */ }
+    }
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) window.requestIdleCallback(run, { timeout: 1200 })
+    else window.setTimeout(run, 120)
   }, [prefetchCache, settings.predictive_prefetch_enabled])
 
   const value = useMemo(() => ({

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useLanguage } from '../context/LanguageContext'
+import { useContent } from '../context/ContentContext'
 import { trackEvent } from '../utils/analytics'
 import './SpatialProductControls.css'
 
@@ -8,6 +9,7 @@ function Icon({ children }) { return <span className="spatial-control-icon" aria
 
 export default function SpatialProductControls({ item, settings = {} }) {
   const { lang, isRtl } = useLanguage()
+  const { content } = useContent()
   const isArabic = lang === 'ar'
   const [mode, setMode] = useState(null)
   const [activeLayer, setActiveLayer] = useState(0)
@@ -15,8 +17,11 @@ export default function SpatialProductControls({ item, settings = {} }) {
   const iosModel = item?.ar_ios_model_url || item?.usdz_url || settings.ar_ios_model_url
   const androidModel = item?.ar_android_model_url || item?.glb_url || settings.ar_android_model_url
   const modelUrl = item?.three_d_model_url || item?.model_3d_url || settings.three_d_model_url || androidModel
-  const hasAr = settings.ar_enabled !== 0 && Boolean(iosModel || androidModel)
-  const has3d = Boolean(modelUrl)
+  const luxury = content?.luxury_tier || {}
+  const suiteEnabled = luxury.enabled !== 0
+  const hasAr = suiteEnabled && luxury.webxr_ar_enabled !== 0 && settings.ar_enabled !== 0 && Boolean(iosModel || androidModel)
+  const has3d = suiteEnabled && Boolean(modelUrl)
+  const exploderEnabled = suiteEnabled && luxury.exploder_3d_enabled !== 0 && settings.exploded_view_enabled !== 0
   const layers = useMemo(() => {
     const attributes = Array.isArray(item?.attributes) ? item.attributes : []
     const fromAttributes = attributes.slice(0, 4).map((attribute, index) => ({
@@ -51,7 +56,7 @@ export default function SpatialProductControls({ item, settings = {} }) {
         <button type="button" className={`spatial-tool-card ${has3d ? '' : 'is-disabled'}`} onClick={() => { if (has3d) { trackEvent('spatial_studio_3d_open', { item_group: item?.item_group || 'unknown' }); setMode('3d') } }} disabled={!has3d} data-magnetic="true">
           <Icon>◉</Icon><span><strong>{t('3D studio view', 'عرض الاستوديو ثلاثي الأبعاد')}</strong><small>{has3d ? t('Rotate and inspect the model', 'دوّر النموذج وافحصه') : t('Configure a 3D model in Desk', 'اضبط نموذجاً ثلاثي الأبعاد من Desk')}</small></span><b>↗</b>
         </button>
-        {settings.exploded_view_enabled !== 0 && <button type="button" className="spatial-tool-card" onClick={() => { trackEvent('spatial_studio_exploded_open', { item_group: item?.item_group || 'unknown' }); setMode('exploded') }} data-magnetic="true">
+        {exploderEnabled && <button type="button" className="spatial-tool-card" onClick={() => { trackEvent('spatial_studio_exploded_open', { item_group: item?.item_group || 'unknown' }); setMode('exploded') }} data-magnetic="true">
           <Icon>✧</Icon><span><strong>{t(settings.exploded_view_title_en || 'Inspect the details', settings.exploded_view_title_ar || 'استكشف التفاصيل')}</strong><small>{t('Pull the story apart', 'افصل التفاصيل لاستكشافها')}</small></span><b>↗</b>
         </button>}
       </div>
