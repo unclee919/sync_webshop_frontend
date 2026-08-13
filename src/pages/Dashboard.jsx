@@ -1,6 +1,8 @@
 import { useState } from 'react'
-import { deleteCustomerAddress, getCustomerPortal, getInvoice, requestReturn, saveCustomerAddress, updateCustomerProfile } from '../api/client'
+import { deleteCustomerAddress, getCustomerPortal, getInvoice, getItem, requestReturn, saveCustomerAddress, updateCustomerProfile } from '../api/client'
 import { useLanguage } from '../context/LanguageContext'
+import { useCart } from '../context/CartContext'
+import { useNavigate } from 'react-router-dom'
 import './Cart.css'
 import './Dashboard.css'
 
@@ -46,6 +48,9 @@ export default function Dashboard() {
   const [savingProfile, setSavingProfile] = useState(false)
   const [addressForm, setAddressForm] = useState(null)
   const [savingAddress, setSavingAddress] = useState(false)
+  const [reordering, setReordering] = useState(null)
+  const { addItem } = useCart()
+  const navigate = useNavigate()
   
   const text = {
     title: isArabic ? 'حسابي' : 'My account',
@@ -84,6 +89,7 @@ export default function Dashboard() {
     addressLine: isArabic ? 'العنوان' : 'Address line',
     city: isArabic ? 'المدينة' : 'City',
     country: isArabic ? 'الدولة' : 'Country',
+    reorder: isArabic ? 'إعادة الطلب' : 'Reorder',
   }
 
   async function refreshPortal() {
@@ -149,6 +155,18 @@ export default function Dashboard() {
     } catch (err) { setError(err.message) }
   }
 
+  async function handleReorder(itemCode) {
+    if (!itemCode) return
+    setReordering(itemCode)
+    setError(null)
+    try {
+      const item = await getItem(itemCode)
+      addItem({ item_code: item.item_code, item_name: item.item_name, price: item.price, currency: item.currency, image: item.image }, 1)
+      setNotice(isArabic ? 'تمت إضافة المنتج إلى السلة.' : 'Item added to your bag.')
+      navigate('/cart')
+    } catch (err) { setError(err.message) } finally { setReordering(null) }
+  }
+
   async function handleReturnSubmit(e) {
     e.preventDefault()
     if (!returnForm) return
@@ -178,7 +196,7 @@ export default function Dashboard() {
         {result.profile && <section className="portal-section"><div className="portal-section-heading"><h2>{text.profile}</h2>{settings.enable_profile_edit && <button type="button" className="inline-action" onClick={() => setEditingProfile(!editingProfile)}>{text.edit}</button>}</div>{editingProfile ? <form className="profile-form" onSubmit={handleProfileSubmit}><label>{isArabic ? 'الاسم' : 'Name'}<input value={profile.customer_name || ''} onChange={(e) => setProfile({ ...profile, customer_name: e.target.value })} /></label><label>{isArabic ? 'البريد الإلكتروني' : 'Email'}<input type="email" value={profile.email || ''} onChange={(e) => setProfile({ ...profile, email: e.target.value })} /></label><label>{isArabic ? 'الهاتف' : 'Phone'}<input value={profile.phone || ''} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} /></label><button type="submit" disabled={savingProfile}>{savingProfile ? text.loading : text.save}</button></form> : <div className="profile-summary"><strong>{result.profile.customer_name}</strong><span>{result.profile.email}</span><span>{result.profile.phone}</span></div>}</section>}
         {settings.enable_addresses && <section className="portal-section"><div className="portal-section-heading"><h2>{text.addresses}</h2><button type="button" className="inline-action" onClick={() => setAddressForm({ address_title: result.profile?.customer_name || '', address_type: 'Shipping', address_line1: '', city: '', country: '', pincode: '', phone: result.profile?.phone || '', email_id: result.profile?.email || '' })}>{text.addAddress}</button></div>{result.addresses?.length ? <div className="address-grid">{result.addresses.map((address) => <article className="address-card" key={address.name}><strong>{address.address_title || address.name}</strong><span>{address.address_line1}</span><span>{[address.city, address.state, address.pincode].filter(Boolean).join(', ')}</span><span>{address.country}</span><div><button type="button" className="inline-action" onClick={() => setAddressForm(address)}>{text.editAddress}</button><button type="button" className="inline-action danger" onClick={() => handleAddressDelete(address.name)}>{text.deleteAddress}</button></div></article>)}</div> : <p className="dashboard-empty">{isArabic ? 'لا توجد عناوين محفوظة.' : 'No saved addresses yet.'}</p>}</section>}
         {result.orders?.length === 0 && <p className="dashboard-empty">{text.noOrders}</p>}
-        <section className="portal-section"><h2>{text.orders}</h2>{result.orders?.map((order) => <article className="order-card" key={order.name}><div className="order-card-top"><span className="order-card-name">{order.name}</span><span className="order-status-pill">{order.status}</span></div><p className="order-card-date">{order.transaction_date}{order.delivery_date ? ` · ${text.delivery}: ${order.delivery_date}` : ''}</p>{settings.enable_tracking_timeline && order.tracking_timeline?.length > 0 && <TrackingTimeline timeline={order.tracking_timeline} isArabic={isArabic} />}<p className="order-card-items" dir="auto">{order.items?.map((item) => <span className="order-line" key={`${order.name}-${item.item_code}`}>{item.item_name} × {item.qty}{settings.enable_rma && <button type="button" className="inline-action" onClick={() => setReturnForm({ orderName: order.name, itemCode: item.item_code, itemName: item.item_name, qty: 1, reason: '' })}>{text.requestReturn}</button>}</span>)}</p>{order.delivery_notes?.length > 0 && <p className="delivery-note">{order.delivery_notes.map((note) => `${note.name}${note.tracking_number ? ` · ${note.tracking_number}` : ''}`).join(' · ')}</p>}<p className="order-card-total">{Number(order.grand_total || 0).toFixed(2)} {order.currency}</p></article>)}</section>
+        <section className="portal-section"><h2>{text.orders}</h2>{result.orders?.map((order) => <article className="order-card" key={order.name}><div className="order-card-top"><span className="order-card-name">{order.name}</span><span className="order-status-pill">{order.status}</span></div><p className="order-card-date">{order.transaction_date}{order.delivery_date ? ` · ${text.delivery}: ${order.delivery_date}` : ''}</p>{settings.enable_tracking_timeline && order.tracking_timeline?.length > 0 && <TrackingTimeline timeline={order.tracking_timeline} isArabic={isArabic} />}<p className="order-card-items" dir="auto">{order.items?.map((item) => <span className="order-line" key={`${order.name}-${item.item_code}`}>{item.item_name} × {item.qty}<button type="button" className="inline-action" onClick={() => handleReorder(item.item_code)} disabled={reordering === item.item_code}>{reordering === item.item_code ? '...' : text.reorder}</button>{settings.enable_rma && <button type="button" className="inline-action" onClick={() => setReturnForm({ orderName: order.name, itemCode: item.item_code, itemName: item.item_name, qty: 1, reason: '' })}>{text.requestReturn}</button>}</span>)}</p>{order.delivery_notes?.length > 0 && <p className="delivery-note">{order.delivery_notes.map((note) => `${note.name}${note.tracking_number ? ` · ${note.tracking_number}` : ''}`).join(' · ')}</p>}<p className="order-card-total">{Number(order.grand_total || 0).toFixed(2)} {order.currency}</p></article>)}</section>
         <section className="portal-section"><h2>{text.invoices}</h2>{result.invoices?.length ? result.invoices.map((invoice) => <div className="portal-row" key={invoice.name}><div><strong>{invoice.name}</strong><span>{invoice.posting_date} · {invoice.status}</span></div><strong>{Number(invoice.grand_total || 0).toFixed(2)} {invoice.currency}</strong><button type="button" onClick={() => handleInvoice(invoice)} disabled={invoiceLoading === invoice.name}>{invoiceLoading === invoice.name ? '...' : text.download}</button></div>) : <p className="dashboard-empty">{isArabic ? 'لا توجد فواتير.' : 'No invoices available.'}</p>}</section>
         <section className="portal-section"><h2>{text.returns}</h2>{result.returns?.length ? result.returns.map((rma) => <div className="portal-row" key={rma.name}><div><strong>{rma.subject}</strong><span>{rma.opening_date}</span></div><span className="order-status-pill">{rma.status}</span></div>) : <p className="dashboard-empty">{isArabic ? 'لا توجد طلبات إرجاع.' : 'No return requests yet.'}</p>}</section>
       </>}
