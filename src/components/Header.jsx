@@ -5,6 +5,7 @@ import { useLanguage } from '../context/LanguageContext'
 import { useCart } from '../context/CartContext'
 import { getCategories, getSearchSuggestions } from '../api/client'
 import VoiceSearch from './VoiceSearch'
+import VisualSearch from './VisualSearch'
 import BrandSwitcher from './BrandSwitcher'
 import './Header.css'
 
@@ -105,6 +106,7 @@ export default function Header({ onOpenCart }) {
               <span className="search-leading"><SearchIcon /></span>
 <input value={search} onChange={(e) => { setSearch(e.target.value); setShowSuggestions(true) }} onFocus={() => setShowSuggestions(true)} placeholder={t(content.search_placeholder_en, content.search_placeholder_ar, 'Search products, categories and more')} />
 	              <VoiceSearch onResult={(text) => { setSearch(text); navigate(`/products?search=${encodeURIComponent(text)}`); setShowSuggestions(false); }} />
+                      <VisualSearch />
 	              <button type="submit">{t(content?.search_button_text_en, content?.search_button_text_ar, 'Search')}</button>
 	            </form>
             {showSuggestions && suggestions.length > 0 && (

@@ -80,6 +80,8 @@
 .search-form input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--header-text); padding: 0.75rem 0.8rem; font: inherit; font-size: 0.83rem; }
 .search-form input::placeholder { color: var(--color-text-muted); }
 .search-form button { align-self: stretch; border: 0; background: var(--color-primary); color: #fff; padding: 0 1.3rem; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.01em; }
+.search-form .visual-search-trigger { align-self: center; min-width: 32px; height: 32px; padding: 0; margin-inline: 0.2rem; border-radius: 50%; background: transparent; color: var(--color-text-muted); font-size: 1.2rem; box-shadow: none; }
+.search-form .visual-search-trigger:hover { background: color-mix(in srgb, var(--color-accent) 18%, transparent); color: var(--color-secondary); }
 .search-form button:hover { background: var(--color-secondary); }
 .search-suggestions { position: absolute; top: calc(100% + 0.6rem); inset-inline: 0; background: var(--header-bg); border: 1px solid var(--color-border); border-radius: 16px; box-shadow: var(--shadow-lg); padding: 0.4rem; overflow: hidden; }
 .search-suggestions button { width: 100%; display: flex; gap: 0.7rem; align-items: center; text-align: start; border: 0; background: transparent; color: var(--header-text); padding: 0.6rem; border-radius: 11px; }

@@ -97,9 +97,9 @@ export function getTerritories() { return callMethod('sync_webshop.api.checkout.
 export function validateCoupon(couponCode, totalAmount) {
   return callMethod('sync_webshop.api.checkout.validate_coupon', { params: { coupon_code: couponCode, total_amount: totalAmount } })
 }
-export function createOrder({ customer, items, payment_method, stripe_payment_intent, delivery_date, coupon_code, governorate, city, location, second_phone, gift_message, gift_wrap, submit = false }) {
+export function createOrder({ customer, items, payment_method, stripe_payment_intent, delivery_date, coupon_code, governorate, city, location, second_phone, gift_message, gift_wrap, fulfillment_method, pickup_warehouse, submit = false }) {
   return callMethod('sync_webshop.api.checkout.create_order', {
-    method: 'POST', body: { customer, items, payment_method, stripe_payment_intent, delivery_date, coupon_code, governorate, city, location, second_phone, gift_message, gift_wrap, submit },
+    method: 'POST', body: { customer, items, payment_method, stripe_payment_intent, delivery_date, coupon_code, governorate, city, location, second_phone, gift_message, gift_wrap, fulfillment_method, pickup_warehouse, submit },
   })
 }
 export function createPaymentIntent(amount, currency = 'gbp') {
@@ -123,3 +123,7 @@ export function sendAiMessage({ message, history, email }) {
 export function getWishlist() { return callMethod('sync_webshop.api.user.get_wishlist') }
 export function addToWishlist(itemCode) { return callMethod('sync_webshop.api.user.add_to_wishlist', { method: 'POST', body: { item_code: itemCode } }) }
 export function removeFromWishlist(itemCode) { return callMethod('sync_webshop.api.user.remove_from_wishlist', { method: 'POST', body: { item_code: itemCode } }) }
+
+export function searchByImage({ imageData, filename, query } = {}) {
+  return callMethod('sync_webshop.api.visual_search.search_by_image', { method: 'POST', body: { image_data: imageData, filename, query } })
+}

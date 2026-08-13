@@ -28,6 +28,8 @@ export default function Checkout() {
   const [location, setLocation] = useState('')
   const [deliveryDate, setDeliveryDate] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('cod')
+  const [fulfillmentMethod, setFulfillmentMethod] = useState('Delivery')
+  const [pickupWarehouse, setPickupWarehouse] = useState('')
   const [couponCode, setCouponCode] = useState('')
   const [coupon, setCoupon] = useState(null)
   const [couponMessage, setCouponMessage] = useState(null)
@@ -44,6 +46,8 @@ export default function Checkout() {
   const [giftOptions, setGiftOptions] = useState({ wrap: false, message: '' })
 
   const gatewayList = settings?.payment_gateways || []
+  const fulfillment = settings?.fulfillment || {}
+  const paymobGateway = gatewayList.find((gateway) => gateway.name === 'paymob')
   const currency = items[0]?.currency || 'GBP'
   const cities = useMemo(() => territories.find((row) => row.governorate === governorate)?.cities || [], [territories, governorate])
   const requireTerritory = settings?.checkout_require_city_governorate ?? true
@@ -122,6 +126,8 @@ export default function Checkout() {
         customer: customerPayload(),
         items: items.map((item) => ({ item_code: item.item_code, qty: item.qty })),
         payment_method: paymentMethod,
+        fulfillment_method: fulfillmentMethod,
+        pickup_warehouse: pickupWarehouse,
         stripe_payment_intent: stripePaymentIntentId,
         delivery_date: deliveryDate,
         coupon_code: coupon?.coupon_code,
@@ -150,7 +156,7 @@ export default function Checkout() {
     setSubmitting(true)
     setError(null)
     try {
-      const draft = await createOrder({ customer: customerPayload(), items: items.map((item) => ({ item_code: item.item_code, qty: item.qty })), payment_method: 'paymob', delivery_date: deliveryDate, coupon_code: coupon?.coupon_code, governorate, city, location, second_phone: secondPhone, gift_message: giftOptions.message, gift_wrap: giftOptions.wrap, submit: false })
+      const draft = await createOrder({ customer: customerPayload(), items: items.map((item) => ({ item_code: item.item_code, qty: item.qty })), payment_method: 'paymob', delivery_date: deliveryDate, fulfillment_method: fulfillmentMethod, pickup_warehouse: pickupWarehouse, coupon_code: coupon?.coupon_code, governorate, city, location, second_phone: secondPhone, gift_message: giftOptions.message, gift_wrap: giftOptions.wrap, submit: false })
       const paymobGateway = gatewayList.find((gateway) => gateway.name === 'paymob')
       const intention = await createPaymobIntention({ amount: draft.grand_total, currency: paymobGateway?.currency || draft.currency || currency, customer: customerPayload(), items: items.map((item) => ({ item_code: item.item_code, item_name: item.item_name, qty: item.qty, price: item.price })), salesOrder: draft.sales_order, deliveryDate })
       if (!intention?.checkout_url) throw new Error(lang === 'ar' ? 'تعذر فتح بوابة الدفع.' : 'Paymob did not return a checkout URL.')
@@ -207,9 +213,9 @@ export default function Checkout() {
 
             <GiftOptions value={giftOptions} onChange={setGiftOptions} />
 
-            <section className="checkout-section"><h2 className="section-title-small">{lang === 'ar' ? 'موعد التوصيل' : 'Delivery Date'}</h2><div className="form-group"><input type="date" required value={deliveryDate} min={new Date().toISOString().split('T')[0]} onChange={(event) => setDeliveryDate(event.target.value)} /><p className="form-hint">{lang === 'ar' ? 'اختر موعد التوصيل المفضل لديك' : 'Select your preferred delivery date'}</p></div></section>
+            <section className="checkout-section"><h2 className="section-title-small">{lang === 'ar' ? 'طريقة الاستلام' : 'Fulfillment'}</h2><div className="payment-methods"><label className={`payment-method-option ${fulfillmentMethod === 'Delivery' ? 'active' : ''}`}><input type="radio" name="fulfillmentMethod" value="Delivery" checked={fulfillmentMethod === 'Delivery'} onChange={() => { setFulfillmentMethod('Delivery'); setPickupWarehouse('') }} /><span>{lang === 'ar' ? 'التوصيل' : 'Delivery'}</span></label>{fulfillment.pickup_enabled && <label className={`payment-method-option ${fulfillmentMethod === 'Store Pickup' ? 'active' : ''}`}><input type="radio" name="fulfillmentMethod" value="Store Pickup" checked={fulfillmentMethod === 'Store Pickup'} onChange={() => setFulfillmentMethod('Store Pickup')} /><span>{lang === 'ar' ? (fulfillment.pickup_title_ar || 'الاستلام من المتجر') : (fulfillment.pickup_title_en || 'Store pickup')}</span></label>}</div>{fulfillmentMethod === 'Store Pickup' && <div className="form-group"><p className="form-hint">{lang === 'ar' ? (fulfillment.pickup_note_ar || 'اختر مستودعاً متاحاً لاستلام طلبك منه.') : (fulfillment.pickup_note_en || 'Choose an available warehouse and collect your order there.')}</p><select required value={pickupWarehouse} onChange={(event) => setPickupWarehouse(event.target.value)}><option value="">{lang === 'ar' ? 'اختر موقع الاستلام' : 'Select pickup location'}</option>{(fulfillment.warehouses || []).map((warehouse) => <option key={warehouse.name} value={warehouse.name}>{warehouse.warehouse_name || warehouse.name}{warehouse.city ? ` · ${warehouse.city}` : ''}</option>)}</select></div>}</section><section className="checkout-section"><h2 className="section-title-small">{lang === 'ar' ? 'موعد التوصيل' : 'Delivery Date'}</h2><div className="form-group"><input type="date" required value={deliveryDate} min={new Date().toISOString().split('T')[0]} onChange={(event) => setDeliveryDate(event.target.value)} /><p className="form-hint">{lang === 'ar' ? 'اختر موعد التوصيل المفضل لديك' : 'Select your preferred delivery date'}</p></div></section>
 
-            <section className="checkout-section"><h2 className="section-title-small">{lang === 'ar' ? 'طريقة الدفع' : 'Payment Method'}</h2><div className="payment-methods">{gatewayList.map((gateway) => <label key={gateway.name} className={`payment-method-option ${paymentMethod === gateway.name ? 'active' : ''}`}><input type="radio" name="paymentMethod" value={gateway.name} checked={paymentMethod === gateway.name} onChange={(event) => setPaymentMethod(event.target.value)} /><span>{lang === 'ar' ? (gateway.label_ar || gateway.label) : (gateway.label_en || gateway.label)}</span></label>)}</div>{paymentMethod === 'stripe' && stripePromise && <div className="stripe-payment-box"><Elements stripe={stripePromise}><StripePaymentForm customer={{ name, email, phone }} amount={grandTotal} currency={currency} onPaymentSuccess={(id) => handleConfirmOrder(id)} /></Elements></div>}</section>
+            <section className="checkout-section"><h2 className="section-title-small">{lang === 'ar' ? 'طريقة الدفع' : 'Payment Method'}</h2><div className="payment-methods">{gatewayList.map((gateway) => <label key={gateway.name} className={`payment-method-option ${paymentMethod === gateway.name ? 'active' : ''}`}><input type="radio" name="paymentMethod" value={gateway.name} checked={paymentMethod === gateway.name} onChange={(event) => setPaymentMethod(event.target.value)} /><span>{lang === 'ar' ? (gateway.label_ar || gateway.label) : (gateway.label_en || gateway.label)}</span></label>)}</div>{paymentMethod === 'paymob' && paymobGateway && <p className="form-hint">{lang === 'ar' ? (paymobGateway.note_ar || 'ادفع بأمان عبر Paymob') : (paymobGateway.note_en || 'Pay securely through Paymob')} {(paymobGateway.methods || []).map((method) => lang === 'ar' ? method.label_ar : method.label_en).join(' · ')}</p>}{paymentMethod === 'stripe' && stripePromise && <div className="stripe-payment-box"><Elements stripe={stripePromise}><StripePaymentForm customer={{ name, email, phone }} amount={grandTotal} currency={currency} onPaymentSuccess={(id) => handleConfirmOrder(id)} /></Elements></div>}</section>
             {error && <div className="error-message">{error}</div>}
             {(paymentMethod === 'cod' || paymentMethod === 'paymob') && <button type="submit" className="place-order-btn" disabled={submitting}>{submitting ? (lang === 'ar' ? 'جاري المعالجة...' : 'Processing...') : (paymentMethod === 'paymob' ? (lang === 'ar' ? 'المتابعة إلى الدفع' : 'Continue to Paymob') : (lang === 'ar' ? 'تأكيد الطلب' : 'Confirm Order'))}</button>}
           </form>
