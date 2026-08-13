@@ -45,7 +45,7 @@ function ProductCard({ item, content, lang, onAdd, onQuickView }) {
       <div className="home-product-media">
                   <Link to={`/products/${encodeURIComponent(item.item_code)}`} className="home-product-image" data-magnetic="true" onMouseEnter={() => prefetchProduct(item.item_code)} onFocus={() => prefetchProduct(item.item_code)} onClick={handleProductIntent}>
 
-          {item.image ? <img src={item.image} alt={item.item_name} loading="lazy" /> : <span className="product-image-placeholder">{item.item_name?.slice(0, 1)}</span>}
+          {item.image ? <img src={item.image} alt={item.item_name} loading="lazy" decoding="async" width="400" height="368" sizes="(max-width: 700px) 50vw, (max-width: 1100px) 25vw, 20vw" /> : <span className="product-image-placeholder">{item.item_name?.slice(0, 1)}</span>}
           {hovering && content?.product_settings?.enable_video_hover !== 0 && (item.video_url || item.video || item.product_video) && <video className="home-product-hover-video" src={item.video_url || item.video || item.product_video} muted autoPlay loop playsInline aria-label={t('Product preview', 'معاينة المنتج')} />}
         </Link>
         <div className="product-card-badges">
@@ -137,8 +137,9 @@ export default function Landing() {
 
   return (
     <div className={`landing-page ${isRtl ? 'rtl' : 'ltr'}`}>
+      {hero?.image && <link rel="preload" as="image" href={hero.image} fetchPriority="high" />}
       <motion.section ref={heroRef} className="home-hero" style={hero?.image ? { backgroundImage: 'none' } : undefined}>
-        {hero?.image && <motion.div className="hero-parallax-media" style={{ y: heroParallaxY, backgroundImage: `linear-gradient(90deg, rgba(10, 39, 34, 0.8) 0%, rgba(10, 39, 34, 0.4) 100%), url(${hero.image})` }} />}
+        {hero?.image && <motion.div className="hero-parallax-media" style={{ y: heroParallaxY }}><img src={hero.image} alt="" fetchPriority="high" loading="eager" decoding="async" width="1920" height="900" sizes="100vw" /></motion.div>}
         <div className="container hero-inner">
           <motion.div className="hero-copy" style={{ y: heroCopyY }}>
             <span className="hero-eyebrow">{t(content?.business_profile?.vertical_label_en, content?.business_profile?.vertical_label_ar, 'Thoughtfully selected')}</span>
@@ -162,7 +163,7 @@ export default function Landing() {
 
             {categories.length > 0 && <section className="home-section container">
         <div className="home-section-heading"><div><h2>{landingBuilder.enabled ? t(landingBuilder.featured_grid_title_en, landingBuilder.featured_grid_title_ar, t(content?.best_categories_text_en, content?.best_categories_text_ar, 'Best Categories')) : t(content?.best_categories_text_en, content?.best_categories_text_ar, 'Best Categories')}</h2></div><Link to="/products" className="section-view-all">{t(content?.view_all_text_en, content?.view_all_text_ar, 'View All')}<ArrowIcon /></Link></div>
-        <div className="category-rail">{categories.slice(0, 8).map((cat, i) => <Link key={i} to={`/products?category=${encodeURIComponent(cat.item_group)}`} className="category-tile"><div className="category-tile-image">{cat.image ? <img src={cat.image} alt="" /> : <span>{i+1}</span>}</div><div className="category-tile-copy"><h3>{t(cat.label_en, cat.label_ar, cat.item_group)}</h3><span>{t('Explore collection', 'استكشف المجموعة')} →</span></div></Link>)}</div>
+        <div className="category-rail">{categories.slice(0, 8).map((cat, i) => <Link key={i} to={`/products?category=${encodeURIComponent(cat.item_group)}`} className="category-tile"><div className="category-tile-image">{cat.image ? <img src={cat.image} alt="" loading="lazy" decoding="async" width="640" height="360" sizes="(max-width: 700px) 50vw, 25vw" /> : <span>{i+1}</span>}</div><div className="category-tile-copy"><h3>{t(cat.label_en, cat.label_ar, cat.item_group)}</h3><span>{t('Explore collection', 'استكشف المجموعة')} →</span></div></Link>)}</div>
       </section>}
 
       {content?.recommendations_enabled !== 0 && content?.experience_settings?.curated_for_you_enabled !== 0 && recommendations.length > 0 && <section className="home-section smart-recommendations"><div className="container"><div className="home-section-heading"><div><span className="section-kicker">{t('Smart selection', 'اختيار ذكي')}</span><h2>{t(content?.experience_settings?.curated_for_you_title_en || content?.recommendations_title_en, content?.experience_settings?.curated_for_you_title_ar || content?.recommendations_title_ar, 'Picked for you')}</h2></div><Link to="/products" className="section-view-all">{t(content?.view_all_text_en, content?.view_all_text_ar, 'View All')}<ArrowIcon /></Link></div><div className="home-product-grid">{recommendations.map(item => <ProductCard key={item.item_code} item={item} content={content} lang={lang} onAdd={addItem} onQuickView={setQuickViewCode} />)}</div></div></section>}

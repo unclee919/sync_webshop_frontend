@@ -11,7 +11,8 @@
   color: #fff;
 }
 .home-hero::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 80% 20%, rgba(230,184,92,0.2), transparent 28%); pointer-events: none; }
-.hero-parallax-media { position: absolute; inset: -7% 0; background-position: center; background-size: cover; will-change: transform; }
+.hero-parallax-media { position: absolute; inset: -7% 0; overflow: hidden; background: var(--color-primary); will-change: transform; }
+.hero-parallax-media img { width: 100%; height: 100%; display: block; object-fit: cover; object-position: center; }
 .hero-parallax-media::after { content: ''; position: absolute; inset: 0; background: linear-gradient(115deg, rgba(3, 24, 20, .12), transparent 60%); }
 @media (prefers-reduced-motion: reduce) { .hero-parallax-media { transform: none !important; } }
 .hero-inner { position: relative; z-index: 1; min-height: var(--hero-height); display: flex; align-items: center; justify-content: space-between; gap: 3rem; padding-top: 4rem; padding-bottom: 4rem; }
