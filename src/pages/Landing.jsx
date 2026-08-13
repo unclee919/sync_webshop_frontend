@@ -8,6 +8,7 @@ import { useLanguage } from '../context/LanguageContext'
 import { useComparison } from '../context/ComparisonContext'
 import QuickView from '../components/QuickView'
 import SocialProof from '../components/SocialProof'
+import EliteStories from '../components/EliteStories'
 import './Landing.css'
 
 function ArrowIcon() { return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13" /><path d="m13 6 6 6-6 6" /></svg> }
@@ -17,16 +18,18 @@ function HeartIcon() { return <svg viewBox="0 0 24 24" aria-hidden="true"><path 
 function ProductCard({ item, content, lang, onAdd, onQuickView }) {
   const isArabic = lang === 'ar'
   const { add: addToCompare, remove: removeFromCompare, isCompared } = useComparison()
+  const [hovering, setHovering] = useState(false)
   const t = (en, ar, fallback = '') => (isArabic ? (ar || en || fallback) : (en || ar || fallback))
   const oldPrice = Number(item.old_price || 0)
   const price = Number(item.price || 0)
   const isUnavailable = item.available === false || item.in_stock === false
 
   return (
-    <article className="home-product-card">
+    <article className="home-product-card" onMouseEnter={() => setHovering(true)} onMouseLeave={() => setHovering(false)}>
       <div className="home-product-media">
         <Link to={`/products/${encodeURIComponent(item.item_code)}`} className="home-product-image">
           {item.image ? <img src={item.image} alt={item.item_name} loading="lazy" /> : <span className="product-image-placeholder">{item.item_name?.slice(0, 1)}</span>}
+          {hovering && content?.product_settings?.enable_video_hover !== 0 && (item.video_url || item.video || item.product_video) && <video className="home-product-hover-video" src={item.video_url || item.video || item.product_video} muted autoPlay loop playsInline aria-label={t('Product preview', 'معاينة المنتج')} />}
         </Link>
         <div className="product-card-badges">
           {item.discount_percentage > 0 && <span className="sale-badge">-{item.discount_percentage}%</span>}
@@ -130,6 +133,8 @@ export default function Landing() {
           </motion.div>
         </div>
       </motion.section>
+
+      <EliteStories content={content} />
 
             {categories.length > 0 && <section className="home-section container">
         <div className="home-section-heading"><div><h2>{t(content?.best_categories_text_en, content?.best_categories_text_ar, 'Best Categories')}</h2></div><Link to="/products" className="section-view-all">{t(content?.view_all_text_en, content?.view_all_text_ar, 'View All')}<ArrowIcon /></Link></div>

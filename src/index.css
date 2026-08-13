@@ -29,6 +29,8 @@
   --shadow-lg: 0 20px 50px rgba(23, 63, 58, 0.14);
   --transition-base: 180ms ease;
   --transition-smooth: 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --section-gap: 5rem;
   --card-gap: 1.25rem;
   --header-height: 84px;
@@ -65,3 +67,6 @@ button:active { transform: translateY(1px); }
 :focus-visible { outline: 3px solid color-mix(in srgb, var(--color-secondary) 55%, transparent); outline-offset: 2px; }
 
 @media (max-width: 720px) { .container { width: min(100% - 1.25rem, var(--container-max-width)); } }
+
+.elite-glass{border:1px solid color-mix(in srgb,var(--color-border) 72%,transparent);background:color-mix(in srgb,var(--header-bg) 76%,transparent);box-shadow:var(--shadow-md);backdrop-filter:blur(18px)}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *,*::before,*::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; } }

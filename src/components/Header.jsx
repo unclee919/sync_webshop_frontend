@@ -35,7 +35,10 @@ export default function Header({ onOpenCart }) {
   const menuTitle = t(content?.mega_menu_title_en, content?.mega_menu_title_ar, 'Browse categories')
   const renderCategoryTree = (items = [], depth = 0) => items.map((cat) => (
     <div className={`mega-menu-category depth-${depth}`} key={cat.name}>
-      <Link to={`/products?category=${encodeURIComponent(cat.name)}`} onClick={() => setShowCategories(false)}>{cat.label || cat.name}</Link>
+      <Link className={depth === 0 ? 'mega-category-card' : ''} to={`/products?category=${encodeURIComponent(cat.name)}`} onClick={() => setShowCategories(false)}>
+        {depth === 0 && <span className="mega-category-image">{cat.image ? <img src={cat.image} alt="" loading="lazy" /> : <span>{cat.label?.slice(0, 1) || cat.name?.slice(0, 1)}</span>}</span>}
+        <span><strong>{cat.label || cat.name}</strong>{depth === 0 && <small>{t('Explore collection', 'استكشف المجموعة')}</small>}</span>
+      </Link>
       {cat.children?.length > 0 && <div className="mega-menu-children">{renderCategoryTree(cat.children, depth + 1)}</div>}
     </div>
   ))
@@ -109,7 +112,7 @@ export default function Header({ onOpenCart }) {
                 {suggestions.slice(0, 6).map((s, i) => (
                   <button key={i} type="button" onClick={() => { navigate(s.type === 'category' ? `/products?category=${encodeURIComponent(s.id)}` : `/products/${encodeURIComponent(s.id)}`); setSearch(''); setShowSuggestions(false) }}>
                     <span className="suggestion-image">{s.image ? <img src={s.image} alt="" /> : <span>⌕</span>}</span>
-                    <span><strong>{s.name}</strong><small>{s.type === 'category' ? t('Category', 'الفئة') : t('Product', 'المنتج')}</small></span>
+                    <span><strong>{s.name}</strong><small>{s.type === 'category' ? t('Category', 'الفئة') : `${t('Product', 'المنتج')}${s.price != null ? ` · ${Number(s.price).toFixed(2)} ${s.currency || ''}` : ''}`}</small></span>
                   </button>
                 ))}
               </div>

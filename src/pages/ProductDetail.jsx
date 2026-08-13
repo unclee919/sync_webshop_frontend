@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { getItem, getProductReviews, submitProductReview } from '../api/client'
+import { getItem, getProductReviews, getRecommendations, submitProductReview } from '../api/client'
 import { useCart } from '../context/CartContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useContent } from '../context/ContentContext'
 import SEOHead from '../components/SEOHead'
 import LoginModal from '../components/LoginModal'
+import ImmersiveProductViewer from '../components/ImmersiveProductViewer'
+import CompleteTheLook from '../components/CompleteTheLook'
 import './Products.css'
 
 export default function ProductDetail() {
@@ -20,10 +22,10 @@ export default function ProductDetail() {
   const reviewTitle = isArabic ? (productSettings.reviews_title_ar || 'آراء العملاء') : (productSettings.reviews_title_en || 'Customer reviews')
   const [item, setItem] = useState(null)
   const [reviews, setReviews] = useState(null)
+  const [relatedItems, setRelatedItems] = useState([])
   const [error, setError] = useState(null)
   const [qty, setQty] = useState(1)
   const [added, setAdded] = useState(false)
-  const [zoomed, setZoomed] = useState(false)
   const [showLogin, setShowLogin] = useState(false)
   const [reviewNotice, setReviewNotice] = useState(null)
   const [reviewSubmitting, setReviewSubmitting] = useState(false)
@@ -32,10 +34,12 @@ export default function ProductDetail() {
   useEffect(() => {
     setItem(null)
     setReviews(null)
+    setRelatedItems([])
     setError(null)
     setAdded(false)
     setReviewNotice(null)
     getItem(itemCode).then(setItem).catch((err) => setError(err.message))
+    getRecommendations({ itemCode, limit: 4 }).then((result) => setRelatedItems(Array.isArray(result) ? result : [])).catch(() => setRelatedItems([]))
     if (productSettings.reviews_enabled !== 0) {
       getProductReviews({ itemCode }).then(setReviews).catch(() => setReviews(null))
     }
@@ -93,7 +97,7 @@ export default function ProductDetail() {
       <SEOHead title={item.item_name} description={item.description || item.item_name} image={item.image} type="product" />
       <div className="breadcrumb"><Link to="/">{isArabic ? 'الرئيسية' : 'Home'}</Link><span>/</span><Link to="/products">{isArabic ? 'المنتجات' : 'Products'}</Link><span>/</span><span>{item.item_name}</span></div>
       <div className="product-detail-layout">
-        <div className={`product-gallery ${zoomed ? 'is-zoomed' : ''}`} onClick={() => item.image && setZoomed((value) => !value)}>{item.image ? <><img src={item.image} alt={item.item_name} className="main-image" /><span className="zoom-hint">{zoomed ? (isArabic ? 'اضغط للتصغير' : 'Click to zoom out') : (isArabic ? 'اضغط للتكبير' : 'Click to zoom')}</span></> : <div className="no-image-large">{isArabic ? 'لا توجد صورة' : 'No image'}</div>}</div>
+        <div className="product-gallery"><ImmersiveProductViewer item={item} enabled={productSettings.enable_immersive_viewer !== 0} /></div>
         <div className="product-info">
           <span className="product-cat">{item.item_group}</span>
           <h1>{item.item_name}</h1>
@@ -106,6 +110,7 @@ export default function ProductDetail() {
           <div className="detail-actions"><div className="qty-input"><button className="qty-btn" onClick={() => setQty((value) => Math.max(1, value - 1))}>−</button><input type="number" min="1" max={maxQty} value={qty} onChange={(e) => setQty(Math.min(maxQty, Math.max(1, parseInt(e.target.value, 10) || 1)))} /><button className="qty-btn" onClick={() => setQty((value) => Math.min(maxQty, value + 1))}>+</button></div><button className={`add-cart-large ${added ? 'added' : ''}`} disabled={!isInStock} onClick={handleAdd}>{added ? (isArabic ? (c.added_text_ar || 'تمت الإضافة') : (c.added_text_en || 'Added')) : (isArabic ? (c.add_to_cart_text_ar || 'أضف إلى السلة') : (c.add_to_cart_text_en || 'Add to Cart'))}</button><button className="buy-now-button" disabled={!isInStock} onClick={handleBuyNow}>{isArabic ? 'اشترِ الآن' : 'Buy now'}</button></div>
         </div>
       </div>
+      <CompleteTheLook item={item} products={item.recommendations || relatedItems} content={c} />
       <div className="mobile-sticky-buy"><div><strong>{Number(item.price || 0).toFixed(2)} {item.currency}</strong><span>{isInStock ? (isArabic ? 'متوفر الآن' : 'Available now') : (isArabic ? 'غير متوفر' : 'Unavailable')}</span></div><button type="button" disabled={!isInStock} onClick={handleAdd}>{added ? (isArabic ? 'تمت الإضافة' : 'Added') : (isArabic ? 'أضف إلى السلة' : 'Add to cart')}</button></div>
       {productSettings.reviews_enabled !== 0 && <section className="reviews-section">
         <div className="section-heading"><h2>{reviewTitle}</h2></div>
@@ -128,7 +133,7 @@ export default function ProductDetail() {
           <button type="submit" disabled={reviewSubmitting}>{reviewSubmitting ? (isArabic ? 'جارٍ الإرسال...' : 'Submitting...') : (isArabic ? 'إرسال التقييم' : 'Submit review')}</button>
         </form>
       </section>}
-      {item.recommendations?.length > 0 && <section className="related-products"><div className="section-heading"><h2>{isArabic ? (c.related_products_title_ar || 'قد يعجبك أيضاً') : (c.related_products_title_en || 'You may also like')}</h2></div><div className="product-grid">{item.recommendations.map((product) => <Link className="product-card" to={`/products/${encodeURIComponent(product.item_code)}`} key={product.item_code}><div className="product-card-image">{product.image ? <img src={product.image} alt={product.item_name} /> : <div className="no-image">{isArabic ? 'لا توجد صورة' : 'No image'}</div>}</div><div className="product-card-body"><h3>{product.item_name}</h3>{product.price != null && <p className="card-price">{Number(product.price).toFixed(2)} {product.currency}</p>}</div></Link>)}</div></section>}
+      {(item.recommendations || relatedItems).length > 0 && <section className="related-products"><div className="section-heading"><h2>{isArabic ? (c.related_products_title_ar || 'قد يعجبك أيضاً') : (c.related_products_title_en || 'You may also like')}</h2></div><div className="product-grid">{(item.recommendations || relatedItems).map((product) => <Link className="product-card" to={`/products/${encodeURIComponent(product.item_code)}`} key={product.item_code}><div className="product-card-image">{product.image ? <img src={product.image} alt={product.item_name} /> : <div className="no-image">{isArabic ? 'لا توجد صورة' : 'No image'}</div>}</div><div className="product-card-body"><h3>{product.item_name}</h3>{product.price != null && <p className="card-price">{Number(product.price).toFixed(2)} {product.currency}</p>}</div></Link>)}</div></section>}
       {showLogin && <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} onSuccess={() => { setShowLogin(false); addItem(cartItem(), qty); navigate('/checkout?express=1') }} />}
     </div>
   )

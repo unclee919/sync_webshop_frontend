@@ -34,7 +34,7 @@ export default function MiniCart({ open, onClose }) {
           <button type="button" className="mini-cart-close" onClick={onClose} aria-label={isArabic ? 'إغلاق السلة' : 'Close cart'}>×</button>
         </div>
         <div className="mini-cart-progress" aria-label={isArabic ? 'تقدم الشحن المجاني' : 'Free shipping progress'}>
-          <div className="mini-cart-progress-copy">{remaining > 0 ? <span>{remaining.toFixed(2)} SAR {text.away}</span> : <strong>{text.free}</strong>}</div>
+          <div className="mini-cart-progress-copy">{remaining > 0 ? <span>{remaining.toFixed(2)} SAR {text.away}</span> : <strong><span className="shipping-unlocked-mark" aria-hidden="true">✓</span>{text.free}</strong>}</div>
           <div className="mini-cart-progress-track"><span style={{ width: `${progress}%` }} /></div>
         </div>
         <div className="mini-cart-items">
