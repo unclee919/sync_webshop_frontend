@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { useLanguage } from '../context/LanguageContext'
+import { useContent } from '../context/ContentContext'
+import { formatStorefrontPrice } from '../utils/currency'
 import { getCheckoutSettings } from '../api/client'
 import './Cart.css'
 
 export default function Cart() {
   const { items, setQty, removeItem, total } = useCart()
   const { lang, isRtl } = useLanguage()
+  const { content } = useContent()
   const [shippingRule, setShippingRule] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -51,8 +54,8 @@ export default function Cart() {
             ) : (
               <span>
                 {lang === 'ar' 
-                  ? `بقي ${remaining.toFixed(2)} ${currency} للحصول على شحن مجاني` 
-                  : `You're ${remaining.toFixed(2)} ${currency} away from free shipping`}
+                  ? `بقي ${formatStorefrontPrice(remaining, currency, content)} للحصول على شحن مجاني`
+                  : `You're ${formatStorefrontPrice(remaining, currency, content)} away from free shipping`}
               </span>
             )}
           </div>
@@ -89,7 +92,7 @@ export default function Cart() {
                 </div>
                 
                 <div className="col-price">
-                  {item.price} {item.currency}
+                  {formatStorefrontPrice(item.price, item.currency, content)}
                 </div>
 
                 <div className="col-qty">
@@ -105,7 +108,7 @@ export default function Cart() {
                 </div>
 
                 <div className="col-total">
-                  {(item.price * item.qty).toFixed(2)} {item.currency}
+                  {formatStorefrontPrice(item.price * item.qty, item.currency, content)}
                 </div>
               </div>
             ))}
@@ -117,13 +120,13 @@ export default function Cart() {
             <h2 className="summary-title">{lang === 'ar' ? 'ملخص الطلب' : 'Order Summary'}</h2>
             <div className="summary-row">
               <span>{lang === 'ar' ? 'المجموع الفرعي' : 'Subtotal'}</span>
-              <span>{total.toFixed(2)} {currency}</span>
+              <span>{formatStorefrontPrice(total, currency, content)}</span>
             </div>
             <div className="summary-row">
               <span>{lang === 'ar' ? 'الشحن' : 'Shipping'}</span>
               <span>
                 {shippingRule ? (
-                  total >= threshold ? (lang === 'ar' ? 'مجاني' : 'Free') : `${shippingRule.shipping_cost.toFixed(2)} ${currency}`
+                  total >= threshold ? (lang === 'ar' ? 'مجاني' : 'Free') : formatStorefrontPrice(shippingRule.shipping_cost, currency, content)
                 ) : (
                   lang === 'ar' ? 'محسوب عند الدفع' : 'Calculated at checkout'
                 )}
@@ -132,7 +135,7 @@ export default function Cart() {
             <div className="summary-total">
               <span>{lang === 'ar' ? 'الإجمالي' : 'Total'}</span>
               <span>
-                {(total + (shippingRule && total < threshold ? shippingRule.shipping_cost : 0)).toFixed(2)} {currency}
+                {formatStorefrontPrice(total + (shippingRule && total < threshold ? shippingRule.shipping_cost : 0), currency, content)}
               </span>
             </div>
             <Link to="/checkout" className="checkout-btn">

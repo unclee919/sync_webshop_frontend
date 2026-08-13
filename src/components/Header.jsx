@@ -8,6 +8,7 @@ import VoiceSearch from './VoiceSearch'
 import VisualSearch from './VisualSearch'
 import BrandSwitcher from './BrandSwitcher'
 import CurrencySwitcher from './CurrencySwitcher'
+import { formatStorefrontPrice } from '../utils/currency'
 import './Header.css'
 
 function SearchIcon() { return <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></svg> }
@@ -152,11 +153,11 @@ export default function Header({ onOpenCart }) {
 	            </form>
             {showSuggestions && (suggestions.length > 0 || predictiveResult?.ghost) && (
               <div className="search-suggestions">
-                {predictiveResult?.ghost && <button type="button" className="search-ghost-result" onClick={() => { navigate(`/products/${encodeURIComponent(predictiveResult.ghost.item_code)}`); setSearch(''); setShowSuggestions(false) }}><span className="suggestion-image">{predictiveResult.ghost.image ? <img src={predictiveResult.ghost.image} alt="" /> : <span>⌕</span>}</span><span><strong>{predictiveResult.ghost.item_name}</strong><small>{t('Best match', 'أفضل تطابق')}{predictiveResult.ghost.price != null ? ` · ${Number(predictiveResult.ghost.price).toFixed(2)} ${predictiveResult.ghost.currency || ''}` : ''}</small></span></button>}
+                {predictiveResult?.ghost && <button type="button" className="search-ghost-result" onClick={() => { navigate(`/products/${encodeURIComponent(predictiveResult.ghost.item_code)}`); setSearch(''); setShowSuggestions(false) }}><span className="suggestion-image">{predictiveResult.ghost.image ? <img src={predictiveResult.ghost.image} alt="" /> : <span>⌕</span>}</span><span><strong>{predictiveResult.ghost.item_name}</strong><small>{t('Best match', 'أفضل تطابق')}{predictiveResult.ghost.price != null ? ` · ${formatStorefrontPrice(predictiveResult.ghost.price, predictiveResult.ghost.currency, content)}` : ''}</small></span></button>}
                 {suggestions.slice(0, 6).map((s, i) => (
                   <button key={i} type="button" onClick={() => { navigate(s.type === 'category' ? `/products?category=${encodeURIComponent(s.id)}` : `/products/${encodeURIComponent(s.id)}`); setSearch(''); setShowSuggestions(false) }}>
                     <span className="suggestion-image">{s.image ? <img src={s.image} alt="" /> : <span>⌕</span>}</span>
-                    <span><strong>{s.name}</strong><small>{s.type === 'category' ? t('Category', 'الفئة') : `${t('Product', 'المنتج')}${s.price != null ? ` · ${Number(s.price).toFixed(2)} ${s.currency || ''}` : ''}`}</small></span>
+                    <span><strong>{s.name}</strong><small>{s.type === 'category' ? t('Category', 'الفئة') : `${t('Product', 'المنتج')}${s.price != null ? ` · ${formatStorefrontPrice(s.price, s.currency, content)}` : ''}`}</small></span>
                   </button>
                 ))}
               </div>

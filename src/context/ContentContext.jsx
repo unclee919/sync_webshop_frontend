@@ -14,7 +14,7 @@ const FONT_STACKS = {
 export const DEFAULT_CONTENT = {
   site_name: 'Sync Webshop',
   storefront_brands: [],
-  master_settings: { landing: { enabled: 0 }, subscriptions: { enabled: 0, discount_percent: 0, intervals: [] }, courier: { provider: 'Manual', auto_waybill: 0 }, returns: { allowed_days: 14 }, currencies: { auto_detect: 1, supported: ['SAR'], rates: {} }, social_feed: [] },
+  master_settings: { landing: { enabled: 0 }, subscriptions: { enabled: 0, discount_percent: 0, intervals: [] }, courier: { provider: 'Manual', auto_waybill: 0 }, returns: { allowed_days: 14 }, currencies: { auto_detect: 1, supported: [], rates: {} }, social_feed: [] },
   social_feed_items: [],
   enterprise_settings: { ai: { auto_translate_enabled: 0, intelligent_merchandising: 0, voice_actions_enabled: 0 }, b2b: { enabled: 0, volume_pricing_enabled: 0, corporate_credit_enabled: 0, quick_order_enabled: 0 }, live_shopping: { enabled: 0 }, flash_sales: { enabled: 0, scarcity_threshold: 5, discount_percent: 0 }, recovery: { enabled: 0, delay_hours: 2, coupon_discount: 0 }, fraud_shield: { enabled: 0, max_order_amount: 5000 }, infrastructure: { edge_cache_enabled: 0, auto_healing_enabled: 0 } },
   ecosystem_settings: { ai: { rag_support_enabled: 0, demand_forecaster_enabled: 0, marketing_hub_enabled: 0 }, marketplace: { multi_vendor_enabled: 0, commission_percent: 15, affiliate_enabled: 0 }, fintech: { gift_cards_enabled: 0, subscription_box_enabled: 0 }, omnichannel: { bopis_enabled: 0, kiosk_mode_enabled: 0 } },

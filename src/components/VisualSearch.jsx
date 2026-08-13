@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { searchByImage } from '../api/client'
 import { useContent } from '../context/ContentContext'
 import { useLanguage } from '../context/LanguageContext'
+import { formatStorefrontPrice } from '../utils/currency'
 import './VisualSearch.css'
 
 export default function VisualSearch() {
@@ -54,7 +55,7 @@ export default function VisualSearch() {
         {preview && <img className="visual-search-preview" src={preview} alt={t('Selected product', 'المنتج المحدد')} />}
         {busy && <p className="visual-search-status" role="status">{t('Finding similar items…', 'جارٍ العثور على منتجات مشابهة…')}</p>}
         {error && <p className="visual-search-error" role="alert">{error}</p>}
-        {!busy && results.length > 0 && <div className="visual-search-results">{results.map((item) => <Link key={item.item_code} to={`/products/${encodeURIComponent(item.item_code)}`} onClick={() => setOpen(false)} className="visual-search-result"><img src={item.image} alt="" loading="lazy" /><span><strong>{item.item_name}</strong><small>{item.price != null ? `${Number(item.price).toFixed(2)} ${item.currency || ''}` : t('View product', 'عرض المنتج')}</small></span></Link>)}</div>}
+        {!busy && results.length > 0 && <div className="visual-search-results">{results.map((item) => <Link key={item.item_code} to={`/products/${encodeURIComponent(item.item_code)}`} onClick={() => setOpen(false)} className="visual-search-result"><img src={item.image} alt="" loading="lazy" /><span><strong>{item.item_name}</strong><small>{item.price != null ? formatStorefrontPrice(item.price, item.currency, content) : t('View product', 'عرض المنتج')}</small></span></Link>)}</div>}
         {!busy && !error && preview && results.length === 0 && <p className="visual-search-status">{t('No close matches found. Try a clearer product photo.', 'لم نعثر على نتائج قريبة. جرّب صورة أوضح للمنتج.')}</p>}
       </section>
     </div>}

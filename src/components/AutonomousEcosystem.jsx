@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { getBranches, ragSupportQuery, redeemGiftCard } from '../api/client'
 import { useContent } from '../context/ContentContext'
 import { useLanguage } from '../context/LanguageContext'
+import { formatStorefrontPrice } from '../utils/currency'
 import './AutonomousEcosystem.css'
 
 export default function AutonomousEcosystem() {
@@ -73,7 +74,7 @@ export default function AutonomousEcosystem() {
           <input value={giftCode} onChange={(e) => setGiftCode(e.target.value)} placeholder={t('Enter gift code (e.g., SYNC-ELITE-2026)', 'أدخل رمز الهدية')} />
           <button type="submit">{t('Redeem', 'استرداد')}</button>
         </form>
-        {giftResult && <div className={`ecosystem-result ${giftResult.valid ? 'success' : 'error'}`}>{giftResult.message} {giftResult.valid && `(Balance: SAR ${giftResult.remaining_balance})`}</div>}
+        {giftResult && <div className={`ecosystem-result ${giftResult.valid ? 'success' : 'error'}`}>{giftResult.message} {giftResult.valid && `(${t('Balance', 'الرصيد')}: ${formatStorefrontPrice(giftResult.remaining_balance, giftResult.currency, content)})`}</div>}
       </div>}
     </div>
   </section>

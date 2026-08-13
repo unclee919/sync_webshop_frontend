@@ -8,6 +8,7 @@ import { useLanguage } from '../context/LanguageContext'
 import { useContent } from '../context/ContentContext'
 import StripePaymentForm from '../components/StripePaymentForm'
 import GiftOptions from '../components/GiftOptions'
+import { formatStorefrontPrice } from '../utils/currency'
 import './Cart.css'
 
 export default function Checkout() {
@@ -49,7 +50,7 @@ export default function Checkout() {
   const gatewayList = settings?.payment_gateways || []
   const fulfillment = settings?.fulfillment || {}
   const paymobGateway = gatewayList.find((gateway) => gateway.name === 'paymob')
-  const currency = items[0]?.currency || 'GBP'
+  const currency = items[0]?.currency || c.master_settings?.currencies?.supported?.[0] || ''
   const cities = useMemo(() => territories.find((row) => row.governorate === governorate)?.cities || [], [territories, governorate])
   const requireTerritory = settings?.checkout_require_city_governorate ?? true
   const requireSecondPhone = settings?.checkout_require_second_phone ?? true
@@ -105,7 +106,7 @@ export default function Checkout() {
     try {
       const validated = await validateCoupon(code, total)
       setCoupon(validated)
-      setCouponMessage({ type: 'success', text: lang === 'ar' ? `تم تطبيق الخصم: ${Number(validated.discount_amount || 0).toFixed(2)} ${currency}` : `Coupon applied: ${Number(validated.discount_amount || 0).toFixed(2)} ${currency}` })
+      setCouponMessage({ type: 'success', text: lang === 'ar' ? `تم تطبيق الخصم: ${formatStorefrontPrice(validated.discount_amount, currency, content)}` : `Coupon applied: ${formatStorefrontPrice(validated.discount_amount, currency, content)}` })
     } catch (err) {
       setCoupon(null)
       setCouponMessage({ type: 'error', text: err.message })
@@ -185,9 +186,9 @@ export default function Checkout() {
         <div className="success-icon">✓</div>
         <h1>{lang === 'ar' ? (c.order_success_title_ar || 'تم تقديم الطلب بنجاح') : (c.order_success_title_en || 'Order Placed Successfully')}</h1>
         <p>{lang === 'ar' ? 'رقم الطلب:' : 'Order Number:'} <strong>{result.sales_order}</strong></p>
-        <p>{lang === 'ar' ? 'الإجمالي:' : 'Total:'} <strong>{Number(result.grand_total || 0).toFixed(2)} {result.currency}</strong></p>
-        {Number(result.coupon_discount || 0) > 0 && <p>{lang === 'ar' ? 'الخصم:' : 'Discount:'} {Number(result.coupon_discount).toFixed(2)} {result.currency}</p>}
-        {Number(result.shipping_cost || 0) > 0 && <p>{lang === 'ar' ? 'شامل رسوم الشحن:' : 'Including shipping:'} {Number(result.shipping_cost).toFixed(2)} {result.currency}</p>}
+        <p>{lang === 'ar' ? 'الإجمالي:' : 'Total:'} <strong>{formatStorefrontPrice(result.grand_total, result.currency, content)}</strong></p>
+        {Number(result.coupon_discount || 0) > 0 && <p>{lang === 'ar' ? 'الخصم:' : 'Discount:'} {formatStorefrontPrice(result.coupon_discount, result.currency, content)}</p>}
+        {Number(result.shipping_cost || 0) > 0 && <p>{lang === 'ar' ? 'شامل رسوم الشحن:' : 'Including shipping:'} {formatStorefrontPrice(result.shipping_cost, result.currency, content)}</p>}
         <div className="success-actions"><Link to="/products" className="btn-primary">{lang === 'ar' ? (c.continue_shopping_text_ar || 'مواصلة التسوق') : (c.continue_shopping_text_en || 'Continue Shopping')}</Link></div>
       </div>
     </div>
@@ -223,7 +224,7 @@ export default function Checkout() {
           </form>
         </div>
 
-        <div className="checkout-summary-container"><h2 className="section-title-small">{lang === 'ar' ? 'ملخص الطلب' : 'Order Summary'}</h2><div className="checkout-items">{items.map((item) => <div key={item.item_code} className="checkout-item"><div className="item-img-mini">{item.image && <img src={item.image} alt="" />}<span className="item-qty-badge">{item.qty}</span></div><div className="item-name-mini">{item.item_name}</div><div className="item-price-mini">{(item.price * item.qty).toFixed(2)} {item.currency}</div></div>)}</div><div className="summary-footer"><div className="summary-row"><span>{lang === 'ar' ? 'المجموع الفرعي' : 'Subtotal'}</span><span>{total.toFixed(2)} {currency}</span></div>{discount > 0 && <div className="summary-row discount-row"><span>{lang === 'ar' ? 'الخصم' : 'Discount'}</span><span>-{discount.toFixed(2)} {currency}</span></div>}<div className="summary-row"><span>{lang === 'ar' ? 'الشحن' : 'Shipping'}</span><span>{shippingCost > 0 ? `${shippingCost.toFixed(2)} ${currency}` : (lang === 'ar' ? 'مجاني' : 'Free')}</span></div><div className="summary-row total-row"><span>{lang === 'ar' ? 'الإجمالي' : 'Total'}</span><span className="total-price">{grandTotal.toFixed(2)} {currency}</span></div></div></div>
+        <div className="checkout-summary-container"><h2 className="section-title-small">{lang === 'ar' ? 'ملخص الطلب' : 'Order Summary'}</h2><div className="checkout-items">{items.map((item) => <div key={item.item_code} className="checkout-item"><div className="item-img-mini">{item.image && <img src={item.image} alt="" />}<span className="item-qty-badge">{item.qty}</span></div><div className="item-name-mini">{item.item_name}</div><div className="item-price-mini">{formatStorefrontPrice(item.price * item.qty, item.currency, content)}</div></div>)}</div><div className="summary-footer"><div className="summary-row"><span>{lang === 'ar' ? 'المجموع الفرعي' : 'Subtotal'}</span><span>{formatStorefrontPrice(total, currency, content)}</span></div>{discount > 0 && <div className="summary-row discount-row"><span>{lang === 'ar' ? 'الخصم' : 'Discount'}</span><span>-{formatStorefrontPrice(discount, currency, content)}</span></div>}<div className="summary-row"><span>{lang === 'ar' ? 'الشحن' : 'Shipping'}</span><span>{shippingCost > 0 ? formatStorefrontPrice(shippingCost, currency, content) : (lang === 'ar' ? 'مجاني' : 'Free')}</span></div><div className="summary-row total-row"><span>{lang === 'ar' ? 'الإجمالي' : 'Total'}</span><span className="total-price">{formatStorefrontPrice(grandTotal, currency, content)}</span></div></div></div>
       </div>
     </div>
   )

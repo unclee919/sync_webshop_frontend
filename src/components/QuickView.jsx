@@ -4,6 +4,7 @@ import { getItem } from '../api/client'
 import { useCart } from '../context/CartContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useContent } from '../context/ContentContext'
+import { formatStorefrontPrice } from '../utils/currency'
 import './QuickView.css'
 
 export default function QuickView({ itemCode, onClose }) {
@@ -44,7 +45,7 @@ export default function QuickView({ itemCode, onClose }) {
               <span className="product-cat">{item.item_group}</span>
               <h2>{item.item_name}</h2>
               <div className="detail-price">
-                {item.price ? <span className="current-price">{item.price.toFixed(2)} {item.currency}</span> : <span className="price-empty">{t('Price on request', 'السعر عند الطلب')}</span>}
+                {item.price ? <span className="current-price">{formatStorefrontPrice(item.price, item.currency, content)}</span> : <span className="price-empty">{t('Price on request', 'السعر عند الطلب')}</span>}
               </div>
               <div className="quick-view-description" dangerouslySetInnerHTML={{ __html: item.description?.slice(0, 250) + (item.description?.length > 250 ? '...' : '') }} />
               <div className="detail-actions">

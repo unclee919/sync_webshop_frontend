@@ -132,7 +132,7 @@ export function createPaymentIntent(amount, currency = 'gbp') {
   return callMethod('sync_webshop.api.payment.create_payment_intent', { method: 'POST', body: { amount, currency } })
 }
 export function getPaymobSettings() { return callMethod('sync_webshop.api.paymob.get_paymob_settings') }
-export function createPaymobIntention({ amount, currency = 'EGP', customer, items, salesOrder, deliveryDate }) {
+export function createPaymobIntention({ amount, currency, customer, items, salesOrder, deliveryDate }) {
   return callMethod('sync_webshop.api.paymob.create_payment_intention', {
     method: 'POST',
     body: { amount, currency, customer, items, sales_order: salesOrder, delivery_date: deliveryDate },
