@@ -7,6 +7,7 @@ import { useCart } from '../context/CartContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useContent } from '../context/ContentContext'
 import StripePaymentForm from '../components/StripePaymentForm'
+import GiftOptions from '../components/GiftOptions'
 import './Cart.css'
 
 export default function Checkout() {
@@ -40,6 +41,7 @@ export default function Checkout() {
   const [submitting, setSubmitting] = useState(false)
   const [loading, setLoading] = useState(true)
   const [settingsError, setSettingsError] = useState(null)
+  const [giftOptions, setGiftOptions] = useState({ wrap: false, message: '' })
 
   const gatewayList = settings?.payment_gateways || []
   const currency = items[0]?.currency || 'GBP'
@@ -85,7 +87,7 @@ export default function Checkout() {
   }, [])
 
   function customerPayload() {
-    return { name, email, phone, second_phone: secondPhone, address, governorate, city, location, coupon_code: coupon?.coupon_code }
+    return { name, email, phone, second_phone: secondPhone, address, governorate, city, location, coupon_code: coupon?.coupon_code, gift_message: giftOptions.message, gift_wrap: giftOptions.wrap }
   }
 
   async function handleApplyCoupon(event) {
@@ -127,6 +129,8 @@ export default function Checkout() {
         city,
         location,
         second_phone: secondPhone,
+        gift_message: giftOptions.message,
+        gift_wrap: giftOptions.wrap,
         submit,
       })
       if (submit) {
@@ -146,7 +150,7 @@ export default function Checkout() {
     setSubmitting(true)
     setError(null)
     try {
-      const draft = await createOrder({ customer: customerPayload(), items: items.map((item) => ({ item_code: item.item_code, qty: item.qty })), payment_method: 'paymob', delivery_date: deliveryDate, coupon_code: coupon?.coupon_code, governorate, city, location, second_phone: secondPhone, submit: false })
+      const draft = await createOrder({ customer: customerPayload(), items: items.map((item) => ({ item_code: item.item_code, qty: item.qty })), payment_method: 'paymob', delivery_date: deliveryDate, coupon_code: coupon?.coupon_code, governorate, city, location, second_phone: secondPhone, gift_message: giftOptions.message, gift_wrap: giftOptions.wrap, submit: false })
       const paymobGateway = gatewayList.find((gateway) => gateway.name === 'paymob')
       const intention = await createPaymobIntention({ amount: draft.grand_total, currency: paymobGateway?.currency || draft.currency || currency, customer: customerPayload(), items: items.map((item) => ({ item_code: item.item_code, item_name: item.item_name, qty: item.qty, price: item.price })), salesOrder: draft.sales_order, deliveryDate })
       if (!intention?.checkout_url) throw new Error(lang === 'ar' ? 'تعذر فتح بوابة الدفع.' : 'Paymob did not return a checkout URL.')
@@ -200,6 +204,8 @@ export default function Checkout() {
             </section>
 
             <section className="checkout-section"><h2 className="section-title-small">{lang === 'ar' ? 'رمز الخصم' : 'Coupon Code'}</h2><div className="coupon-form"><input value={couponCode} onChange={(event) => setCouponCode(event.target.value)} placeholder={lang === 'ar' ? (settings?.coupon_placeholder_ar || 'أدخل كود الخصم') : (settings?.coupon_placeholder_en || 'Enter coupon code')} disabled={Boolean(coupon)} /><button type="button" onClick={handleApplyCoupon} disabled={couponLoading || Boolean(coupon)}>{couponLoading ? '...' : (lang === 'ar' ? 'تطبيق' : 'Apply')}</button>{coupon && <button type="button" className="coupon-remove" onClick={removeCoupon}>{lang === 'ar' ? 'إزالة' : 'Remove'}</button>}</div>{couponMessage && <p className={`coupon-message ${couponMessage.type}`}>{couponMessage.text}</p>}</section>
+
+            <GiftOptions value={giftOptions} onChange={setGiftOptions} />
 
             <section className="checkout-section"><h2 className="section-title-small">{lang === 'ar' ? 'موعد التوصيل' : 'Delivery Date'}</h2><div className="form-group"><input type="date" required value={deliveryDate} min={new Date().toISOString().split('T')[0]} onChange={(event) => setDeliveryDate(event.target.value)} /><p className="form-hint">{lang === 'ar' ? 'اختر موعد التوصيل المفضل لديك' : 'Select your preferred delivery date'}</p></div></section>
 

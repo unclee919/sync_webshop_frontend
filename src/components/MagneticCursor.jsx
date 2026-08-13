@@ -1,13 +1,16 @@
 import { useEffect, useRef } from 'react'
 import { useUltraExperience } from '../context/UltraExperienceContext'
+import { useContent } from '../context/ContentContext'
 import './MagneticCursor.css'
 
 export default function MagneticCursor() {
   const cursorRef = useRef(null)
   const { settings } = useUltraExperience()
+  const { content } = useContent()
+  const sensoryEnabled = content?.experience_settings?.sensory_ui_enabled !== 0
 
   useEffect(() => {
-    if (settings.magnetic_cursor_enabled === 0 || window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined
+    if (!sensoryEnabled || settings.magnetic_cursor_enabled === 0 || window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined
     const cursor = cursorRef.current
     let raf = 0
     let pointer = { x: -100, y: -100 }
@@ -45,8 +48,8 @@ export default function MagneticCursor() {
       document.removeEventListener('pointerleave', clearTarget)
       if (raf) cancelAnimationFrame(raf)
     }
-  }, [settings.magnetic_cursor_enabled])
+  }, [sensoryEnabled, settings.magnetic_cursor_enabled])
 
-  if (settings.magnetic_cursor_enabled === 0) return null
+  if (!sensoryEnabled || settings.magnetic_cursor_enabled === 0) return null
   return <span ref={cursorRef} className="magnetic-cursor" aria-hidden="true" />
 }

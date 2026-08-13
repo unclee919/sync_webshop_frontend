@@ -11,6 +11,7 @@ import ImmersiveProductViewer from '../components/ImmersiveProductViewer'
 import CompleteTheLook from '../components/CompleteTheLook'
 import SpatialProductControls from '../components/SpatialProductControls'
 import FitGuide from '../components/FitGuide'
+import ProductStageSwitcher from '../components/ProductStageSwitcher'
 import './Products.css'
 
 export default function ProductDetail() {
@@ -108,7 +109,7 @@ export default function ProductDetail() {
       <SEOHead title={item.item_name} description={item.description || item.item_name} image={item.image} type="product" />
       <div className="breadcrumb"><Link to="/">{isArabic ? 'الرئيسية' : 'Home'}</Link><span>/</span><Link to="/products">{isArabic ? 'المنتجات' : 'Products'}</Link><span>/</span><span>{item.item_name}</span></div>
       <div className="product-detail-layout">
-        <div className="product-gallery"><ImmersiveProductViewer item={item} enabled={productSettings.enable_immersive_viewer !== 0} /><SpatialProductControls item={item} settings={productSettings} /><FitGuide item={item} settings={productSettings} /></div>
+        <div className="product-gallery"><ImmersiveProductViewer item={item} enabled={productSettings.enable_immersive_viewer !== 0} /><ProductStageSwitcher item={item} /><SpatialProductControls item={item} settings={productSettings} /><FitGuide item={item} settings={productSettings} /></div>
         <div className="product-info">
           <span className="product-cat">{item.item_group}</span>
           <h1>{item.item_name}</h1>

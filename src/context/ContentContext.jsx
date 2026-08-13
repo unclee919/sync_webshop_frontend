@@ -53,6 +53,7 @@ export const DEFAULT_CONTENT = {
   footer_settings: { enabled: 1, columns: [] },
   product_settings: { show_related_products: 1, show_sidebar: 1, enable_immersive_viewer: 1, enable_video_hover: 1, complete_the_look_enabled: 1, complete_the_look_title_en: 'Complete the look', complete_the_look_title_ar: 'أكمل الإطلالة', ar_enabled: 1, ar_ios_model_url: '', ar_android_model_url: '', three_d_model_url: '', exploded_view_enabled: 1, exploded_view_title_en: 'Inspect the details', exploded_view_title_ar: 'استكشف التفاصيل', fit_guide_enabled: 1, fit_guide_title_en: 'Find your best fit', fit_guide_title_ar: 'اعثر على المقاس المناسب' },
   ultra_settings: { adaptive_palette_enabled: 1, circadian_theme_enabled: 1, shared_transitions_enabled: 1, magnetic_cursor_enabled: 1, predictive_prefetch_enabled: 1, palette_transition_ms: 520, circadian_evening_start: 18, circadian_morning_start: 7 },
+  experience_settings: { sensory_ui_enabled: 1, cinematic_transitions_enabled: 1, lookbook_hotspots_enabled: 1, curated_for_you_enabled: 1, curated_for_you_title_en: 'Curated for you', curated_for_you_title_ar: 'مختارات لك', express_checkout_enabled: 1, express_checkout_title_en: 'A faster way to checkout', express_checkout_title_ar: 'طريقة أسرع لإتمام الطلب', express_checkout_subtitle_en: 'Use your saved details and continue in one fluid step.', express_checkout_subtitle_ar: 'استخدم بياناتك المحفوظة وأكمل طلبك بخطوة سلسة.', express_checkout_cta_en: 'Checkout faster', express_checkout_cta_ar: 'إتمام أسرع', gifting_enabled: 1, gifting_title_en: 'Make it a gift', gifting_title_ar: 'اجعلها هدية', gifting_message_placeholder_en: 'Add a personal note', gifting_message_placeholder_ar: 'أضف رسالة شخصية', gifting_wrap_label_en: 'Add gift wrapping', gifting_wrap_label_ar: 'إضافة تغليف هدايا' },
   theme: {
     layout_style: 'Cedar',
     colors: {
@@ -97,6 +98,9 @@ function mergeContent(data) {
       spacing: { ...DEFAULT_CONTENT.theme.spacing, ...(source.theme?.spacing || {}) },
       dimensions: { ...DEFAULT_CONTENT.theme.dimensions, ...(source.theme?.dimensions || {}) },
     },
+    product_settings: { ...DEFAULT_CONTENT.product_settings, ...(source.product_settings || {}) },
+    ultra_settings: { ...DEFAULT_CONTENT.ultra_settings, ...(source.ultra_settings || {}) },
+    experience_settings: { ...DEFAULT_CONTENT.experience_settings, ...(source.experience_settings || {}) },
   }
 }
 

@@ -1,13 +1,16 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useUltraExperience } from '../context/UltraExperienceContext'
+import { useContent } from '../context/ContentContext'
 import './SharedTransitionOverlay.css'
 
 export default function SharedTransitionOverlay() {
   const { transition } = useUltraExperience()
+  const { content } = useContent()
+  const enabled = content?.experience_settings?.cinematic_transitions_enabled !== 0
 
   return (
     <AnimatePresence>
-      {transition && (
+      {enabled && transition && (
         <motion.div className="shared-transition-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} aria-hidden="true">
           <motion.div
             className="shared-transition-card elite-glass"
