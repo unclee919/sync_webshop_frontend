@@ -32,6 +32,13 @@ export default function Header({ onOpenCart }) {
   const isArabic = lang === 'ar'
   const t = (en, ar, fallback = '') => (isArabic ? (ar || en || fallback) : (en || ar || fallback))
   const navLinks = (content?.nav_links || []).filter((link) => link.show_in_navbar !== 0)
+  const dynamicPages = content?.dynamic_pages || {}
+  const dynamicLinks = [
+    { key: 'about', path: '/about-us', enabled: dynamicPages.about_enabled !== 0, show: dynamicPages.about_show_in_nav !== 0, en: dynamicPages.about_label_en, ar: dynamicPages.about_label_ar },
+    { key: 'policy', path: '/our-policy', enabled: dynamicPages.policy_enabled !== 0, show: dynamicPages.policy_show_in_nav !== 0, en: dynamicPages.policy_label_en, ar: dynamicPages.policy_label_ar },
+    { key: 'articles', path: '/articles', enabled: dynamicPages.articles_enabled !== 0, show: dynamicPages.articles_show_in_nav !== 0, en: dynamicPages.articles_label_en, ar: dynamicPages.articles_label_ar },
+    { key: 'qa', path: '/qa', enabled: dynamicPages.qa_enabled !== 0, show: dynamicPages.qa_show_in_nav !== 0, en: dynamicPages.qa_label_en, ar: dynamicPages.qa_label_ar },
+  ].filter((link) => dynamicPages.enabled !== 0 && link.enabled && link.show)
   const logo = content?.theme?.logo
   const menuMax = Math.max(1, Number(content?.mega_menu_max_categories) || 12)
   const menuTitle = t(content?.mega_menu_title_en, content?.mega_menu_title_ar, 'Browse categories')
@@ -179,6 +186,7 @@ export default function Header({ onOpenCart }) {
             <Link to="/" className={location.pathname === '/' ? 'active' : ''}>{t(content?.home_text_en, content?.home_text_ar, 'Home')}</Link>
             <Link to="/products" className={location.pathname.startsWith('/products') ? 'active' : ''}>{t(content?.all_products_text_en, content?.all_products_text_ar, 'All products')}</Link>
             <Link to="/features" className={location.pathname === '/features' ? 'active' : ''}>{t(content?.why_us_text_en, content?.why_us_text_ar, 'Why shop with us')}</Link>
+            {dynamicLinks.map((link) => <Link key={link.key} to={link.path} className={location.pathname === link.path || (link.key === 'articles' && location.pathname.startsWith('/articles/')) ? 'active' : ''}>{t(link.en, link.ar)}</Link>)}
             {navLinks.map((link, i) => link.is_external ? <a key={i} href={link.link_url} target="_blank" rel="noreferrer">{t(link.label_en, link.label_ar)}</a> : <Link key={i} to={link.link_url}>{t(link.label_en, link.label_ar)}</Link>)}
           </div>
           {content.phone_number && <a className="support-pill" href={`tel:${content.phone_number}`}><span className="support-dot" />{t(content.support_center_text_en, content.support_center_text_ar, 'Support')} <strong>{content.phone_number}</strong></a>}

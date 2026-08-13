@@ -15,6 +15,13 @@ export default function Footer() {
   const footer = content.footer_settings || {}
   const columns = footer.columns || []
   const socialLinks = content.social_links || []
+  const dynamicPages = content.dynamic_pages || {}
+  const dynamicLinks = [
+    { key: 'about', path: '/about-us', enabled: dynamicPages.about_enabled !== 0, show: dynamicPages.about_show_in_nav !== 0, en: dynamicPages.about_label_en, ar: dynamicPages.about_label_ar },
+    { key: 'policy', path: '/our-policy', enabled: dynamicPages.policy_enabled !== 0, show: dynamicPages.policy_show_in_nav !== 0, en: dynamicPages.policy_label_en, ar: dynamicPages.policy_label_ar },
+    { key: 'articles', path: '/articles', enabled: dynamicPages.articles_enabled !== 0, show: dynamicPages.articles_show_in_nav !== 0, en: dynamicPages.articles_label_en, ar: dynamicPages.articles_label_ar },
+    { key: 'qa', path: '/qa', enabled: dynamicPages.qa_enabled !== 0, show: dynamicPages.qa_show_in_nav !== 0, en: dynamicPages.qa_label_en, ar: dynamicPages.qa_label_ar },
+  ].filter((link) => dynamicPages.enabled !== 0 && link.enabled && link.show)
   const year = new Date().getFullYear()
 
   return <footer className={`site-footer ${isRtl ? 'rtl' : 'ltr'}`}>
@@ -30,8 +37,10 @@ export default function Footer() {
       </div>
 
       <div className="footer-links-grid">
-        {columns.length > 0 ? columns.slice(0, 4).map((column, index) => <div className="footer-link-column" key={`${column.title_en}-${index}`}><h3>{t(column.title_en, column.title_ar)}</h3><ul>{(column.links || []).map((link, linkIndex) => <li key={`${link.link_url}-${linkIndex}`}>{link.is_external ? <a href={link.link_url} target="_blank" rel="noreferrer">{t(link.label_en, link.label_ar)} <ArrowIcon /></a> : <Link to={link.link_url}>{t(link.label_en, link.label_ar)} <ArrowIcon /></Link>}</li>)}</ul></div>) : <div className="footer-link-column"><h3>{t('Explore', 'استكشف')}</h3><ul><li><Link to="/">{t('Home', 'الرئيسية')} <ArrowIcon /></Link></li><li><Link to="/products">{t('All products', 'كل المنتجات')} <ArrowIcon /></Link></li><li><Link to="/track">{t('Track order', 'تتبع الطلب')} <ArrowIcon /></Link></li><li><Link to="/features">{t('Why us', 'لماذا نحن')} <ArrowIcon /></Link></li></ul></div>}
-        <div className="footer-link-column footer-social-column"><h3>{t('Follow along', 'تابعنا')}</h3><div className="footer-social-links">{socialLinks.length > 0 ? socialLinks.map((link, index) => <a key={`${link.platform}-${index}`} href={link.link_url} target="_blank" rel="noreferrer">{link.platform}</a>) : <span>{t('Social links can be managed from Frappe Desk.', 'يمكن إدارة روابط التواصل الاجتماعي من لوحة Frappe.')}</span>}</div></div>
+                {columns.length > 0 ? columns.slice(0, 4).map((column, index) => <div className="footer-link-column" key={`${column.title_en}-${index}`}><h3>{t(column.title_en, column.title_ar)}</h3><ul>{(column.links || []).map((link, linkIndex) => <li key={`${link.link_url}-${linkIndex}`}>{link.is_external ? <a href={link.link_url} target="_blank" rel="noreferrer">{t(link.label_en, link.label_ar)} <ArrowIcon /></a> : <Link to={link.link_url}>{t(link.label_en, link.label_ar)} <ArrowIcon /></Link>}</li>)}</ul></div>) : <div className="footer-link-column"><h3>{t('Explore', 'استكشف')}</h3><ul><li><Link to="/">{t('Home', 'الرئيسية')} <ArrowIcon /></Link></li><li><Link to="/products">{t('All products', 'كل المنتجات')} <ArrowIcon /></Link></li><li><Link to="/track">{t('Track order', 'تتبع الطلب')} <ArrowIcon /></Link></li><li><Link to="/features">{t('Why us', 'لماذا نحن')} <ArrowIcon /></Link></li></ul></div>}
+        {dynamicLinks.length > 0 && <div className="footer-link-column"><h3>{t('Information', 'معلومات')}</h3><ul>{dynamicLinks.map((link) => <li key={link.key}><Link to={link.path}>{t(link.en, link.ar)} <ArrowIcon /></Link></li>)}</ul></div>}
+        <div className="footer-link-column footer-social-column">
+<h3>{t('Follow along', 'تابعنا')}</h3><div className="footer-social-links">{socialLinks.length > 0 ? socialLinks.map((link, index) => <a key={`${link.platform}-${index}`} href={link.link_url} target="_blank" rel="noreferrer">{link.platform}</a>) : <span>{t('Social links can be managed from Frappe Desk.', 'يمكن إدارة روابط التواصل الاجتماعي من لوحة Frappe.')}</span>}</div></div>
       </div>
     </div>
     <div className="footer-bottom"><div className="container footer-bottom-inner"><span>{footer.copyright_en || footer.copyright_ar || `© ${year} ${content.site_name}. ${t('All rights reserved.', 'جميع الحقوق محفوظة.')}`}</span><span>{t('Designed for a better shopping experience.', 'مصمم لتجربة تسوق أفضل.')}</span></div></div>

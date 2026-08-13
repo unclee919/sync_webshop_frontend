@@ -161,3 +161,10 @@ export function getPresenceSettings() { return callMethod("sync_webshop.api.pres
 export function requestQuote({ customer, items, note, company }) {
   return callMethod("sync_webshop.api.presence.request_quote", { method: "POST", body: { customer, items, note, company } })
 }
+
+export function getDynamicPageSettings() { return callMethod('sync_webshop.api.dynamic_pages.get_dynamic_page_settings') }
+export function getAboutPage() { return callMethod('sync_webshop.api.dynamic_pages.get_about_page') }
+export function getPolicyPage() { return callMethod('sync_webshop.api.dynamic_pages.get_policy_page') }
+export function getArticles() { return callMethod('sync_webshop.api.dynamic_pages.get_articles') }
+export function getArticle(route) { return callMethod('sync_webshop.api.dynamic_pages.get_article', { params: { route } }) }
+export function getQaItems() { return callMethod('sync_webshop.api.dynamic_pages.get_qa_items') }
