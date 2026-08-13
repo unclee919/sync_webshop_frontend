@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useContent } from '../context/ContentContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useCart } from '../context/CartContext'
-import { getCategories, getSearchSuggestions } from '../api/client'
+import { getCategories, getItem, getSearchSuggestions, sendVoiceAction } from '../api/client'
 import VoiceSearch from './VoiceSearch'
 import VisualSearch from './VisualSearch'
 import BrandSwitcher from './BrandSwitcher'
@@ -18,7 +18,7 @@ function HeartIcon() { return <svg viewBox="0 0 24 24" aria-hidden="true"><path 
 export default function Header({ onOpenCart }) {
   const { content } = useContent()
   const { lang, setLang, isRtl } = useLanguage()
-  const { count } = useCart()
+  const { count, addItem } = useCart()
   const navigate = useNavigate()
   const location = useLocation()
   const searchRef = useRef(null)
@@ -66,6 +66,27 @@ export default function Header({ onOpenCart }) {
 
   useEffect(() => { setMobileOpen(false); setShowCategories(false) }, [location.pathname, location.search])
 
+  const handleVoiceResult = async (text) => {
+    const voiceEnabled = content?.enterprise_settings?.ai?.voice_actions_enabled !== 0
+    if (voiceEnabled) {
+      try {
+        const action = await sendVoiceAction(text)
+        if (action?.action === 'add_to_cart' && action.item_code) {
+          const item = await getItem(action.item_code)
+          addItem({ item_code: item.item_code, item_name: item.item_name, price: item.price, currency: item.currency, image: item.image }, 1)
+          onOpenCart?.()
+          return
+        }
+        if (action?.action === 'apply_coupon' && action.coupon_code) {
+          sessionStorage.setItem('sync_webshop_voice_coupon', action.coupon_code)
+        }
+      } catch { /* fall back to normal search when voice action is unavailable */ }
+    }
+    setSearch(text)
+    navigate(`/products?search=${encodeURIComponent(text)}`)
+    setShowSuggestions(false)
+  }
+
   const handleSearch = (event) => {
     event.preventDefault()
     if (!search.trim()) { navigate('/products'); return }
@@ -107,7 +128,7 @@ export default function Header({ onOpenCart }) {
             <form className="search-form" onSubmit={handleSearch}>
               <span className="search-leading"><SearchIcon /></span>
 <input value={search} onChange={(e) => { setSearch(e.target.value); setShowSuggestions(true) }} onFocus={() => setShowSuggestions(true)} placeholder={t(content.search_placeholder_en, content.search_placeholder_ar, 'Search products, categories and more')} />
-	              <VoiceSearch onResult={(text) => { setSearch(text); navigate(`/products?search=${encodeURIComponent(text)}`); setShowSuggestions(false); }} />
+	              <VoiceSearch onResult={handleVoiceResult} />
                       <VisualSearch />
 	              <button type="submit">{t(content?.search_button_text_en, content?.search_button_text_ar, 'Search')}</button>
 	            </form>

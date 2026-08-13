@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { getContent, getEliteSettings, getStorefrontProfiles, getMasterClassSettings } from '../api/client'
+import { getContent, getEliteSettings, getStorefrontProfiles, getMasterClassSettings, getEnterpriseSettings } from '../api/client'
 
 const ContentContext = createContext(null)
 
@@ -16,6 +16,7 @@ export const DEFAULT_CONTENT = {
   storefront_brands: [],
   master_settings: { landing: { enabled: 0 }, subscriptions: { enabled: 0, discount_percent: 0, intervals: [] }, courier: { provider: 'Manual', auto_waybill: 0 }, returns: { allowed_days: 14 }, currencies: { auto_detect: 1, supported: ['SAR'], rates: {} }, social_feed: [] },
   social_feed_items: [],
+  enterprise_settings: { ai: { auto_translate_enabled: 0, intelligent_merchandising: 0, voice_actions_enabled: 0 }, b2b: { enabled: 0, volume_pricing_enabled: 0, corporate_credit_enabled: 0, quick_order_enabled: 0 }, live_shopping: { enabled: 0 }, flash_sales: { enabled: 0, scarcity_threshold: 5, discount_percent: 0 }, recovery: { enabled: 0, delay_hours: 2, coupon_discount: 0 }, fraud_shield: { enabled: 0, max_order_amount: 5000 }, infrastructure: { edge_cache_enabled: 0, auto_healing_enabled: 0 } },
   business_profile: { vertical: 'General Retail', vertical_label_en: 'Thoughtfully selected', vertical_label_ar: 'مختارات بعناية', intro_en: 'Everyday essentials, thoughtfully selected.', intro_ar: 'احتياجاتك اليومية، مختارة بعناية.', unit_label_en: 'item', unit_label_ar: 'منتج' },
   elite_settings: { ai_vision: { visual_search_enabled: 1, auto_tagging_enabled: 1, nlp_enabled: 1 }, marketplaces: { amazon_sa_enabled: 0, noon_enabled: 0, sync_interval_minutes: 30 }, regional_payments: { tabby_enabled: 1, tamara_enabled: 1, mada_enabled: 1, apple_pay_enabled: 1 }, pwa: { pwa_enabled: 1, app_short_name: 'Sync Webshop', theme_color: '#173F3A', offline_message_en: 'You are currently offline.', offline_message_ar: 'أنت غير متصل بالإنترنت حالياً.' } },
   site_name_en: 'Sync Webshop',
@@ -110,6 +111,7 @@ function mergeContent(data) {
     storefront_brands: Array.isArray(source.storefront_brands) ? source.storefront_brands : DEFAULT_CONTENT.storefront_brands,
     master_settings: { ...DEFAULT_CONTENT.master_settings, ...(source.master_settings || {}), landing: { ...DEFAULT_CONTENT.master_settings.landing, ...(source.master_settings?.landing || {}) }, subscriptions: { ...DEFAULT_CONTENT.master_settings.subscriptions, ...(source.master_settings?.subscriptions || {}) }, courier: { ...DEFAULT_CONTENT.master_settings.courier, ...(source.master_settings?.courier || {}) }, returns: { ...DEFAULT_CONTENT.master_settings.returns, ...(source.master_settings?.returns || {}) }, currencies: { ...DEFAULT_CONTENT.master_settings.currencies, ...(source.master_settings?.currencies || {}) } },
     social_feed_items: Array.isArray(source.social_feed_items) ? source.social_feed_items : DEFAULT_CONTENT.social_feed_items,
+    enterprise_settings: { ...DEFAULT_CONTENT.enterprise_settings, ...(source.enterprise_settings || {}), ai: { ...DEFAULT_CONTENT.enterprise_settings.ai, ...(source.enterprise_settings?.ai || {}) }, b2b: { ...DEFAULT_CONTENT.enterprise_settings.b2b, ...(source.enterprise_settings?.b2b || {}) }, live_shopping: { ...DEFAULT_CONTENT.enterprise_settings.live_shopping, ...(source.enterprise_settings?.live_shopping || {}) }, flash_sales: { ...DEFAULT_CONTENT.enterprise_settings.flash_sales, ...(source.enterprise_settings?.flash_sales || {}) }, recovery: { ...DEFAULT_CONTENT.enterprise_settings.recovery, ...(source.enterprise_settings?.recovery || {}) }, fraud_shield: { ...DEFAULT_CONTENT.enterprise_settings.fraud_shield, ...(source.enterprise_settings?.fraud_shield || {}) }, infrastructure: { ...DEFAULT_CONTENT.enterprise_settings.infrastructure, ...(source.enterprise_settings?.infrastructure || {}) } },
     elite_settings: {
       ...DEFAULT_CONTENT.elite_settings,
       ...(source.elite_settings || {}),
@@ -156,8 +158,8 @@ export function ContentProvider({ children }) {
   const loadContent = async () => {
     try {
       setLoading(true)
-      const [data, eliteSettings, storefrontProfiles, masterSettings] = await Promise.all([getContent(), getEliteSettings().catch(() => null), getStorefrontProfiles().catch(() => []), getMasterClassSettings().catch(() => null)])
-      const nextContent = mergeContent({ ...data, elite_settings: eliteSettings || data?.elite_settings, storefront_brands: storefrontProfiles || data?.storefront_brands, master_settings: masterSettings || data?.master_settings, social_feed_items: masterSettings?.social_feed || data?.social_feed_items })
+      const [data, eliteSettings, storefrontProfiles, masterSettings, enterpriseSettings] = await Promise.all([getContent(), getEliteSettings().catch(() => null), getStorefrontProfiles().catch(() => []), getMasterClassSettings().catch(() => null), getEnterpriseSettings().catch(() => null)])
+      const nextContent = mergeContent({ ...data, elite_settings: eliteSettings || data?.elite_settings, storefront_brands: storefrontProfiles || data?.storefront_brands, master_settings: masterSettings || data?.master_settings, social_feed_items: masterSettings?.social_feed || data?.social_feed_items, enterprise_settings: enterpriseSettings || data?.enterprise_settings })
       setContent(nextContent)
       applyThemeToDocument(nextContent.theme)
       setError(null)

@@ -3,6 +3,8 @@ import { deleteCustomerAddress, getCustomerPortal, getInvoice, getItem, requestR
 import { useLanguage } from '../context/LanguageContext'
 import { useCart } from '../context/CartContext'
 import { useNavigate } from 'react-router-dom'
+import { useContent } from '../context/ContentContext'
+import B2BQuickOrder from '../components/B2BQuickOrder'
 import './Cart.css'
 import './Dashboard.css'
 
@@ -34,6 +36,7 @@ function TrackingTimeline({ timeline, isArabic }) {
 
 export default function Dashboard() {
   const { lang, isRtl } = useLanguage()
+  const { content } = useContent()
   const isArabic = lang === 'ar'
   const [email, setEmail] = useState('')
   const [result, setResult] = useState(null)
@@ -189,6 +192,7 @@ export default function Dashboard() {
       <form className="dashboard-lookup" onSubmit={handleSubmit}><input type="email" required placeholder={text.emailPlaceholder} value={email} onChange={(e) => setEmail(e.target.value)} /><button type="submit" disabled={loading}>{loading ? text.loading : text.lookup}</button></form>
       {error && <p className="checkout-error" role="alert">{error}</p>}
       {notice && <p className="dashboard-notice" role="status">{notice}</p>}
+      <B2BQuickOrder />
       {result && <>
         {analytics && <section className="portal-section"><h2>{text.analytics}</h2><div className="portal-summary"><div><strong>{analytics.total_orders || 0}</strong><span>{text.orders}</span></div><div><strong>{Number(analytics.total_spend || 0).toFixed(2)} {analytics.currency || ''}</strong><span>{text.spend}</span></div><div><strong>{Number(analytics.average_order_value || 0).toFixed(2)} {analytics.currency || ''}</strong><span>{text.average}</span></div><div><strong>{analytics.completed_orders || 0}</strong><span>{text.completed}</span></div></div></section>}
         {result.loyalty && settings.enable_loyalty && <section className="portal-section loyalty-card"><h2>{text.loyalty}</h2><strong>{Number(result.loyalty.points || 0).toLocaleString()} </strong><span>{text.loyalty}</span></section>}
