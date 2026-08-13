@@ -134,7 +134,7 @@ export default function Landing() {
         {hero?.image && <motion.div className="hero-parallax-media" style={{ y: heroParallaxY, backgroundImage: `linear-gradient(90deg, rgba(10, 39, 34, 0.8) 0%, rgba(10, 39, 34, 0.4) 100%), url(${hero.image})` }} />}
         <div className="container hero-inner">
           <motion.div className="hero-copy" style={{ y: heroCopyY }}>
-            <span className="hero-eyebrow">{t('Thoughtfully selected', 'مختارات بعناية')}</span>
+            <span className="hero-eyebrow">{t(content?.business_profile?.vertical_label_en, content?.business_profile?.vertical_label_ar, 'Thoughtfully selected')}</span>
             <h1>{heroTitle}</h1>
             <p>{heroSubtitle}</p>
             <div className="hero-actions">

@@ -13,6 +13,7 @@ const FONT_STACKS = {
 
 export const DEFAULT_CONTENT = {
   site_name: 'Sync Webshop',
+  business_profile: { vertical: 'General Retail', vertical_label_en: 'Thoughtfully selected', vertical_label_ar: 'مختارات بعناية', intro_en: 'Everyday essentials, thoughtfully selected.', intro_ar: 'احتياجاتك اليومية، مختارة بعناية.', unit_label_en: 'item', unit_label_ar: 'منتج' },
   site_name_en: 'Sync Webshop',
   site_name_ar: 'متجر سينك',
   tagline_en: 'Everyday essentials, thoughtfully selected.',
@@ -101,6 +102,7 @@ function mergeContent(data) {
     product_settings: { ...DEFAULT_CONTENT.product_settings, ...(source.product_settings || {}) },
     ultra_settings: { ...DEFAULT_CONTENT.ultra_settings, ...(source.ultra_settings || {}) },
     experience_settings: { ...DEFAULT_CONTENT.experience_settings, ...(source.experience_settings || {}) },
+    business_profile: { ...DEFAULT_CONTENT.business_profile, ...(source.business_profile || {}) },
   }
 }
 
