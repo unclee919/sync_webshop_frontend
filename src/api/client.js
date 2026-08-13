@@ -34,9 +34,9 @@ export function apiCall(path, body = {}) { return callMethod(path, { method: 'PO
 export function getTheme() { return callMethod('sync_webshop.api.theme.get_theme') }
 export function getContent() { return callMethod('sync_webshop.api.content.get_content') }
 
-export function getCatalog({ itemGroup, search, page = 1, pageSize = 20, minPrice, maxPrice, attributes } = {}) {
+export function getCatalog({ itemGroup, search, page = 1, pageSize = 20, minPrice, maxPrice, attributes, styleProfile } = {}) {
   return callMethod('sync_webshop.api.catalog.get_catalog', {
-    params: { item_group: itemGroup, search, page, page_size: pageSize, min_price: minPrice, max_price: maxPrice, attributes },
+    params: { item_group: itemGroup, search, page, page_size: pageSize, min_price: minPrice, max_price: maxPrice, attributes, style_profile: styleProfile },
   })
 }
 export function getCategories() { return callMethod('sync_webshop.api.catalog.get_categories') }
@@ -126,4 +126,10 @@ export function removeFromWishlist(itemCode) { return callMethod('sync_webshop.a
 
 export function searchByImage({ imageData, filename, query } = {}) {
   return callMethod('sync_webshop.api.visual_search.search_by_image', { method: 'POST', body: { image_data: imageData, filename, query } })
+}
+
+export function getStyleQuiz() { return callMethod("sync_webshop.api.presence.get_style_quiz") }
+export function getPresenceSettings() { return callMethod("sync_webshop.api.presence.get_presence_settings") }
+export function requestQuote({ customer, items, note, company }) {
+  return callMethod("sync_webshop.api.presence.request_quote", { method: "POST", body: { customer, items, note, company } })
 }

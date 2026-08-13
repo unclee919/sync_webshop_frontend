@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { getOrderStatus } from '../api/client'
 import { useLanguage } from '../context/LanguageContext'
 import './Cart.css'
+import TrackingMap from '../components/TrackingMap'
 
 export default function OrderTracking() {
   const { lang, isRtl } = useLanguage()
@@ -85,6 +86,7 @@ export default function OrderTracking() {
               </div>
             </div>
 
+            <TrackingMap tracking={order.tracking} />
             <div className="order-items-list mt-4">
               <h4>{lang === 'ar' ? 'المنتجات' : 'Items'}</h4>
               {order.items.map(item => (

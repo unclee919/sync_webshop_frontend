@@ -11,6 +11,7 @@ import QuickView from '../components/QuickView'
 import SocialProof from '../components/SocialProof'
 import EliteStories from '../components/EliteStories'
 import EditorialCollectionRail from '../components/EditorialCollectionRail'
+import StyleQuiz from '../components/StyleQuiz'
 import './Landing.css'
 
 function ArrowIcon() { return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13" /><path d="m13 6 6 6-6 6" /></svg> }
@@ -146,6 +147,7 @@ export default function Landing() {
 
       <EliteStories content={content} />
       <EditorialCollectionRail collections={content?.editorial_collections || []} />
+      <StyleQuiz />
 
             {categories.length > 0 && <section className="home-section container">
         <div className="home-section-heading"><div><h2>{t(content?.best_categories_text_en, content?.best_categories_text_ar, 'Best Categories')}</h2></div><Link to="/products" className="section-view-all">{t(content?.view_all_text_en, content?.view_all_text_ar, 'View All')}<ArrowIcon /></Link></div>

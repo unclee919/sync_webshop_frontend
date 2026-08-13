@@ -12,6 +12,8 @@ import CompleteTheLook from '../components/CompleteTheLook'
 import SpatialProductControls from '../components/SpatialProductControls'
 import FitGuide from '../components/FitGuide'
 import ProductStageSwitcher from '../components/ProductStageSwitcher'
+import MaterialStudio from '../components/MaterialStudio'
+import QuoteRequestModal from '../components/QuoteRequestModal'
 import './Products.css'
 
 export default function ProductDetail() {
@@ -109,7 +111,7 @@ export default function ProductDetail() {
       <SEOHead title={item.item_name} description={item.description || item.item_name} image={item.image} type="product" />
       <div className="breadcrumb"><Link to="/">{isArabic ? 'الرئيسية' : 'Home'}</Link><span>/</span><Link to="/products">{isArabic ? 'المنتجات' : 'Products'}</Link><span>/</span><span>{item.item_name}</span></div>
       <div className="product-detail-layout">
-        <div className="product-gallery"><ImmersiveProductViewer item={item} enabled={productSettings.enable_immersive_viewer !== 0} /><ProductStageSwitcher item={item} /><SpatialProductControls item={item} settings={productSettings} /><FitGuide item={item} settings={productSettings} /></div>
+        <div className="product-gallery"><ImmersiveProductViewer item={item} enabled={productSettings.enable_immersive_viewer !== 0} /><ProductStageSwitcher item={item} /><SpatialProductControls item={item} settings={productSettings} /><FitGuide item={item} settings={productSettings} /><MaterialStudio item={item} settings={productSettings} /></div>
         <div className="product-info">
           <span className="product-cat">{item.item_group}</span>
           <h1>{item.item_name}</h1>
@@ -119,7 +121,7 @@ export default function ProductDetail() {
           {item.attributes?.length > 0 && <div className="variant-attributes"><h3>{isArabic ? 'المواصفات' : 'Available options'}</h3>{item.attributes.map((attribute) => <span className="variant-chip" key={`${attribute.attribute}-${attribute.value}`}>{attribute.attribute}: {attribute.value}</span>)}</div>}
           <div className="product-detail-description-wrapper"><div className="product-detail-description" dangerouslySetInnerHTML={{ __html: item.description || '' }} /></div>
           <ul className="product-meta"><li>{isArabic ? (c.item_code_label_ar || 'رمز المنتج:') : (c.item_code_label_en || 'Item Code:')} <span>{item.item_code}</span></li><li>{isArabic ? (c.category_label_ar || 'الفئة:') : (c.category_label_en || 'Category:')} <span>{item.item_group}</span></li>{item.stock_uom && <li>{isArabic ? (c.unit_label_ar || 'الوحدة:') : (c.unit_label_en || 'Unit:')} <span>{item.stock_uom}</span></li>}</ul>
-          <div className="detail-actions"><div className="qty-input"><button className="qty-btn" onClick={() => setQty((value) => Math.max(1, value - 1))}>−</button><input type="number" min="1" max={maxQty} value={qty} onChange={(e) => setQty(Math.min(maxQty, Math.max(1, parseInt(e.target.value, 10) || 1)))} /><button className="qty-btn" onClick={() => setQty((value) => Math.min(maxQty, value + 1))}>+</button></div><button className={`add-cart-large ${added ? 'added' : ''}`} disabled={!isInStock} onClick={handleAdd}>{added ? (isArabic ? (c.added_text_ar || 'تمت الإضافة') : (c.added_text_en || 'Added')) : (isArabic ? (c.add_to_cart_text_ar || 'أضف إلى السلة') : (c.add_to_cart_text_en || 'Add to Cart'))}</button><button className="buy-now-button" disabled={!isInStock} onClick={handleBuyNow}>{isArabic ? 'اشترِ الآن' : 'Buy now'}</button></div>
+          <div className="detail-actions"><div className="qty-input"><button className="qty-btn" onClick={() => setQty((value) => Math.max(1, value - 1))}>−</button><input type="number" min="1" max={maxQty} value={qty} onChange={(e) => setQty(Math.min(maxQty, Math.max(1, parseInt(e.target.value, 10) || 1)))} /><button className="qty-btn" onClick={() => setQty((value) => Math.min(maxQty, value + 1))}>+</button></div><button className={`add-cart-large ${added ? 'added' : ''}`} disabled={!isInStock} onClick={handleAdd}>{added ? (isArabic ? (c.added_text_ar || 'تمت الإضافة') : (c.added_text_en || 'Added')) : (isArabic ? (c.add_to_cart_text_ar || 'أضف إلى السلة') : (c.add_to_cart_text_en || 'Add to Cart'))}</button><button className="buy-now-button" disabled={!isInStock} onClick={handleBuyNow}>{isArabic ? 'اشترِ الآن' : 'Buy now'}</button></div><QuoteRequestModal item={item} content={c} />
         </div>
       </div>
       <CompleteTheLook item={item} products={item.recommendations || relatedItems} content={c} />

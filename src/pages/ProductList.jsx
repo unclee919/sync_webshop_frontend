@@ -38,10 +38,13 @@ export default function ProductList() {
   const [filtersInitialized, setFiltersInitialized] = useState(false)
   const [selectedAttrs, setSelectedAttrs] = useState({})
   const [quickViewCode, setQuickViewCode] = useState(null)
+  const [styleProfile, setStyleProfile] = useState(() => { try { return JSON.parse(localStorage.getItem('sync_webshop_style_profile') || 'null') } catch { return null } })
 
   const isArabic = lang === 'ar'
   const t = (en, ar, fallback = '') => (isArabic ? (ar || en || fallback) : (en || ar || fallback))
   const adaptiveMediaEnabled = content?.experience_settings?.performance_adaptive_media_enabled !== 0
+
+  useEffect(() => { const onProfile = (event) => setStyleProfile(event.detail || null); window.addEventListener('sync-style-profile-updated', onProfile); return () => window.removeEventListener('sync-style-profile-updated', onProfile) }, [])
 
   useEffect(() => {
     let isMounted = true
@@ -56,7 +59,8 @@ export default function ProductList() {
           pageSize: PAGE_SIZE,
           minPrice: minPrice !== priceRange.min_price || maxPrice !== priceRange.max_price ? minPrice : undefined,
           maxPrice: minPrice !== priceRange.min_price || maxPrice !== priceRange.max_price ? maxPrice : undefined,
-          attributes: Object.keys(selectedAttrs).length > 0 ? selectedAttrs : undefined
+          attributes: Object.keys(selectedAttrs).length > 0 ? selectedAttrs : undefined,
+          styleProfile: content?.experience_settings?.style_quiz_enabled !== 0 ? styleProfile : undefined
         })
         if (isMounted) {
           setCatalog(catalogData || { items: [], total_count: 0 })
@@ -79,7 +83,7 @@ export default function ProductList() {
 
     fetchCatalog()
     return () => { isMounted = false }
-  }, [category, search, page, minPrice, maxPrice, selectedAttrs, filtersInitialized])
+  }, [category, search, page, minPrice, maxPrice, selectedAttrs, filtersInitialized, styleProfile, content?.experience_settings?.style_quiz_enabled])
 
   useEffect(() => {
     getCategories().then(setCategories).catch(console.error)
