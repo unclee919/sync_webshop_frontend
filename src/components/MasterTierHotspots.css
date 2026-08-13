@@ -1,0 +1,15 @@
+.master-tier-hotspots { margin-top: 2.5rem; margin-bottom: 2.5rem; }
+.hotspots-heading { display: flex; justify-content: space-between; align-items: end; gap: 1rem; margin-bottom: 1rem; }
+.hotspots-heading h2 { margin: .35rem 0; color: var(--color-primary); font-family: var(--font-heading); }
+.hotspots-heading p { margin: 0; color: var(--color-text-muted); }
+.hotspot-canvas { position: relative; overflow: hidden; min-height: 360px; aspect-ratio: 16 / 8; border-radius: var(--border-radius-lg, 28px); background: var(--color-primary); box-shadow: var(--shadow-lg); }
+.hotspot-canvas > img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: .88; }
+.hotspot-pin { position: absolute; transform: translate(-50%, -50%); display: grid; place-items: center; width: 34px; height: 34px; border: 2px solid #fff; border-radius: 50%; background: var(--color-accent); color: var(--color-primary); box-shadow: 0 5px 20px rgba(0,0,0,.24); transition: transform .2s ease, background .2s ease; }
+.hotspot-pin:hover, .hotspot-pin.active { transform: translate(-50%, -50%) scale(1.15); background: #fff; }
+.hotspot-pin span { font-size: 1.25rem; line-height: 1; }
+.hotspot-popover { position: absolute; inset-inline-end: 1.25rem; bottom: 1.25rem; width: min(280px, calc(100% - 2.5rem)); padding: 1rem; border: 1px solid rgba(255,255,255,.25); border-radius: 16px; background: color-mix(in srgb, var(--color-primary) 92%, transparent); color: #fff; backdrop-filter: blur(12px); display: grid; gap: .35rem; }
+.hotspot-popover .section-kicker { color: var(--color-accent); }
+.hotspot-popover strong { font-family: var(--font-heading); }
+.hotspot-popover a { color: var(--color-accent); font-size: .78rem; font-weight: 800; }
+.hotspot-popover-close { position: absolute; inset-inline-end: .55rem; top: .4rem; color: #fff; background: transparent; border: 0; font-size: 1.1rem; }
+@media (max-width: 700px) { .hotspot-canvas { min-height: 280px; aspect-ratio: 4 / 3; } .hotspots-heading { display: block; } .hotspot-pin { width: 30px; height: 30px; } .hotspot-popover { inset-inline: .75rem; inset-inline-end: .75rem; bottom: .75rem; width: auto; } }

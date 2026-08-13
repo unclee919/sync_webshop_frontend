@@ -158,6 +158,14 @@ export function syncEliteMarketplaces() { return callMethod('sync_webshop.api.el
 
 export function getStyleQuiz() { return callMethod("sync_webshop.api.presence.get_style_quiz") }
 export function getPresenceSettings() { return callMethod("sync_webshop.api.presence.get_presence_settings") }
+export function getMasterTierSettings() { return callMethod('sync_webshop.api.master_tier.get_master_tier_settings') }
+export function getPredictiveSearch(search, limit = 6) { return callMethod('sync_webshop.api.master_tier.get_predictive_search', { params: { search, limit } }) }
+export function getLookbookHotspots(limit = 24) { return callMethod('sync_webshop.api.master_tier.get_hotspots', { params: { limit } }) }
+export function getProductSeo(itemCode, lang = 'en') { return callMethod('sync_webshop.api.master_tier.get_product_seo', { params: { item_code: itemCode, lang } }) }
+export function getLoyaltySnapshot({ email, phone } = {}) { return callMethod('sync_webshop.api.master_tier.get_loyalty_snapshot', { params: { email, phone } }) }
+export function redeemLoyaltyPoints({ points, email, phone }) { return callMethod('sync_webshop.api.master_tier.redeem_loyalty_points', { method: 'POST', body: { points, email, phone } }) }
+export function getReferralHub({ email, phone } = {}) { return callMethod('sync_webshop.api.master_tier.get_referral_hub', { params: { email, phone } }) }
+export function claimReferralCode({ referralCode, email, phone }) { return callMethod('sync_webshop.api.master_tier.claim_referral_code', { method: 'POST', body: { referral_code: referralCode, email, phone } }) }
 export function requestQuote({ customer, items, note, company }) {
   return callMethod("sync_webshop.api.presence.request_quote", { method: "POST", body: { customer, items, note, company } })
 }

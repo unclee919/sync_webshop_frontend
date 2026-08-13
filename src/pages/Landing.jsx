@@ -12,6 +12,7 @@ import SocialProof from '../components/SocialProof'
 import EliteStories from '../components/EliteStories'
 import EditorialCollectionRail from '../components/EditorialCollectionRail'
 import StyleQuiz from '../components/StyleQuiz'
+import MasterTierHotspots from '../components/MasterTierHotspots'
 import EnterpriseExperience from '../components/EnterpriseExperience'
 import AutonomousEcosystem from '../components/AutonomousEcosystem'
 import './Landing.css'
@@ -152,6 +153,7 @@ export default function Landing() {
       <EliteStories content={content} />
       <EditorialCollectionRail collections={content?.editorial_collections || []} />
       <StyleQuiz />
+      <MasterTierHotspots />
       <EnterpriseExperience />
       <AutonomousEcosystem />
 

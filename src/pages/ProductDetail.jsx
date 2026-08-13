@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { getItem, getProductReviews, getRecommendations, getShopTheLook, submitProductReview } from '../api/client'
+import { getItem, getProductReviews, getProductSeo, getRecommendations, getShopTheLook, submitProductReview } from '../api/client'
 import { useCart } from '../context/CartContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useContent } from '../context/ContentContext'
@@ -33,6 +33,7 @@ export default function ProductDetail() {
   const [reviews, setReviews] = useState(null)
   const [relatedItems, setRelatedItems] = useState([])
   const [lookItems, setLookItems] = useState([])
+  const [seoData, setSeoData] = useState(null)
   const [error, setError] = useState(null)
   const [qty, setQty] = useState(1)
   const [added, setAdded] = useState(false)
@@ -50,6 +51,7 @@ export default function ProductDetail() {
     setAdded(false)
     setReviewNotice(null)
     getItem(itemCode).then(setItem).catch((err) => setError(err.message))
+    if (content?.master_tier?.ai_seo_enabled !== 0) getProductSeo(itemCode, lang).then((result) => setSeoData(result?.enabled ? result : null)).catch(() => setSeoData(null))
     getRecommendations({ itemCode, limit: 4 }).then((result) => setRelatedItems(Array.isArray(result) ? result : [])).catch(() => setRelatedItems([]))
     getShopTheLook(itemCode, 6).then((result) => setLookItems(Array.isArray(result?.items) ? result.items : [])).catch(() => setLookItems([]))
     if (productSettings.reviews_enabled !== 0) {
@@ -62,7 +64,7 @@ export default function ProductDetail() {
         localStorage.setItem('sync_webshop_recently_viewed', JSON.stringify([itemCode, ...previous].slice(0, limit)))
       } catch { /* local storage may be unavailable */ }
     }
-  }, [itemCode, productSettings.enable_recently_viewed, productSettings.recently_viewed_limit, productSettings.reviews_enabled])
+  }, [itemCode, lang, content?.master_tier?.ai_seo_enabled, productSettings.enable_recently_viewed, productSettings.recently_viewed_limit, productSettings.reviews_enabled])
 
   useEffect(() => {
     if (!item) return undefined
@@ -113,7 +115,7 @@ export default function ProductDetail() {
 
   return (
     <div className={`products-page container ${isRtl ? 'rtl' : 'ltr'}`}>
-      <SEOHead title={item.item_name} description={item.description || item.item_name} image={item.image} type="product" />
+      <SEOHead title={seoData?.title || item.item_name} description={seoData?.description || item.description || item.item_name} image={seoData?.image || item.image} structuredData={seoData?.structured_data} type="product" />
       <div className="breadcrumb"><Link to="/">{isArabic ? 'الرئيسية' : 'Home'}</Link><span>/</span><Link to="/products">{isArabic ? 'المنتجات' : 'Products'}</Link><span>/</span><span>{item.item_name}</span></div>
       <div className="product-detail-layout">
         <div className="product-gallery"><Suspense fallback={<div className="spatial-loading" role="status">{isArabic ? 'جارٍ تحميل الاستوديو...' : 'Loading product studio…'}</div>}><ImmersiveProductViewer item={item} enabled={productSettings.enable_immersive_viewer !== 0} /><ProductStageSwitcher item={item} /><SpatialProductControls item={item} settings={productSettings} /><FitGuide item={item} settings={productSettings} /><MaterialStudio item={item} settings={productSettings} /></Suspense></div>

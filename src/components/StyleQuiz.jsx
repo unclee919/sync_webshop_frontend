@@ -7,12 +7,14 @@ import './StyleQuiz.css'
 export default function StyleQuiz() {
   const { content } = useContent()
   const { lang, isRtl } = useLanguage()
+  const masterTier = content?.master_tier || {}
+  const quizEnabled = masterTier.enabled !== 0 && masterTier.style_quiz_enabled !== 0
   const [open, setOpen] = useState(false)
   const [data, setData] = useState(null)
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState({})
-  useEffect(() => { if (content?.style_quiz_enabled !== 0) getStyleQuiz().then(setData).catch(() => setData(null)) }, [content?.style_quiz_enabled])
-  if (content?.style_quiz_enabled === 0 || !data?.enabled || !data.questions?.length) return null
+  useEffect(() => { if (quizEnabled) getStyleQuiz().then(setData).catch(() => setData(null)) }, [quizEnabled])
+  if (!quizEnabled || !data?.enabled || !data.questions?.length) return null
   const isArabic = lang === 'ar'
   const question = data.questions[step]
   const finish = () => {

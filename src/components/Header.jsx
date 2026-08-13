@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useContent } from '../context/ContentContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useCart } from '../context/CartContext'
-import { getCategories, getItem, getSearchSuggestions, sendVoiceAction } from '../api/client'
+import { getCategories, getItem, getSearchSuggestions, getPredictiveSearch, sendVoiceAction } from '../api/client'
 import VoiceSearch from './VoiceSearch'
 import VisualSearch from './VisualSearch'
 import BrandSwitcher from './BrandSwitcher'
@@ -24,6 +24,7 @@ export default function Header({ onOpenCart }) {
   const searchRef = useRef(null)
   const [search, setSearch] = useState('')
   const [suggestions, setSuggestions] = useState([])
+  const [predictiveResult, setPredictiveResult] = useState(null)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [showCategories, setShowCategories] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -32,6 +33,8 @@ export default function Header({ onOpenCart }) {
   const isArabic = lang === 'ar'
   const t = (en, ar, fallback = '') => (isArabic ? (ar || en || fallback) : (en || ar || fallback))
   const navLinks = (content?.nav_links || []).filter((link) => link.show_in_navbar !== 0)
+  const masterTier = content?.master_tier || {}
+  const ghostSearchEnabled = masterTier.ghost_search_enabled !== 0
   const dynamicPages = content?.dynamic_pages || {}
   const dynamicLinks = [
     { key: 'about', path: '/about-us', enabled: dynamicPages.about_enabled !== 0, show: dynamicPages.about_show_in_nav !== 0, en: dynamicPages.about_label_en, ar: dynamicPages.about_label_ar },
@@ -64,6 +67,14 @@ export default function Header({ onOpenCart }) {
     }, 260)
     return () => clearTimeout(timer)
   }, [search])
+
+  useEffect(() => {
+    if (!ghostSearchEnabled || search.trim().length < 2) { setPredictiveResult(null); return }
+    const timer = setTimeout(() => {
+      getPredictiveSearch(search.trim(), 6).then((result) => setPredictiveResult(result || null)).catch(() => setPredictiveResult(null))
+    }, 320)
+    return () => clearTimeout(timer)
+  }, [ghostSearchEnabled, search])
 
   useEffect(() => {
     const handleOutside = (event) => { if (searchRef.current && !searchRef.current.contains(event.target)) setShowSuggestions(false) }
@@ -139,8 +150,9 @@ export default function Header({ onOpenCart }) {
                       <VisualSearch />
 	              <button type="submit">{t(content?.search_button_text_en, content?.search_button_text_ar, 'Search')}</button>
 	            </form>
-            {showSuggestions && suggestions.length > 0 && (
+            {showSuggestions && (suggestions.length > 0 || predictiveResult?.ghost) && (
               <div className="search-suggestions">
+                {predictiveResult?.ghost && <button type="button" className="search-ghost-result" onClick={() => { navigate(`/products/${encodeURIComponent(predictiveResult.ghost.item_code)}`); setSearch(''); setShowSuggestions(false) }}><span className="suggestion-image">{predictiveResult.ghost.image ? <img src={predictiveResult.ghost.image} alt="" /> : <span>⌕</span>}</span><span><strong>{predictiveResult.ghost.item_name}</strong><small>{t('Best match', 'أفضل تطابق')}{predictiveResult.ghost.price != null ? ` · ${Number(predictiveResult.ghost.price).toFixed(2)} ${predictiveResult.ghost.currency || ''}` : ''}</small></span></button>}
                 {suggestions.slice(0, 6).map((s, i) => (
                   <button key={i} type="button" onClick={() => { navigate(s.type === 'category' ? `/products?category=${encodeURIComponent(s.id)}` : `/products/${encodeURIComponent(s.id)}`); setSearch(''); setShowSuggestions(false) }}>
                     <span className="suggestion-image">{s.image ? <img src={s.image} alt="" /> : <span>⌕</span>}</span>

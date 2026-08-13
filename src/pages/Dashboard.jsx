@@ -5,6 +5,7 @@ import { useCart } from '../context/CartContext'
 import { useNavigate } from 'react-router-dom'
 import { useContent } from '../context/ContentContext'
 import B2BQuickOrder from '../components/B2BQuickOrder'
+import MasterTierHub from '../components/MasterTierHub'
 import './Cart.css'
 import './Dashboard.css'
 
@@ -194,6 +195,7 @@ export default function Dashboard() {
       {notice && <p className="dashboard-notice" role="status">{notice}</p>}
       <B2BQuickOrder />
       {result && <>
+        <MasterTierHub email={email.trim()} />
         {analytics && <section className="portal-section"><h2>{text.analytics}</h2><div className="portal-summary"><div><strong>{analytics.total_orders || 0}</strong><span>{text.orders}</span></div><div><strong>{Number(analytics.total_spend || 0).toFixed(2)} {analytics.currency || ''}</strong><span>{text.spend}</span></div><div><strong>{Number(analytics.average_order_value || 0).toFixed(2)} {analytics.currency || ''}</strong><span>{text.average}</span></div><div><strong>{analytics.completed_orders || 0}</strong><span>{text.completed}</span></div></div></section>}
         {result.loyalty && settings.enable_loyalty && <section className="portal-section loyalty-card"><h2>{text.loyalty}</h2><strong>{Number(result.loyalty.points || 0).toLocaleString()} </strong><span>{text.loyalty}</span></section>}
         {result.membership && settings.enable_loyalty && <section className="portal-section loyalty-card membership-card"><h2>{isArabic ? (settings.membership_title_ar || 'عضويتك') : (settings.membership_title_en || 'Your membership')}</h2><strong style={{ color: result.membership.badge_color || '#C8A96B' }}>{result.membership.tier_name || (isArabic ? 'عضو جديد' : 'New member')}</strong>{result.membership.discount_percent > 0 && <span>{Number(result.membership.discount_percent).toFixed(0)}% {isArabic ? 'خصم للأعضاء' : 'member discount'}</span>}<small>{isArabic ? (result.membership.perks_ar || '') : (result.membership.perks_en || '')}</small></section>}

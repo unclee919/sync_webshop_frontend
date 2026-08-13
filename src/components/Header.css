@@ -91,6 +91,8 @@
 .search-suggestions button > span:last-child { display: grid; gap: 0.05rem; }
 .search-suggestions strong { font-size: 0.78rem; }
 .search-suggestions small { color: var(--color-text-muted); font-size: 0.67rem; }
+.search-ghost-result { border: 1px solid color-mix(in srgb, var(--color-accent) 60%, transparent) !important; background: color-mix(in srgb, var(--color-accent) 9%, var(--header-bg)); }
+.search-ghost-result small::before { content: '✦ '; color: var(--color-accent); }
 
 .header-actions { display: flex; gap: clamp(0.7rem, 1.6vw, 1.25rem); align-items: center; }
 .header-action { display: grid; justify-items: center; gap: 0.22rem; color: var(--header-text); min-width: 42px; transition: transform var(--transition-base), color var(--transition-base); }
