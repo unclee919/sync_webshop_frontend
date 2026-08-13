@@ -190,7 +190,7 @@ export default function Checkout() {
       return
     }
     if (paymentMethod === 'cod') await handleConfirmOrder()
-    else if (paymentMethod === 'paymob') await handlePaymobOrder()
+    else if (paymentMethod === 'paymob' || ['tabby', 'tamara', 'mada', 'apple_pay'].includes(paymentMethod)) await handlePaymobOrder()
     else if (paymentMethod === 'stripe') setError(lang === 'ar' ? 'يرجى استخدام زر الدفع بعد إدخال بيانات البطاقة.' : 'Use the card payment button after entering your card details.')
   }
 
@@ -237,7 +237,7 @@ export default function Checkout() {
 
             <section className="checkout-section"><h2 className="section-title-small">{lang === 'ar' ? 'طريقة الدفع' : 'Payment Method'}</h2><div className="payment-methods">{gatewayList.map((gateway) => <label key={gateway.name} className={`payment-method-option ${paymentMethod === gateway.name ? 'active' : ''}`}><input type="radio" name="paymentMethod" value={gateway.name} checked={paymentMethod === gateway.name} onChange={(event) => setPaymentMethod(event.target.value)} /><span>{lang === 'ar' ? (gateway.label_ar || gateway.label) : (gateway.label_en || gateway.label)}</span></label>)}</div>{paymentMethod === 'paymob' && paymobGateway && <p className="form-hint">{lang === 'ar' ? (paymobGateway.note_ar || 'ادفع بأمان عبر Paymob') : (paymobGateway.note_en || 'Pay securely through Paymob')} {(paymobGateway.methods || []).map((method) => lang === 'ar' ? method.label_ar : method.label_en).join(' · ')}</p>}{regionalPaymentOptions.length > 0 && <p className="form-hint regional-payment-hint">{lang === 'ar' ? 'طرق دفع إقليمية مفعلة من لوحة التحكم: ' : 'Regional payment methods enabled in Desk: '}{regionalPaymentOptions.map((option) => `${lang === 'ar' ? option.label_ar : option.label_en}${option.safe_mode ? (lang === 'ar' ? ' (وضع آمن)' : ' (safe mode)') : ''}`).join(' · ')}</p>}{paymentMethod === 'stripe' && stripePromise && <div className="stripe-payment-box"><Elements stripe={stripePromise}><StripePaymentForm customer={{ name, email, phone }} amount={grandTotal} currency={currency} onPaymentSuccess={(id) => handleConfirmOrder(id)} /></Elements></div>}</section>
             {error && <div className="error-message">{error}</div>}
-            {(paymentMethod === 'cod' || paymentMethod === 'paymob') && <button type="submit" className="place-order-btn" disabled={submitting}>{submitting ? (lang === 'ar' ? 'جاري المعالجة...' : 'Processing...') : (paymentMethod === 'paymob' ? (lang === 'ar' ? 'المتابعة إلى الدفع' : 'Continue to Paymob') : (lang === 'ar' ? 'تأكيد الطلب' : 'Confirm Order'))}</button>}
+            {(paymentMethod === 'cod' || paymentMethod === 'paymob' || ['tabby', 'tamara', 'mada', 'apple_pay'].includes(paymentMethod)) && <button type="submit" className="place-order-btn" disabled={submitting}>{submitting ? (lang === 'ar' ? 'جاري المعالجة...' : 'Processing...') : (paymentMethod !== 'cod' ? (lang === 'ar' ? 'المتابعة إلى الدفع' : 'Continue to Payment') : (lang === 'ar' ? 'تأكيد الطلب' : 'Confirm Order'))}</button>}
           </form>
         </div>
 
