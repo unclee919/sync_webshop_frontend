@@ -41,6 +41,7 @@ export default function ProductList() {
 
   const isArabic = lang === 'ar'
   const t = (en, ar, fallback = '') => (isArabic ? (ar || en || fallback) : (en || ar || fallback))
+  const adaptiveMediaEnabled = content?.experience_settings?.performance_adaptive_media_enabled !== 0
 
   useEffect(() => {
     let isMounted = true
@@ -168,7 +169,7 @@ export default function ProductList() {
                 <article key={item.item_code} className="product-card-v2">
                   <div className="product-img-action-wrap">
                     <Link to={`/products/${encodeURIComponent(item.item_code)}`} className="product-img" data-magnetic="true" onMouseEnter={(event) => { prefetchProduct(item.item_code); event.currentTarget.querySelector('video')?.play().catch(() => {}) }} onMouseLeave={(event) => { const video = event.currentTarget.querySelector('video'); if (video) { video.pause(); video.currentTime = 0 } }} onFocus={() => prefetchProduct(item.item_code)} onClick={(event) => { activateProductPalette(item); beginSharedTransition(item, event.currentTarget.getBoundingClientRect()) }}>
-                      {item.image ? <><img src={item.image} alt={item.item_name} loading="lazy" decoding="async" />{content?.product_settings?.enable_video_hover !== 0 && item.video_url && <video className="catalog-product-hover-video" src={item.video_url} muted loop playsInline preload="none" aria-hidden="true" />}</> : <div className="no-image-placeholder">{item.item_name?.slice(0, 1)}</div>}
+                      {item.image ? <><img src={item.image} alt={item.item_name} loading={adaptiveMediaEnabled ? 'lazy' : 'eager'} decoding="async" />{content?.product_settings?.enable_video_hover !== 0 && item.video_url && <video className="catalog-product-hover-video" src={item.video_url} muted loop playsInline preload={adaptiveMediaEnabled ? 'none' : 'metadata'} aria-hidden="true" />}</> : <div className="no-image-placeholder">{item.item_name?.slice(0, 1)}</div>}
                     </Link>
                     <div className="product-action-overlay">
                       <button type="button" className="action-btn" onClick={() => setQuickViewCode(item.item_code)} aria-label={t('Quick View', 'عرض سريع')}>👁</button><button type="button" className={`action-btn compare-action ${isCompared(item.item_code) ? 'active' : ''}`} onClick={() => isCompared(item.item_code) ? removeFromCompare(item.item_code) : addToCompare(item)} aria-label={t('Compare', 'مقارنة')}>⇄</button>
