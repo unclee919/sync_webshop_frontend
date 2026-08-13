@@ -7,6 +7,7 @@ import { getCategories, getSearchSuggestions } from '../api/client'
 import VoiceSearch from './VoiceSearch'
 import VisualSearch from './VisualSearch'
 import BrandSwitcher from './BrandSwitcher'
+import CurrencySwitcher from './CurrencySwitcher'
 import './Header.css'
 
 function SearchIcon() { return <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></svg> }
@@ -85,6 +86,7 @@ export default function Header({ onOpenCart }) {
             <div className="utility-message">{t(content.top_bar_message_en, content.top_bar_message_ar, 'Fresh finds, delivered to your door.')}</div>
             <div className="utility-actions">
               {content.phone_number && <a href={`tel:${content.phone_number}`}>{t(content.need_help_text_en, content.need_help_text_ar, 'Need help?')} <strong>{content.phone_number}</strong></a>}
+              <CurrencySwitcher />
               <button type="button" className="language-switch" onClick={() => setLang(isArabic ? 'en' : 'ar')}>{isArabic ? 'English' : 'العربية'}</button>
             </div>
           </div>
