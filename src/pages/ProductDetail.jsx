@@ -1,18 +1,18 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { getItem, getProductReviews, getRecommendations, submitProductReview } from '../api/client'
+import { getItem, getProductReviews, getRecommendations, getShopTheLook, submitProductReview } from '../api/client'
 import { useCart } from '../context/CartContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useContent } from '../context/ContentContext'
 import { useUltraExperience } from '../context/UltraExperienceContext'
 import SEOHead from '../components/SEOHead'
 import LoginModal from '../components/LoginModal'
-import ImmersiveProductViewer from '../components/ImmersiveProductViewer'
+const ImmersiveProductViewer = lazy(() => import('../components/ImmersiveProductViewer'))
 import CompleteTheLook from '../components/CompleteTheLook'
-import SpatialProductControls from '../components/SpatialProductControls'
-import FitGuide from '../components/FitGuide'
-import ProductStageSwitcher from '../components/ProductStageSwitcher'
-import MaterialStudio from '../components/MaterialStudio'
+const SpatialProductControls = lazy(() => import('../components/SpatialProductControls'))
+const FitGuide = lazy(() => import('../components/FitGuide'))
+const ProductStageSwitcher = lazy(() => import('../components/ProductStageSwitcher'))
+const MaterialStudio = lazy(() => import('../components/MaterialStudio'))
 import QuoteRequestModal from '../components/QuoteRequestModal'
 import './Products.css'
 
@@ -30,6 +30,7 @@ export default function ProductDetail() {
   const [item, setItem] = useState(null)
   const [reviews, setReviews] = useState(null)
   const [relatedItems, setRelatedItems] = useState([])
+  const [lookItems, setLookItems] = useState([])
   const [error, setError] = useState(null)
   const [qty, setQty] = useState(1)
   const [added, setAdded] = useState(false)
@@ -42,11 +43,13 @@ export default function ProductDetail() {
     setItem(null)
     setReviews(null)
     setRelatedItems([])
+    setLookItems([])
     setError(null)
     setAdded(false)
     setReviewNotice(null)
     getItem(itemCode).then(setItem).catch((err) => setError(err.message))
     getRecommendations({ itemCode, limit: 4 }).then((result) => setRelatedItems(Array.isArray(result) ? result : [])).catch(() => setRelatedItems([]))
+    getShopTheLook(itemCode, 6).then((result) => setLookItems(Array.isArray(result?.items) ? result.items : [])).catch(() => setLookItems([]))
     if (productSettings.reviews_enabled !== 0) {
       getProductReviews({ itemCode }).then(setReviews).catch(() => setReviews(null))
     }
@@ -62,9 +65,9 @@ export default function ProductDetail() {
   useEffect(() => {
     if (!item) return undefined
     activateProductPalette(item)
-    ;(item.recommendations || relatedItems || []).forEach((product) => prefetchProduct(product.item_code))
+    ;(item.recommendations || lookItems || relatedItems || []).forEach((product) => prefetchProduct(product.item_code))
     return () => resetProductPalette()
-  }, [item, relatedItems, activateProductPalette, resetProductPalette, prefetchProduct])
+  }, [item, relatedItems, lookItems, activateProductPalette, resetProductPalette, prefetchProduct])
 
   if (error) return <div className={`products-page container ${isRtl ? 'rtl' : 'ltr'}`}><p className="error-box">{isArabic ? 'تعذر تحميل المنتج' : 'Could not load this item'}: {error}</p></div>
   if (!item) return <div className={`products-page container ${isRtl ? 'rtl' : 'ltr'}`}><p className="loading-state">{isArabic ? 'جارٍ التحميل...' : 'Loading...'}</p></div>
@@ -111,7 +114,7 @@ export default function ProductDetail() {
       <SEOHead title={item.item_name} description={item.description || item.item_name} image={item.image} type="product" />
       <div className="breadcrumb"><Link to="/">{isArabic ? 'الرئيسية' : 'Home'}</Link><span>/</span><Link to="/products">{isArabic ? 'المنتجات' : 'Products'}</Link><span>/</span><span>{item.item_name}</span></div>
       <div className="product-detail-layout">
-        <div className="product-gallery"><ImmersiveProductViewer item={item} enabled={productSettings.enable_immersive_viewer !== 0} /><ProductStageSwitcher item={item} /><SpatialProductControls item={item} settings={productSettings} /><FitGuide item={item} settings={productSettings} /><MaterialStudio item={item} settings={productSettings} /></div>
+        <div className="product-gallery"><Suspense fallback={<div className="spatial-loading" role="status">{isArabic ? 'جارٍ تحميل الاستوديو...' : 'Loading product studio…'}</div>}><ImmersiveProductViewer item={item} enabled={productSettings.enable_immersive_viewer !== 0} /><ProductStageSwitcher item={item} /><SpatialProductControls item={item} settings={productSettings} /><FitGuide item={item} settings={productSettings} /><MaterialStudio item={item} settings={productSettings} /></Suspense></div>
         <div className="product-info">
           <span className="product-cat">{item.item_group}</span>
           <h1>{item.item_name}</h1>
@@ -124,7 +127,7 @@ export default function ProductDetail() {
           <div className="detail-actions"><div className="qty-input"><button className="qty-btn" onClick={() => setQty((value) => Math.max(1, value - 1))}>−</button><input type="number" min="1" max={maxQty} value={qty} onChange={(e) => setQty(Math.min(maxQty, Math.max(1, parseInt(e.target.value, 10) || 1)))} /><button className="qty-btn" onClick={() => setQty((value) => Math.min(maxQty, value + 1))}>+</button></div><button className={`add-cart-large ${added ? 'added' : ''}`} disabled={!isInStock} onClick={handleAdd}>{added ? (isArabic ? (c.added_text_ar || 'تمت الإضافة') : (c.added_text_en || 'Added')) : (isArabic ? (c.add_to_cart_text_ar || 'أضف إلى السلة') : (c.add_to_cart_text_en || 'Add to Cart'))}</button><button className="buy-now-button" disabled={!isInStock} onClick={handleBuyNow}>{isArabic ? 'اشترِ الآن' : 'Buy now'}</button></div><QuoteRequestModal item={item} content={c} />
         </div>
       </div>
-      <CompleteTheLook item={item} products={item.recommendations || relatedItems} content={c} />
+      <CompleteTheLook item={item} products={item.recommendations || (lookItems.length ? lookItems : relatedItems)} content={c} />
       <div className="mobile-sticky-buy"><div><strong>{Number(item.price || 0).toFixed(2)} {item.currency}</strong><span>{isInStock ? (isArabic ? 'متوفر الآن' : 'Available now') : (isArabic ? 'غير متوفر' : 'Unavailable')}</span></div><button type="button" disabled={!isInStock} onClick={handleAdd}>{added ? (isArabic ? 'تمت الإضافة' : 'Added') : (isArabic ? 'أضف إلى السلة' : 'Add to cart')}</button></div>
       {productSettings.reviews_enabled !== 0 && <section className="reviews-section">
         <div className="section-heading"><h2>{reviewTitle}</h2></div>

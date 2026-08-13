@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import Header from './components/Header'
 import Footer from './components/Footer'
@@ -13,20 +13,20 @@ import SharedTransitionOverlay from './components/SharedTransitionOverlay'
 import MagneticCursor from './components/MagneticCursor'
 import ExpressCheckoutBar from './components/ExpressCheckoutBar'
 import SEOHead from './components/SEOHead'
-import Landing from './pages/Landing'
-import ProductList from './pages/ProductList'
-import ProductDetail from './pages/ProductDetail'
-import Cart from './pages/Cart'
-import Checkout from './pages/Checkout'
-import Dashboard from './pages/Dashboard'
-import OrderTracking from './pages/OrderTracking'
-import Features from './pages/Features'
-import Wishlist from './pages/Wishlist'
-import SiteInfo from './pages/SiteInfo'
-import CollectionStoryteller from './pages/CollectionStoryteller'
+const Landing = lazy(() => import('./pages/Landing'))
+const ProductList = lazy(() => import('./pages/ProductList'))
+const ProductDetail = lazy(() => import('./pages/ProductDetail'))
+const Cart = lazy(() => import('./pages/Cart'))
+const Checkout = lazy(() => import('./pages/Checkout'))
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const OrderTracking = lazy(() => import('./pages/OrderTracking'))
+const Features = lazy(() => import('./pages/Features'))
+const Wishlist = lazy(() => import('./pages/Wishlist'))
+const SiteInfo = lazy(() => import('./pages/SiteInfo'))
+const CollectionStoryteller = lazy(() => import('./pages/CollectionStoryteller'))
 import './App.css'
 
 export default function App() {
   const [miniCartOpen, setMiniCartOpen] = useState(false)
-  return <div className="app-wrapper"><SEOHead /><Header onOpenCart={() => setMiniCartOpen(true)} /><main className="main-content page-transition"><Routes><Route path="/" element={<Landing />} /><Route path="/products" element={<ProductList />} /><Route path="/products/:itemCode" element={<ProductDetail />} /><Route path="/wishlist" element={<Wishlist />} /><Route path="/contact-us" element={<SiteInfo />} /><Route path="/cart" element={<Cart />} /><Route path="/checkout" element={<Checkout />} /><Route path="/dashboard" element={<Dashboard />} /><Route path="/track" element={<OrderTracking />} /><Route path="/features" element={<Features />} /><Route path="/collections/:slug" element={<CollectionStoryteller />} /></Routes></main><Footer /><FloatingButtons /><AiChatWidget /><DarkModeToggle /><MiniCart open={miniCartOpen} onClose={() => setMiniCartOpen(false)} /><SocialProof /><ComparisonTray /><MobileQuickActions onOpenCart={() => setMiniCartOpen(true)} /><SharedTransitionOverlay /><MagneticCursor /><ExpressCheckoutBar /></div>
+  return <div className="app-wrapper"><SEOHead /><Header onOpenCart={() => setMiniCartOpen(true)} /><main className="main-content page-transition"><Suspense fallback={<div className="container route-loading" role="status">Loading…</div>}><Routes><Route path="/" element={<Landing />} /><Route path="/products" element={<ProductList />} /><Route path="/products/:itemCode" element={<ProductDetail />} /><Route path="/wishlist" element={<Wishlist />} /><Route path="/contact-us" element={<SiteInfo />} /><Route path="/cart" element={<Cart />} /><Route path="/checkout" element={<Checkout />} /><Route path="/dashboard" element={<Dashboard />} /><Route path="/track" element={<OrderTracking />} /><Route path="/features" element={<Features />} /><Route path="/collections/:slug" element={<CollectionStoryteller />} /></Routes></Suspense></main><Footer /><FloatingButtons /><AiChatWidget /><DarkModeToggle /><MiniCart open={miniCartOpen} onClose={() => setMiniCartOpen(false)} /><SocialProof /><ComparisonTray /><MobileQuickActions onOpenCart={() => setMiniCartOpen(true)} /><SharedTransitionOverlay /><MagneticCursor /><ExpressCheckoutBar /></div>
 }

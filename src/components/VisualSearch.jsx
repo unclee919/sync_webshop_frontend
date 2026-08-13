@@ -15,7 +15,8 @@ export default function VisualSearch() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const settings = content?.experience_settings || {}
-  if (settings.visual_search_enabled !== 1 && settings.visual_search_enabled !== true) return null
+  const aiVision = content?.elite_settings?.ai_vision || {}
+  if (aiVision.visual_search_enabled === 0 || (settings.visual_search_enabled !== 1 && settings.visual_search_enabled !== true)) return null
   const isArabic = lang === 'ar'
   const title = isArabic ? (settings.visual_search_title_ar || 'البحث بالصورة') : (settings.visual_search_title_en || 'Search by image')
   const hint = isArabic ? (settings.visual_search_hint_ar || 'ارفع صورة منتج للعثور على منتجات مشابهة') : (settings.visual_search_hint_en || 'Upload a product photo to find similar items')

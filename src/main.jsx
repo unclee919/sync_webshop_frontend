@@ -7,13 +7,9 @@ import { LanguageProvider } from './context/LanguageContext'
 import { ContentProvider } from './context/ContentContext'
 import { ComparisonProvider } from './context/ComparisonContext'
 import { UltraExperienceProvider } from './context/UltraExperienceContext'
+import PwaController from './components/PwaController'
 import './index.css'
 
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js').catch(() => {})
-  })
-}
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -23,6 +19,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <ComparisonProvider>
             <BrowserRouter>
               <UltraExperienceProvider>
+                <PwaController />
                 <App />
               </UltraExperienceProvider>
             </BrowserRouter>

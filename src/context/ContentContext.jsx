@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { getContent } from '../api/client'
+import { getContent, getEliteSettings, getStorefrontProfiles } from '../api/client'
 
 const ContentContext = createContext(null)
 
@@ -13,7 +13,9 @@ const FONT_STACKS = {
 
 export const DEFAULT_CONTENT = {
   site_name: 'Sync Webshop',
+  storefront_brands: [],
   business_profile: { vertical: 'General Retail', vertical_label_en: 'Thoughtfully selected', vertical_label_ar: 'مختارات بعناية', intro_en: 'Everyday essentials, thoughtfully selected.', intro_ar: 'احتياجاتك اليومية، مختارة بعناية.', unit_label_en: 'item', unit_label_ar: 'منتج' },
+  elite_settings: { ai_vision: { visual_search_enabled: 1, auto_tagging_enabled: 1, nlp_enabled: 1 }, marketplaces: { amazon_sa_enabled: 0, noon_enabled: 0, sync_interval_minutes: 30 }, regional_payments: { tabby_enabled: 1, tamara_enabled: 1, mada_enabled: 1, apple_pay_enabled: 1 }, pwa: { pwa_enabled: 1, app_short_name: 'Sync Webshop', theme_color: '#173F3A', offline_message_en: 'You are currently offline.', offline_message_ar: 'أنت غير متصل بالإنترنت حالياً.' } },
   site_name_en: 'Sync Webshop',
   site_name_ar: 'متجر سينك',
   tagline_en: 'Everyday essentials, thoughtfully selected.',
@@ -103,6 +105,15 @@ function mergeContent(data) {
     ultra_settings: { ...DEFAULT_CONTENT.ultra_settings, ...(source.ultra_settings || {}) },
     experience_settings: { ...DEFAULT_CONTENT.experience_settings, ...(source.experience_settings || {}) },
     business_profile: { ...DEFAULT_CONTENT.business_profile, ...(source.business_profile || {}) },
+    storefront_brands: Array.isArray(source.storefront_brands) ? source.storefront_brands : DEFAULT_CONTENT.storefront_brands,
+    elite_settings: {
+      ...DEFAULT_CONTENT.elite_settings,
+      ...(source.elite_settings || {}),
+      ai_vision: { ...DEFAULT_CONTENT.elite_settings.ai_vision, ...(source.elite_settings?.ai_vision || {}) },
+      marketplaces: { ...DEFAULT_CONTENT.elite_settings.marketplaces, ...(source.elite_settings?.marketplaces || {}) },
+      regional_payments: { ...DEFAULT_CONTENT.elite_settings.regional_payments, ...(source.elite_settings?.regional_payments || {}) },
+      pwa: { ...DEFAULT_CONTENT.elite_settings.pwa, ...(source.elite_settings?.pwa || {}) },
+    },
   }
 }
 
@@ -141,8 +152,8 @@ export function ContentProvider({ children }) {
   const loadContent = async () => {
     try {
       setLoading(true)
-      const data = await getContent()
-      const nextContent = mergeContent(data)
+      const [data, eliteSettings, storefrontProfiles] = await Promise.all([getContent(), getEliteSettings().catch(() => null), getStorefrontProfiles().catch(() => [])])
+      const nextContent = mergeContent({ ...data, elite_settings: eliteSettings || data?.elite_settings, storefront_brands: storefrontProfiles || data?.storefront_brands })
       setContent(nextContent)
       applyThemeToDocument(nextContent.theme)
       setError(null)

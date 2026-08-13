@@ -33,6 +33,12 @@ export function apiCall(path, body = {}) { return callMethod(path, { method: 'PO
 
 export function getTheme() { return callMethod('sync_webshop.api.theme.get_theme') }
 export function getContent() { return callMethod('sync_webshop.api.content.get_content') }
+export function getEliteSettings() { return callMethod('sync_webshop.api.elite.get_elite_settings') }
+export function getStorefrontProfiles() { return callMethod('sync_webshop.api.elite.get_storefront_profiles') }
+export function getLoyaltyTiers() { return callMethod('sync_webshop.api.elite.get_loyalty_tiers') }
+export function getShopTheLook(itemCode, limit = 6) { return callMethod('sync_webshop.api.elite.get_shop_the_look', { params: { item_code: itemCode, limit } }) }
+export function getRegionalPaymentOptions() { return callMethod('sync_webshop.api.elite.get_regional_payment_options') }
+export function createRegionalPaymentSession({ gateway, amount, currency, orderReference }) { return callMethod('sync_webshop.api.elite.create_regional_payment_session', { method: 'POST', body: { gateway, amount, currency, order_reference: orderReference } }) }
 
 export function getCatalog({ itemGroup, search, page = 1, pageSize = 20, minPrice, maxPrice, attributes, styleProfile } = {}) {
   return callMethod('sync_webshop.api.catalog.get_catalog', {
@@ -127,6 +133,8 @@ export function removeFromWishlist(itemCode) { return callMethod('sync_webshop.a
 export function searchByImage({ imageData, filename, query } = {}) {
   return callMethod('sync_webshop.api.visual_search.search_by_image', { method: 'POST', body: { image_data: imageData, filename, query } })
 }
+export function runEliteVisualSearch() { return callMethod('sync_webshop.api.elite.visual_search_match') }
+export function syncEliteMarketplaces() { return callMethod('sync_webshop.api.elite.sync_marketplaces', { method: 'POST', body: {} }) }
 
 export function getStyleQuiz() { return callMethod("sync_webshop.api.presence.get_style_quiz") }
 export function getPresenceSettings() { return callMethod("sync_webshop.api.presence.get_presence_settings") }

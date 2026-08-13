@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getAiChatSettings, sendAiMessage } from '../api/client'
 import { useLanguage } from '../context/LanguageContext'
+import { useContent } from '../context/ContentContext'
 import './AiChatWidget.css'
 
 export default function AiChatWidget() {
   const { lang, isRtl } = useLanguage()
+  const { content } = useContent()
+  const eliteNlp = content?.elite_settings?.ai_vision || {}
   const [settings, setSettings] = useState(null)
   const [open, setOpen] = useState(false)
   const [input, setInput] = useState('')
@@ -27,9 +30,10 @@ export default function AiChatWidget() {
   useEffect(() => {
     getAiChatSettings().then((data) => {
       setSettings(data)
-      if (data?.greeting_message) setMessages([{ role: 'assistant', content: data.greeting_message }])
+      const deskGreeting = lang === 'ar' ? eliteNlp.welcome_message_ar : eliteNlp.welcome_message_en
+      if (deskGreeting || data?.greeting_message) setMessages([{ role: 'assistant', content: deskGreeting || data.greeting_message }])
     }).catch(() => setSettings({ enabled: false }))
-  }, [])
+  }, [lang, eliteNlp.welcome_message_en, eliteNlp.welcome_message_ar])
 
   async function submit(e) {
     e.preventDefault()
@@ -50,7 +54,7 @@ export default function AiChatWidget() {
     }
   }
 
-  if (!settings?.enabled) return null
+  if (!settings?.enabled || eliteNlp.nlp_enabled === 0 || eliteNlp.nlp_enabled === false) return null
   return (
     <div className={`ai-chat-root ${isRtl ? 'rtl' : 'ltr'}`} style={{ '--ai-primary': settings.primary_color || '#10b981' }}>
       {open && <section className="ai-chat-panel" aria-label={copy.title}>
