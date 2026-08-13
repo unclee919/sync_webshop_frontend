@@ -50,7 +50,8 @@ export const DEFAULT_CONTENT = {
   social_links: [],
   announcement: { enabled: 0 },
   footer_settings: { enabled: 1, columns: [] },
-  product_settings: { show_related_products: 1, show_sidebar: 1, enable_immersive_viewer: 1, enable_video_hover: 1, complete_the_look_enabled: 1, complete_the_look_title_en: 'Complete the look', complete_the_look_title_ar: 'أكمل الإطلالة' },
+  product_settings: { show_related_products: 1, show_sidebar: 1, enable_immersive_viewer: 1, enable_video_hover: 1, complete_the_look_enabled: 1, complete_the_look_title_en: 'Complete the look', complete_the_look_title_ar: 'أكمل الإطلالة', ar_enabled: 1, ar_ios_model_url: '', ar_android_model_url: '', three_d_model_url: '', exploded_view_enabled: 1, exploded_view_title_en: 'Inspect the details', exploded_view_title_ar: 'استكشف التفاصيل', fit_guide_enabled: 1, fit_guide_title_en: 'Find your best fit', fit_guide_title_ar: 'اعثر على المقاس المناسب' },
+  ultra_settings: { adaptive_palette_enabled: 1, circadian_theme_enabled: 1, shared_transitions_enabled: 1, magnetic_cursor_enabled: 1, predictive_prefetch_enabled: 1, palette_transition_ms: 520, circadian_evening_start: 18, circadian_morning_start: 7 },
   theme: {
     layout_style: 'Cedar',
     colors: {

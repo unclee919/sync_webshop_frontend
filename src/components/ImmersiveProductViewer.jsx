@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useLanguage } from '../context/LanguageContext'
+import { useUltraExperience } from '../context/UltraExperienceContext'
 import './ImmersiveProductViewer.css'
 
 function mediaUrl(media) {
@@ -10,6 +11,7 @@ function mediaUrl(media) {
 
 export default function ImmersiveProductViewer({ item, enabled = true }) {
   const { lang, isRtl } = useLanguage()
+  const { palette } = useUltraExperience()
   const isArabic = lang === 'ar'
   const [frame, setFrame] = useState(0)
   const [expanded, setExpanded] = useState(false)
@@ -52,9 +54,9 @@ export default function ImmersiveProductViewer({ item, enabled = true }) {
   if (!item) return null
   if (enabled === false) return <div className="immersive-viewer-fallback">{activeImage ? <img src={activeImage} alt={item.item_name} /> : <div className="no-image-large">{t('No image', 'لا توجد صورة')}</div>}</div>
   return <>
-    <div className={`immersive-viewer ${isRtl ? 'rtl' : 'ltr'} ${expanded ? 'is-expanded' : ''}`}>
+    <div className={`immersive-viewer ${isRtl ? 'rtl' : 'ltr'} ${expanded ? 'is-expanded' : ''}`} style={{ '--viewer-accent': palette?.accent, '--viewer-primary': palette?.primary }}>
       <div className="immersive-viewer-main" onPointerDown={onPointerDown} onPointerUp={onPointerUp} onPointerCancel={() => { dragStart.current = null }}>
-        {showVideo && video ? <video className="immersive-video" src={video} controls autoPlay muted playsInline /> : activeImage ? <motion.img key={activeImage} className="immersive-product-image" src={activeImage} alt={item.item_name} initial={{ opacity: .5, scale: .985 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: .2 }} draggable="false" /> : <div className="no-image-large">{t('No image', 'لا توجد صورة')}</div>}
+        {showVideo && video ? <video className="immersive-video" src={video} controls autoPlay muted playsInline /> : activeImage ? <motion.img layoutId={`product-media-${item.item_code}`} key={activeImage} className="immersive-product-image" src={activeImage} alt={item.item_name} initial={{ opacity: .5, scale: .985 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: .2 }} draggable="false" /> : <div className="no-image-large">{t('No image', 'لا توجد صورة')}</div>}
         <div className="immersive-viewer-sheen" aria-hidden="true" />
         <button type="button" className="immersive-expand" onClick={() => setExpanded((value) => !value)} aria-label={t('Open fullscreen', 'فتح ملء الشاشة')}>{expanded ? '×' : '↗'}</button>
         {frameCount > 1 && <><button type="button" className="immersive-rotate rotate-prev" onClick={() => rotate(-1)} aria-label={t('Previous view', 'المشهد السابق')}>‹</button><button type="button" className="immersive-rotate rotate-next" onClick={() => rotate(1)} aria-label={t('Next view', 'المشهد التالي')}>›</button></>}

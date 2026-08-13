@@ -6,6 +6,7 @@ import { useCart } from '../context/CartContext'
 import { useContent } from '../context/ContentContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useComparison } from '../context/ComparisonContext'
+import { useUltraExperience } from '../context/UltraExperienceContext'
 import QuickView from '../components/QuickView'
 import SocialProof from '../components/SocialProof'
 import EliteStories from '../components/EliteStories'
@@ -18,16 +19,24 @@ function HeartIcon() { return <svg viewBox="0 0 24 24" aria-hidden="true"><path 
 function ProductCard({ item, content, lang, onAdd, onQuickView }) {
   const isArabic = lang === 'ar'
   const { add: addToCompare, remove: removeFromCompare, isCompared } = useComparison()
+  const { activateProductPalette, beginSharedTransition, prefetchProduct } = useUltraExperience()
   const [hovering, setHovering] = useState(false)
   const t = (en, ar, fallback = '') => (isArabic ? (ar || en || fallback) : (en || ar || fallback))
   const oldPrice = Number(item.old_price || 0)
   const price = Number(item.price || 0)
   const isUnavailable = item.available === false || item.in_stock === false
 
+  const handleProductIntent = (event) => {
+    activateProductPalette(item)
+    prefetchProduct(item.item_code)
+    if (event?.currentTarget) beginSharedTransition(item, event.currentTarget.getBoundingClientRect())
+  }
+
   return (
-    <article className="home-product-card" onMouseEnter={() => setHovering(true)} onMouseLeave={() => setHovering(false)}>
+    <article className="home-product-card" onMouseEnter={() => { setHovering(true); prefetchProduct(item.item_code) }} onMouseLeave={() => setHovering(false)}>
       <div className="home-product-media">
-        <Link to={`/products/${encodeURIComponent(item.item_code)}`} className="home-product-image">
+                  <Link to={`/products/${encodeURIComponent(item.item_code)}`} className="home-product-image" data-magnetic="true" onMouseEnter={() => prefetchProduct(item.item_code)} onFocus={() => prefetchProduct(item.item_code)} onClick={handleProductIntent}>
+
           {item.image ? <img src={item.image} alt={item.item_name} loading="lazy" /> : <span className="product-image-placeholder">{item.item_name?.slice(0, 1)}</span>}
           {hovering && content?.product_settings?.enable_video_hover !== 0 && (item.video_url || item.video || item.product_video) && <video className="home-product-hover-video" src={item.video_url || item.video || item.product_video} muted autoPlay loop playsInline aria-label={t('Product preview', 'معاينة المنتج')} />}
         </Link>
@@ -48,7 +57,7 @@ function ProductCard({ item, content, lang, onAdd, onQuickView }) {
       </div>
       <div className="home-product-body">
         <Link className="home-product-category" to={`/products?category=${encodeURIComponent(item.item_group || '')}`}>{item.item_group || t(content.category_label_short_en, content.category_label_short_ar, 'Featured')}</Link>
-        <h3><Link to={`/products/${encodeURIComponent(item.item_code)}`}>{item.item_name}</Link></h3>
+        <h3><Link to={`/products/${encodeURIComponent(item.item_code)}`} onMouseEnter={() => prefetchProduct(item.item_code)} onFocus={() => prefetchProduct(item.item_code)} onClick={handleProductIntent}>{item.item_name}</Link></h3>
         <div className="product-rating"><span>★★★★★</span><small>({item.review_count || 0})</small></div>
         <div className="home-product-footer">
           <div className="home-product-price">

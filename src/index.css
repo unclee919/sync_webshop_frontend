@@ -39,12 +39,18 @@
   --search-bar-max-width: 560px;
   --search-bar-height: 48px;
   --nav-bar-height: 54px;
+  --context-primary: #173F3A;
+  --context-secondary: #2D8B72;
+  --context-accent: #E6B85C;
+  --context-glow: #cce2d4;
+  --context-surface: #f8faf7;
+  --palette-transition-ms: 520ms;
 }
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; background: var(--color-background); }
-body { margin: 0; min-width: 320px; background: var(--color-background); color: var(--color-text-main); font-family: var(--font-body); line-height: 1.55; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
-body::before { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: -1; background: radial-gradient(circle at 10% 0%, color-mix(in srgb, var(--color-accent) 7%, transparent), transparent 34%), radial-gradient(circle at 90% 18%, color-mix(in srgb, var(--color-secondary) 6%, transparent), transparent 28%); }
+body { margin: 0; min-width: 320px; background: var(--color-background); color: var(--color-text-main); font-family: var(--font-body); line-height: 1.55; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; transition: background var(--palette-transition-ms) var(--ease-out), color var(--palette-transition-ms) var(--ease-out); }
+body::before { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: -1; background: radial-gradient(circle at 10% 0%, color-mix(in srgb, var(--context-accent) 8%, transparent), transparent 34%), radial-gradient(circle at 90% 18%, color-mix(in srgb, var(--context-secondary) 8%, transparent), transparent 28%); transition: background var(--palette-transition-ms) var(--ease-out); }
 body, button, input, select, textarea { font-family: var(--font-body); }
 button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
@@ -55,7 +61,13 @@ h1, h2, h3, h4, h5, h6 { margin-top: 0; font-family: var(--font-heading); font-w
 ::placeholder { opacity: 0.82; }
 button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
 button { transition: transform var(--transition-base), background var(--transition-base), color var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base); }
-button:active { transform: translateY(1px); }
+button:active { transform: translateY(1px) scale(.985); }
+
+:root[data-circadian="golden-hour"] { --color-background: color-mix(in srgb, var(--context-surface) 88%, #f0b46a 12%); --color-surface: color-mix(in srgb, var(--context-surface) 82%, #f0b46a 18%); }
+:root[data-circadian="morning"] { --color-background: color-mix(in srgb, var(--context-surface) 92%, white 8%); }
+:root[data-palette] .primary-button, :root[data-palette] .add-cart-large, :root[data-palette] .buy-now-button { background: var(--context-primary); box-shadow: 0 14px 28px color-mix(in srgb, var(--context-primary) 18%, transparent); transition: background var(--palette-transition-ms) var(--ease-out), box-shadow var(--palette-transition-ms) var(--ease-out), transform 180ms var(--ease-out); }
+:root[data-palette] .primary-button:hover, :root[data-palette] .add-cart-large:hover, :root[data-palette] .buy-now-button:hover { background: var(--context-secondary); }
+
 
 .app-wrapper { display: flex; min-height: 100vh; flex-direction: column; }
 .main-content { flex: 1; min-width: 0; }

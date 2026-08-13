@@ -4,16 +4,20 @@ import { getItem, getProductReviews, getRecommendations, submitProductReview } f
 import { useCart } from '../context/CartContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useContent } from '../context/ContentContext'
+import { useUltraExperience } from '../context/UltraExperienceContext'
 import SEOHead from '../components/SEOHead'
 import LoginModal from '../components/LoginModal'
 import ImmersiveProductViewer from '../components/ImmersiveProductViewer'
 import CompleteTheLook from '../components/CompleteTheLook'
+import SpatialProductControls from '../components/SpatialProductControls'
+import FitGuide from '../components/FitGuide'
 import './Products.css'
 
 export default function ProductDetail() {
   const { itemCode } = useParams()
   const { lang, isRtl } = useLanguage()
   const { content } = useContent()
+  const { activateProductPalette, resetProductPalette, beginSharedTransition, prefetchProduct } = useUltraExperience()
   const { addItem } = useCart()
   const navigate = useNavigate()
   const isArabic = lang === 'ar'
@@ -51,6 +55,13 @@ export default function ProductDetail() {
       } catch { /* local storage may be unavailable */ }
     }
   }, [itemCode, productSettings.enable_recently_viewed, productSettings.recently_viewed_limit, productSettings.reviews_enabled])
+
+  useEffect(() => {
+    if (!item) return undefined
+    activateProductPalette(item)
+    ;(item.recommendations || relatedItems || []).forEach((product) => prefetchProduct(product.item_code))
+    return () => resetProductPalette()
+  }, [item, relatedItems, activateProductPalette, resetProductPalette, prefetchProduct])
 
   if (error) return <div className={`products-page container ${isRtl ? 'rtl' : 'ltr'}`}><p className="error-box">{isArabic ? 'تعذر تحميل المنتج' : 'Could not load this item'}: {error}</p></div>
   if (!item) return <div className={`products-page container ${isRtl ? 'rtl' : 'ltr'}`}><p className="loading-state">{isArabic ? 'جارٍ التحميل...' : 'Loading...'}</p></div>
@@ -97,7 +108,7 @@ export default function ProductDetail() {
       <SEOHead title={item.item_name} description={item.description || item.item_name} image={item.image} type="product" />
       <div className="breadcrumb"><Link to="/">{isArabic ? 'الرئيسية' : 'Home'}</Link><span>/</span><Link to="/products">{isArabic ? 'المنتجات' : 'Products'}</Link><span>/</span><span>{item.item_name}</span></div>
       <div className="product-detail-layout">
-        <div className="product-gallery"><ImmersiveProductViewer item={item} enabled={productSettings.enable_immersive_viewer !== 0} /></div>
+        <div className="product-gallery"><ImmersiveProductViewer item={item} enabled={productSettings.enable_immersive_viewer !== 0} /><SpatialProductControls item={item} settings={productSettings} /><FitGuide item={item} settings={productSettings} /></div>
         <div className="product-info">
           <span className="product-cat">{item.item_group}</span>
           <h1>{item.item_name}</h1>
@@ -133,7 +144,7 @@ export default function ProductDetail() {
           <button type="submit" disabled={reviewSubmitting}>{reviewSubmitting ? (isArabic ? 'جارٍ الإرسال...' : 'Submitting...') : (isArabic ? 'إرسال التقييم' : 'Submit review')}</button>
         </form>
       </section>}
-      {(item.recommendations || relatedItems).length > 0 && <section className="related-products"><div className="section-heading"><h2>{isArabic ? (c.related_products_title_ar || 'قد يعجبك أيضاً') : (c.related_products_title_en || 'You may also like')}</h2></div><div className="product-grid">{(item.recommendations || relatedItems).map((product) => <Link className="product-card" to={`/products/${encodeURIComponent(product.item_code)}`} key={product.item_code}><div className="product-card-image">{product.image ? <img src={product.image} alt={product.item_name} /> : <div className="no-image">{isArabic ? 'لا توجد صورة' : 'No image'}</div>}</div><div className="product-card-body"><h3>{product.item_name}</h3>{product.price != null && <p className="card-price">{Number(product.price).toFixed(2)} {product.currency}</p>}</div></Link>)}</div></section>}
+      {(item.recommendations || relatedItems).length > 0 && <section className="related-products"><div className="section-heading"><h2>{isArabic ? (c.related_products_title_ar || 'قد يعجبك أيضاً') : (c.related_products_title_en || 'You may also like')}</h2></div><div className="product-grid">{(item.recommendations || relatedItems).map((product) => <Link className="product-card" data-magnetic="true" to={`/products/${encodeURIComponent(product.item_code)}`} key={product.item_code} onMouseEnter={() => prefetchProduct(product.item_code)} onFocus={() => prefetchProduct(product.item_code)} onClick={(event) => { activateProductPalette(product); beginSharedTransition(product, event.currentTarget.getBoundingClientRect()) }}><div className="product-card-image">{product.image ? <img src={product.image} alt={product.item_name} /> : <div className="no-image">{isArabic ? 'لا توجد صورة' : 'No image'}</div>}</div><div className="product-card-body"><h3>{product.item_name}</h3>{product.price != null && <p className="card-price">{Number(product.price).toFixed(2)} {product.currency}</p>}</div></Link>)}</div></section>}
       {showLogin && <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} onSuccess={() => { setShowLogin(false); addItem(cartItem(), qty); navigate('/checkout?express=1') }} />}
     </div>
   )

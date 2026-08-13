@@ -5,6 +5,8 @@ import { useLanguage } from '../context/LanguageContext'
 import { useCart } from '../context/CartContext'
 import { useContent } from '../context/ContentContext'
 import { useComparison } from '../context/ComparisonContext'
+import { useUltraExperience } from '../context/UltraExperienceContext'
+import VisualFilterChips from '../components/VisualFilterChips'
 import SEOHead from '../components/SEOHead'
 import QuickView from '../components/QuickView'
 import './Products.css'
@@ -16,6 +18,7 @@ export default function ProductList() {
   const { addItem } = useCart()
   const { content } = useContent()
   const { add: addToCompare, remove: removeFromCompare, isCompared } = useComparison()
+  const { prefetchProduct, beginSharedTransition, activateProductPalette } = useUltraExperience()
   const [searchParams, setSearchParams] = useSearchParams()
   const category = searchParams.get('category') || undefined
   const page = Number(searchParams.get('page') || 1)
@@ -158,12 +161,13 @@ export default function ProductList() {
             <span className="products-count">{catalog?.total_count || 0} {t('items found', 'منتجات تم العثور عليها')}</span>
           </div>
 
-          {loading ? <div className="loading-state-grid">{[...Array(6)].map((_, i) => <div key={i} className="shimmer shimmer-card" />)}</div> : (
+          <VisualFilterChips availableAttributes={catalog?.available_attributes} selectedAttrs={selectedAttrs} onToggle={toggleAttribute} />
+          {loading ? <div className="loading-state-grid boutique-skeleton-grid">{[...Array(6)].map((_, i) => <div key={i} className="shimmer shimmer-card boutique-skeleton-card"><span /><span /><span /></div>)}</div> : (
             <div className="products-grid">
               {catalog?.items.map(item => (
                 <article key={item.item_code} className="product-card-v2">
                   <div className="product-img-action-wrap">
-                    <Link to={`/products/${encodeURIComponent(item.item_code)}`} className="product-img">
+                    <Link to={`/products/${encodeURIComponent(item.item_code)}`} className="product-img" data-magnetic="true" onMouseEnter={() => prefetchProduct(item.item_code)} onFocus={() => prefetchProduct(item.item_code)} onClick={(event) => { activateProductPalette(item); beginSharedTransition(item, event.currentTarget.getBoundingClientRect()) }}>
                       {item.image ? <img src={item.image} alt={item.item_name} /> : <div className="no-image-placeholder">{item.item_name?.slice(0, 1)}</div>}
                     </Link>
                     <div className="product-action-overlay">
@@ -172,7 +176,7 @@ export default function ProductList() {
                   </div>
                   <div className="product-content-wrap">
                     <span className="product-cat">{item.item_group}</span>
-                    <h2 className="product-title"><Link to={`/products/${encodeURIComponent(item.item_code)}`}>{item.item_name}</Link></h2>
+                    <h2 className="product-title"><Link to={`/products/${encodeURIComponent(item.item_code)}`} onMouseEnter={() => prefetchProduct(item.item_code)} onFocus={() => prefetchProduct(item.item_code)} onClick={(event) => { activateProductPalette(item); beginSharedTransition(item, event.currentTarget.getBoundingClientRect()) }}>{item.item_name}</Link></h2>
                     <div className="product-card-bottom">
                       <div className="product-price">{item.price ? `${item.price.toFixed(2)} ${item.currency}` : t('On request', 'حسب الطلب')}</div>
                       <button className="add-btn" onClick={() => addItem(item)}>{t(content?.add_to_cart_text_en, content?.add_to_cart_text_ar, 'Add')}</button>
