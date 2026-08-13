@@ -1,4 +1,5 @@
 import { useLanguage } from '../context/LanguageContext'
+import { trackEvent } from '../utils/analytics'
 import './VisualFilterChips.css'
 
 const CHIP_SWATCHES = ['#d7b77a', '#9ab8a3', '#cadce0', '#d2aaa4', '#b7a7c6', '#d8d0bb']
@@ -15,7 +16,7 @@ export default function VisualFilterChips({ availableAttributes = {}, selectedAt
       <div className="visual-filter-rail">
         {entries.flatMap(([attribute, values]) => values.slice(0, 10).map((value, index) => {
           const active = selectedAttrs[attribute]?.includes(value)
-          return <button key={`${attribute}-${value}`} type="button" className={`visual-filter-chip ${active ? 'active' : ''}`} onClick={() => onToggle(attribute, value)} aria-pressed={active}>
+          return <button key={`${attribute}-${value}`} type="button" className={`visual-filter-chip ${active ? 'active' : ''}`} onClick={() => { onToggle(attribute, value); trackEvent('visual_filter_chip_select', { attribute, value }) }} aria-pressed={active}>
             <span className="visual-chip-swatch" style={{ background: CHIP_SWATCHES[index % CHIP_SWATCHES.length] }} />
             <span><small>{attribute}</small><strong>{value}</strong></span><i>{active ? '✓' : '+'}</i>
           </button>

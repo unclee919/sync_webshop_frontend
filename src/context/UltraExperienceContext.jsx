@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { getItem } from '../api/client'
+import { trackEvent } from '../utils/analytics'
 import { useContent } from './ContentContext'
 
 const UltraExperienceContext = createContext(null)
@@ -80,6 +81,7 @@ export function UltraExperienceProvider({ children }) {
 
   useEffect(() => {
     applyExperienceToDocument({ palette, circadianMode, settings })
+    trackEvent('circadian_theme_active', { theme_mode: circadianMode, palette_key: palette?.key || 'cedar' })
   }, [palette, circadianMode, settings])
 
   useEffect(() => {
@@ -93,7 +95,9 @@ export function UltraExperienceProvider({ children }) {
 
   const activateProductPalette = useCallback((item) => {
     if (settings.adaptive_palette_enabled === 0) return
-    setPalette(normalizePalette(item, PALETTE_LIBRARY.cedar))
+    const nextPalette = normalizePalette(item, PALETTE_LIBRARY.cedar)
+    setPalette(nextPalette)
+    trackEvent('adaptive_palette_applied', { palette_key: nextPalette.key, item_group: item?.item_group || 'unknown' })
   }, [settings.adaptive_palette_enabled])
 
   const resetProductPalette = useCallback(() => setPalette(PALETTE_LIBRARY.cedar), [])
@@ -101,6 +105,7 @@ export function UltraExperienceProvider({ children }) {
   const beginSharedTransition = useCallback((item, sourceRect = null) => {
     if (settings.shared_transitions_enabled === 0) return
     setTransition({ item, sourceRect, id: `${item?.item_code || 'item'}-${Date.now()}` })
+    trackEvent('shared_product_transition_start', { item_group: item?.item_group || 'unknown' })
     window.setTimeout(() => setTransition(null), 620)
   }, [settings.shared_transitions_enabled])
 

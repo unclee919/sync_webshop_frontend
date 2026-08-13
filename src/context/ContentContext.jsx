@@ -32,6 +32,7 @@ export const DEFAULT_CONTENT = {
   testimonials: [],
   trust_badges: [],
   stories: [],
+  editorial_collections: [],
   stories_enabled: 1,
   stories_title_en: 'The edit, in moments',
   stories_title_ar: 'مختارات في لحظات',

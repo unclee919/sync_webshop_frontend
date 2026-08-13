@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useLanguage } from '../context/LanguageContext'
+import { trackEvent } from '../utils/analytics'
 import './SpatialProductControls.css'
 
 function Icon({ children }) { return <span className="spatial-control-icon" aria-hidden="true">{children}</span> }
@@ -31,6 +32,7 @@ export default function SpatialProductControls({ item, settings = {} }) {
   }, [item?.attributes, isArabic])
 
   const launchAr = () => {
+    trackEvent('spatial_studio_ar_launch', { has_model: Boolean(iosModel || androidModel), item_group: item?.item_group || 'unknown' })
     const url = isArabic ? (androidModel || iosModel) : (iosModel || androidModel)
     if (url) window.open(url, '_blank', 'noopener,noreferrer')
   }
@@ -46,10 +48,10 @@ export default function SpatialProductControls({ item, settings = {} }) {
         <button type="button" className={`spatial-tool-card ${hasAr ? '' : 'is-disabled'}`} onClick={launchAr} disabled={!hasAr} data-magnetic="true">
           <Icon>⌾</Icon><span><strong>{t('View in your space', 'اعرضه في مساحتك')}</strong><small>{hasAr ? t('Open AR preview', 'فتح المعاينة بالواقع المعزز') : t('Add an AR model in Desk', 'أضف نموذج AR من Desk')}</small></span><b>↗</b>
         </button>
-        <button type="button" className={`spatial-tool-card ${has3d ? '' : 'is-disabled'}`} onClick={() => has3d && setMode('3d')} disabled={!has3d} data-magnetic="true">
+        <button type="button" className={`spatial-tool-card ${has3d ? '' : 'is-disabled'}`} onClick={() => { if (has3d) { trackEvent('spatial_studio_3d_open', { item_group: item?.item_group || 'unknown' }); setMode('3d') } }} disabled={!has3d} data-magnetic="true">
           <Icon>◉</Icon><span><strong>{t('3D studio view', 'عرض الاستوديو ثلاثي الأبعاد')}</strong><small>{has3d ? t('Rotate and inspect the model', 'دوّر النموذج وافحصه') : t('Configure a 3D model in Desk', 'اضبط نموذجاً ثلاثي الأبعاد من Desk')}</small></span><b>↗</b>
         </button>
-        {settings.exploded_view_enabled !== 0 && <button type="button" className="spatial-tool-card" onClick={() => setMode('exploded')} data-magnetic="true">
+        {settings.exploded_view_enabled !== 0 && <button type="button" className="spatial-tool-card" onClick={() => { trackEvent('spatial_studio_exploded_open', { item_group: item?.item_group || 'unknown' }); setMode('exploded') }} data-magnetic="true">
           <Icon>✧</Icon><span><strong>{t(settings.exploded_view_title_en || 'Inspect the details', settings.exploded_view_title_ar || 'استكشف التفاصيل')}</strong><small>{t('Pull the story apart', 'افصل التفاصيل لاستكشافها')}</small></span><b>↗</b>
         </button>}
       </div>
@@ -63,7 +65,7 @@ export default function SpatialProductControls({ item, settings = {} }) {
               <div className="spatial-model-stage"><img src={item?.image} alt="" /><div className="spatial-orbit-ring" /><a href={modelUrl} target="_blank" rel="noreferrer" className="primary-button">{t('Open 3D model', 'فتح النموذج ثلاثي الأبعاد')} ↗</a></div>
             </> : <>
               <span className="spatial-kicker">{t('Exploded view', 'منظور التفاصيل')}</span><h3>{t(settings.exploded_view_title_en || 'Inspect the details', settings.exploded_view_title_ar || 'استكشف التفاصيل')}</h3>
-              <div className="exploded-stage"><div className="exploded-product-core"><img src={item?.image} alt={item?.item_name} /></div>{layers.map((layer, index) => <motion.button key={layer.label} type="button" className={`exploded-layer layer-${index + 1} ${activeLayer === index ? 'active' : ''}`} animate={{ x: activeLayer === index ? (isRtl ? -10 : 10) : 0, scale: activeLayer === index ? 1.04 : 1 }} onClick={() => setActiveLayer(index)}><span>{index + 1}</span>{layer.label}</motion.button>)}</div>
+              <div className="exploded-stage"><div className="exploded-product-core"><img src={item?.image} alt={item?.item_name} /></div>{layers.map((layer, index) => <motion.button key={layer.label} type="button" className={`exploded-layer layer-${index + 1} ${activeLayer === index ? 'active' : ''}`} animate={{ x: activeLayer === index ? (isRtl ? -10 : 10) : 0, scale: activeLayer === index ? 1.04 : 1 }} onClick={() => { setActiveLayer(index); trackEvent('spatial_studio_exploded_layer', { layer_index: index + 1, item_group: item?.item_group || 'unknown' }) }}><span>{index + 1}</span>{layer.label}</motion.button>)}</div>
               <div className="exploded-caption"><strong>{layers[activeLayer]?.label}</strong><p>{layers[activeLayer]?.description}</p></div>
             </>}
           </motion.div>
