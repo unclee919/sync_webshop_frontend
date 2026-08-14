@@ -9,11 +9,28 @@
     <meta name="theme-color" content="#21504c" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="/assets/index-CaTe6nTH.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-w8Mm1gT6.css">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet"></noscript>
+    <script type="module" crossorigin src="/assets/index-DbIIAiXk.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BxufLvRh.css">
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      window.__syncContentPromise = fetch('/api/method/sync_webshop.api.content.get_content', { credentials: 'include', headers: { Accept: 'application/json' } })
+        .then(function (response) { if (!response.ok) throw new Error('content request failed'); return response.json(); })
+        .then(function (payload) {
+          var content = payload && (payload.message || payload);
+          var hero = content && Array.isArray(content.banners) && content.banners.find(function (banner) { return banner && banner.image; });
+          if (hero && hero.image) {
+            var preload = document.createElement('link');
+            preload.rel = 'preload'; preload.as = 'image'; preload.fetchPriority = 'high'; preload.href = hero.image;
+            document.head.appendChild(preload);
+          }
+          return content;
+        })
+        .catch(function () { return null; });
+    </script>
   </body>
 </html>
