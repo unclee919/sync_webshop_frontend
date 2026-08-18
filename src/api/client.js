@@ -1,154 +1,187 @@
-import axios from 'axios'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 
-const API_BASE_URL = window.location.origin
-
-const client = axios.create({
-  baseURL: API_BASE_URL,
-  withCredentials: true,
-  headers: {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json',
-  },
-})
-
-let cachedToken = null;
-
-export async function getToken() {
-  if (cachedToken) return cachedToken;
-  try {
-    const response = await axios.get(API_BASE_URL + '/api/method/sync_webshop.api.utils.get_token', { withCredentials: true });
-    cachedToken = response.data.message;
-    return cachedToken;
-  } catch (e) {
-    return null;
+async function callMethod(path, { method = 'GET', params, body, apiKey, apiSecret } = {}) {
+  let url = `${API_BASE_URL}/api/method/${path}`
+  if (params) {
+    const query = new URLSearchParams()
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        query.append(key, typeof value === 'object' ? JSON.stringify(value) : value)
+      }
+    })
+    const queryString = query.toString()
+    if (queryString) url += `?${queryString}`
   }
+  const headers = { Accept: 'application/json' }
+  if (body) headers['Content-Type'] = 'application/json'
+  if (apiKey && apiSecret) headers.Authorization = `token ${apiKey}:${apiSecret}`
+  const response = await fetch(url, {
+    method,
+    headers,
+    credentials: 'include',
+    body: body ? JSON.stringify(body) : undefined,
+  })
+  const data = await response.json().catch(() => null)
+  if (!response.ok) {
+    const message = data?.message || data?.exception || `Request failed (${response.status})`
+    throw new Error(message)
+  }
+  return data?.message
 }
 
-export async function callMethod(method, { params = {}, body = {}, method: httpMethod = 'GET', credentials = true } = {}) {
-  try {
-    const config = {
-      url: '/api/method/' + method,
-      method: httpMethod,
-      params: httpMethod === 'GET' ? { ...params, ...body } : params,
-      data: httpMethod !== 'GET' ? body : undefined,
-      withCredentials: credentials,
-    };
+export function apiCall(path, body = {}) { return callMethod(path, { method: 'POST', body }) }
 
-    if (httpMethod !== 'GET') {
-      const token = await getToken();
-      if (token) {
-        config.headers = { ...config.headers, 'X-Frappe-CSRF-Token': token };
-      }
-    }
+export function getTheme() { return callMethod('sync_webshop.api.theme.get_theme') }
+export function getContent() { return callMethod('sync_webshop.api.content.get_content') }
+export function getEliteSettings() { return callMethod('sync_webshop.api.elite.get_elite_settings') }
+export function getStorefrontProfiles() { return callMethod('sync_webshop.api.elite.get_storefront_profiles') }
+export function getLoyaltyTiers() { return callMethod('sync_webshop.api.elite.get_loyalty_tiers') }
+export function getShopTheLook(itemCode, limit = 6) { return callMethod('sync_webshop.api.elite.get_shop_the_look', { params: { item_code: itemCode, limit } }) }
+export function getRegionalPaymentOptions() { return callMethod('sync_webshop.api.elite.get_regional_payment_options') }
+export function getEnterpriseSettings() { return callMethod('sync_webshop.api.enterprise.get_enterprise_settings') }
+export function getIntelligentMerchandising(limit = 12) { return callMethod('sync_webshop.api.enterprise.get_intelligent_merchandising', { params: { limit } }) }
+export function sendVoiceAction(command) { return callMethod('sync_webshop.api.enterprise.voice_action', { method: 'POST', body: { command } }) }
+export function getVolumePrice({ itemCode, qty = 1 }) { return callMethod('sync_webshop.api.enterprise.get_volume_price', { params: { item_code: itemCode, qty } }) }
+export function bulkQuickOrder(lines) { return callMethod('sync_webshop.api.enterprise.bulk_quick_order', { method: 'POST', body: { lines } }) }
+export function getLiveShopping() { return callMethod('sync_webshop.api.enterprise.get_live_shopping') }
+export function getFlashSaleItems(limit = 12) { return callMethod('sync_webshop.api.enterprise.get_flash_sale_items', { params: { limit } }) }
+export function getFitPrediction({ itemCode, height, weight, roomWidth, roomDepth }) { return callMethod('sync_webshop.api.enterprise.get_fit_prediction', { params: { item_code: itemCode, height, weight, room_width: roomWidth, room_depth: roomDepth } }) }
+export function getEnterpriseAnalytics() { return callMethod('sync_webshop.api.enterprise.get_enterprise_analytics') }
+export function evaluateOrderRisk({ orderName, amount, paymentAttempts }) { return callMethod('sync_webshop.api.enterprise.evaluate_order_risk', { method: 'POST', body: { order_name: orderName, amount, payment_attempts: paymentAttempts } }) }
+export function getEcosystemSettings() { return callMethod('sync_webshop.api.ecosystem.get_ecosystem_settings') }
+export function ragSupportQuery(question) { return callMethod('sync_webshop.api.ecosystem.rag_support_query', { params: { question } }) }
+export function getBranches() { return callMethod('sync_webshop.api.ecosystem.get_branches') }
+export function redeemGiftCard(code) { return callMethod('sync_webshop.api.ecosystem.redeem_gift_card', { method: 'POST', body: { code } }) }
+export function getMasterClassSettings() { return callMethod('sync_webshop.api.master_class.get_master_class_settings') }
+export function getSocialFeed(limit = 12) { return callMethod('sync_webshop.api.master_class.get_social_feed', { params: { limit } }) }
+export function getPersonalizedLanding(styleProfile, limit = 8) { return callMethod('sync_webshop.api.master_class.get_personalized_landing', { params: { style_profile: styleProfile, limit } }) }
+export function createSubscription({ customerEmail, itemCode, interval }) { return callMethod('sync_webshop.api.master_class.create_subscription', { method: 'POST', body: { customer_email: customerEmail, item_code: itemCode, interval } }) }
+export function getCustomerSubscriptions(customerEmail) { return callMethod('sync_webshop.api.master_class.get_customer_subscriptions', { params: { customer_email: customerEmail } }) }
+export function prepareCourierWaybill(orderName) { return callMethod('sync_webshop.api.master_class.prepare_courier_waybill', { method: 'POST', body: { order_name: orderName } }) }
+export function createRegionalPaymentSession({ gateway, amount, currency, orderReference }) { return callMethod('sync_webshop.api.elite.create_regional_payment_session', { method: 'POST', body: { gateway, amount, currency, order_reference: orderReference } }) }
 
-    const response = await client(config);
-    return response.data.message;
-  } catch (error) {
-    // If we get a 400/403 on a POST request, maybe the token expired
-    if ((error.response?.status === 400 || error.response?.status === 403) && httpMethod !== 'GET') {
-      cachedToken = null;
-      const token = await getToken();
-      if (token) {
-        const retryConfig = {
-          url: '/api/method/' + method,
-          method: httpMethod,
-          params: httpMethod === 'GET' ? { ...params, ...body } : params,
-          data: httpMethod !== 'GET' ? body : undefined,
-          withCredentials: credentials,
-          headers: { 'X-Frappe-CSRF-Token': token }
-        };
-        const retryResponse = await client(retryConfig);
-        return retryResponse.data.message;
-      }
-    }
-    const message = error.response?.data?.message || error.response?.data?.exception || error.message;
-    throw new Error(message);
-  }
+export function getCatalog({ itemGroup, search, page = 1, pageSize = 20, minPrice, maxPrice, attributes, styleProfile } = {}) {
+  return callMethod('sync_webshop.api.catalog.get_catalog', {
+    params: { item_group: itemGroup, search, page, page_size: pageSize, min_price: minPrice, max_price: maxPrice, attributes, style_profile: styleProfile },
+  })
+}
+export function getCategories() { return callMethod('sync_webshop.api.catalog.get_categories') }
+export function getSearchSuggestions(search) { return callMethod('sync_webshop.api.catalog.get_search_suggestions', { params: { search } }) }
+export function getItem(itemCode) { return callMethod('sync_webshop.api.catalog.get_item', { params: { item_code: itemCode } }) }
+export function getStock(itemCode) { return callMethod('sync_webshop.api.catalog.get_stock', { params: { item_code: itemCode } }) }
+export function getRecommendations({ itemCode, itemGroup, limit = 8 } = {}) {
+  return callMethod('sync_webshop.api.catalog.get_recommendations', { params: { item_code: itemCode, item_group: itemGroup, limit } })
+}
+export function getProductReviews({ itemCode, page = 1, pageSize = 10 }) {
+  return callMethod('sync_webshop.api.reviews.get_product_reviews', { params: { item_code: itemCode, page, page_size: pageSize } })
+}
+export function submitProductReview({ itemCode, rating, reviewTitle, reviewText, displayName, orderName, email, phone }) {
+  return callMethod('sync_webshop.api.reviews.submit_review', {
+    method: 'POST',
+    body: { item_code: itemCode, rating, review_title: reviewTitle, review_text: reviewText, display_name: displayName, order_name: orderName, email, phone },
+  })
 }
 
-// Catalog & Products
-export const getProducts = (params) => callMethod('sync_webshop.api.catalog.get_catalog', { body: params, method: 'POST' });
-export const getCatalog = (params) => callMethod('sync_webshop.api.catalog.get_catalog', { body: params, method: 'POST' });
-export const getProduct = (itemCode) => callMethod('sync_webshop.api.catalog.get_item', { params: { item_code: itemCode } });
-export const getItem = (itemCode) => callMethod('sync_webshop.api.catalog.get_item', { params: { item_code: itemCode } });
-export const getCategories = () => callMethod('sync_webshop.api.catalog.get_categories');
-export const getSearchSuggestions = (search) => callMethod('sync_webshop.api.catalog.get_search_suggestions', { params: { search } });
-export const getRecommendations = (params) => callMethod('sync_webshop.api.catalog.get_recommendations', { params });
-export const getFlashSaleItems = () => callMethod('sync_webshop.api.catalog.get_flash_sale_items');
-export const getPredictiveSearch = (q) => callMethod('sync_webshop.api.catalog.get_predictive_search', { params: { q } });
-export const searchByImage = (image) => callMethod('sync_webshop.api.catalog.search_by_image', { body: { image }, method: 'POST' });
 
-// Checkout & Orders
-export const getCheckoutSettings = () => callMethod('sync_webshop.api.checkout.get_checkout_settings');
-export const getTerritories = () => callMethod('sync_webshop.api.checkout.get_territories');
-export const validateCoupon = (couponCode, totalAmount) => callMethod('sync_webshop.api.checkout.validate_coupon', { params: { coupon_code: couponCode, total_amount: totalAmount } });
-// We use credentials for order creation to support logged-in users, but now with a proper CSRF token.
-export const createOrder = (data) => callMethod('sync_webshop.api.checkout.create_order', { body: data, method: 'POST' });
-export const getOrderStatus = (orderId) => callMethod('sync_webshop.api.checkout.get_order_status', { params: { order_id: orderId } });
-export const bulkQuickOrder = (items) => callMethod('sync_webshop.api.checkout.bulk_quick_order', { body: { items }, method: 'POST' });
-export const requestQuote = (data) => callMethod('sync_webshop.api.checkout.request_quote', { body: data, method: 'POST' });
+export function getMyOrders({ email, phone } = {}) {
+  return callMethod('sync_webshop.api.orders.list_my_orders', { params: { email, phone } })
+}
+export function getOrderStatus(orderName, { email, phone } = {}) {
+  return callMethod('sync_webshop.api.orders.get_order_status', { params: { order_name: orderName, email, phone } })
+}
+export function getCustomerPortal({ email, phone } = {}) {
+  return callMethod('sync_webshop.api.portal.get_customer_portal', { params: { email, phone } })
+}
+export function getDashboardSettings() { return callMethod('sync_webshop.api.portal.get_dashboard_settings') }
+export function updateCustomerProfile({ profile, email, phone }) {
+  return callMethod('sync_webshop.api.portal.update_customer_profile', {
+    method: 'POST', body: { profile, email, phone },
+  })
+}
+export function saveCustomerAddress({ address, addressName, email, phone }) {
+  return callMethod('sync_webshop.api.portal.save_customer_address', {
+    method: 'POST', body: { address, address_name: addressName, email, phone },
+  })
+}
+export function deleteCustomerAddress({ addressName, email, phone }) {
+  return callMethod('sync_webshop.api.portal.delete_customer_address', {
+    method: 'POST', body: { address_name: addressName, email, phone },
+  })
+}
+export function requestReturn({ orderName, itemCode, qty = 1, reason, email, phone }) {
+  return callMethod('sync_webshop.api.portal.request_return', {
+    method: 'POST',
+    body: { order_name: orderName, item_code: itemCode, qty, reason, email, phone },
+  })
+}
+export function getInvoice(invoiceName, { email, phone } = {}) {
+  return callMethod('sync_webshop.api.portal.get_invoice', { params: { invoice_name: invoiceName, email, phone } })
+}
 
-// Payment
-export const createPaymobIntention = (data) => callMethod('sync_webshop.api.paymob.create_paymob_intention', { body: data, method: 'POST' });
-export const redeemGiftCard = (code) => callMethod('sync_webshop.api.payment.redeem_gift_card', { body: { code }, method: 'POST' });
+export function getCheckoutSettings() { return callMethod('sync_webshop.api.checkout.get_checkout_settings') }
+export function getTerritories() { return callMethod('sync_webshop.api.checkout.get_territories') }
+export function validateCoupon({ coupon_code, couponCode, total_amount, totalAmount, amount } = {}) {
+  return callMethod('sync_webshop.api.checkout.validate_coupon', {
+    params: {
+      coupon_code: coupon_code ?? couponCode,
+      total_amount: total_amount ?? totalAmount ?? amount,
+    },
+  })
+}
+export function createOrder({ customer, items, payment_method, stripe_payment_intent, delivery_date, coupon_code, governorate, city, location, second_phone, gift_message, gift_wrap, fulfillment_method, pickup_warehouse, submit = false }) {
+  return callMethod('sync_webshop.api.checkout.create_order', {
+    method: 'POST', body: { customer, items, payment_method, stripe_payment_intent, delivery_date, coupon_code, governorate, city, location, second_phone, gift_message, gift_wrap, fulfillment_method, pickup_warehouse, submit },
+  })
+}
+export function createPaymentIntent(amount, currency = 'gbp') {
+  return callMethod('sync_webshop.api.payment.create_payment_intent', { method: 'POST', body: { amount, currency } })
+}
+export function getPaymobSettings() { return callMethod('sync_webshop.api.paymob.get_paymob_settings') }
+export function createPaymobIntention({ salesOrder, paymentMethod = 'visa', customer }) {
+  return callMethod('sync_webshop.api.paymob.create_payment_intention', {
+    method: 'POST',
+    body: { sales_order: salesOrder, payment_method: paymentMethod, customer },
+  })
+}
 
-// Content & Pages
-export const getContent = () => callMethod('sync_webshop.api.content.get_content');
-export const getAboutPage = () => callMethod('sync_webshop.api.dynamic_pages.get_about_page');
-export const getPolicyPage = () => callMethod('sync_webshop.api.dynamic_pages.get_policy_page');
-export const getArticles = () => callMethod('sync_webshop.api.dynamic_pages.get_articles');
-export const getArticle = (name) => callMethod('sync_webshop.api.dynamic_pages.get_article', { params: { name } });
-export const getQaItems = () => callMethod('sync_webshop.api.dynamic_pages.get_qa_items');
-export const getBranches = () => callMethod('sync_webshop.api.dynamic_pages.get_branches');
+export function getAiChatSettings() { return callMethod('sync_webshop.api.ai_chat.get_ai_chat_settings') }
+export function sendAiMessage({ message, history, email }) {
+  return callMethod('sync_webshop.api.ai_chat.send_message', {
+    method: 'POST', body: { message, history, email },
+  })
+}
 
-// AI & Interactions
-export const getAiChatSettings = () => callMethod('sync_webshop.api.ai_chat.get_ai_chat_settings');
-export const getAiChatResponse = (message, history) => callMethod('sync_webshop.api.ai_chat.get_ai_chat_response', { body: { message, history }, method: 'POST' });
-export const sendAiMessage = (message, history) => callMethod('sync_webshop.api.ai_chat.get_ai_chat_response', { body: { message, history }, method: 'POST' });
-export const sendVoiceAction = (audio) => callMethod('sync_webshop.api.ai_chat.send_voice_action', { body: { audio }, method: 'POST' });
-export const ragSupportQuery = (q) => callMethod('sync_webshop.api.ai_chat.rag_support_query', { params: { q } });
+export function getWishlist() { return callMethod('sync_webshop.api.user.get_wishlist') }
+export function addToWishlist(itemCode) { return callMethod('sync_webshop.api.user.add_to_wishlist', { method: 'POST', body: { item_code: itemCode } }) }
+export function removeFromWishlist(itemCode) { return callMethod('sync_webshop.api.user.remove_from_wishlist', { method: 'POST', body: { item_code: itemCode } }) }
 
-// Elite & Tiers
-export const getStorefrontProfiles = () => callMethod('sync_webshop.api.elite.get_storefront_profiles');
-export const getEliteSettings = () => callMethod('sync_webshop.api.elite.get_elite_settings');
-export const getMasterClassSettings = () => callMethod('sync_webshop.api.master_class.get_master_class_settings');
-export const getDynamicPageSettings = () => callMethod('sync_webshop.api.dynamic_pages.get_dynamic_page_settings');
-export const getEnterpriseSettings = () => callMethod('sync_webshop.api.enterprise.get_enterprise_settings');
-export const getEcosystemSettings = () => callMethod('sync_webshop.api.ecosystem.get_ecosystem_settings');
-export const getMasterTierSettings = () => callMethod('sync_webshop.api.master_tier.get_master_tier_settings');
-export const getLuxurySettings = () => callMethod('sync_webshop.api.luxury_tier.get_luxury_settings');
-export const getLiveSessions = () => callMethod('sync_webshop.api.luxury_tier.get_live_sessions');
-export const getSocialPulse = () => callMethod('sync_webshop.api.luxury_tier.get_social_pulse');
-export const getCommunityWall = () => callMethod('sync_webshop.api.luxury_tier.get_community_wall');
-export const getLiveShopping = () => callMethod('sync_webshop.api.luxury_tier.get_live_shopping');
-export const getLookbookHotspots = () => callMethod('sync_webshop.api.luxury_tier.get_lookbook_hotspots');
-export const getShopTheLook = () => callMethod('sync_webshop.api.luxury_tier.get_shop_the_look');
-export const getStyleQuiz = () => callMethod('sync_webshop.api.luxury_tier.get_style_quiz');
+export function searchByImage({ imageData, filename, query } = {}) {
+  return callMethod('sync_webshop.api.visual_search.search_by_image', { method: 'POST', body: { image_data: imageData, filename, query } })
+}
+export function runEliteVisualSearch() { return callMethod('sync_webshop.api.elite.visual_search_match') }
+export function syncEliteMarketplaces() { return callMethod('sync_webshop.api.elite.sync_marketplaces', { method: 'POST', body: {} }) }
 
-// Reviews
-export const submitReview = (data) => callMethod('sync_webshop.api.reviews.submit_review', { body: data, method: 'POST' });
-export const submitProductReview = (data) => callMethod('sync_webshop.api.reviews.submit_review', { body: data, method: 'POST' });
-export const getReviews = (itemCode) => callMethod('sync_webshop.api.reviews.get_reviews', { params: { item_code: itemCode } });
-export const getProductReviews = (itemCode) => callMethod('sync_webshop.api.reviews.get_reviews', { params: { item_code: itemCode } });
+export function getStyleQuiz() { return callMethod("sync_webshop.api.presence.get_style_quiz") }
+export function getPresenceSettings() { return callMethod("sync_webshop.api.presence.get_presence_settings") }
+export function getMasterTierSettings() { return callMethod('sync_webshop.api.master_tier.get_master_tier_settings') }
+export function getPredictiveSearch(search, limit = 6) { return callMethod('sync_webshop.api.master_tier.get_predictive_search', { params: { search, limit } }) }
+export function getLookbookHotspots(limit = 24) { return callMethod('sync_webshop.api.master_tier.get_hotspots', { params: { limit } }) }
+export function getProductSeo(itemCode, lang = 'en') { return callMethod('sync_webshop.api.master_tier.get_product_seo', { params: { item_code: itemCode, lang } }) }
+export function getLoyaltySnapshot({ email, phone } = {}) { return callMethod('sync_webshop.api.master_tier.get_loyalty_snapshot', { params: { email, phone } }) }
+export function redeemLoyaltyPoints({ points, email, phone }) { return callMethod('sync_webshop.api.master_tier.redeem_loyalty_points', { method: 'POST', body: { points, email, phone } }) }
+export function getReferralHub({ email, phone } = {}) { return callMethod('sync_webshop.api.master_tier.get_referral_hub', { params: { email, phone } }) }
+export function claimReferralCode({ referralCode, email, phone }) { return callMethod('sync_webshop.api.master_tier.claim_referral_code', { method: 'POST', body: { referral_code: referralCode, email, phone } }) }
+export function requestQuote({ customer, items, note, company }) {
+  return callMethod("sync_webshop.api.presence.request_quote", { method: "POST", body: { customer, items, note, company } })
+}
 
-// Portal & Customer
-export const login = (email, password) => callMethod('sync_webshop.api.portal.login', { body: { email, password }, method: 'POST' });
-export const signup = (data) => callMethod('sync_webshop.api.portal.signup', { body: data, method: 'POST' });
-export const getCustomerPortal = () => callMethod('sync_webshop.api.portal.get_customer_portal');
-export const getDashboardSettings = () => callMethod('sync_webshop.api.portal.get_dashboard_settings');
-export const updateCustomerProfile = (data) => callMethod('sync_webshop.api.portal.update_profile', { body: data, method: 'POST' });
-export const saveCustomerAddress = (data) => callMethod('sync_webshop.api.portal.save_address', { body: data, method: 'POST' });
-export const deleteCustomerAddress = (name) => callMethod('sync_webshop.api.portal.delete_address', { body: { name }, method: 'POST' });
-export const getInvoice = (name) => callMethod('sync_webshop.api.portal.get_invoice', { params: { name } });
-export const requestReturn = (data) => callMethod('sync_webshop.api.portal.request_return', { body: data, method: 'POST' });
-export const getLoyaltySnapshot = () => callMethod('sync_webshop.api.portal.get_loyalty_snapshot');
-export const redeemLoyaltyPoints = (points) => callMethod('sync_webshop.api.portal.redeem_loyalty_points', { body: { points }, method: 'POST' });
-export const getReferralHub = () => callMethod('sync_webshop.api.portal.get_referral_hub');
-export const claimReferralCode = (code) => callMethod('sync_webshop.api.portal.claim_referral_code', { body: { code }, method: 'POST' });
-export const createSubscription = (data) => callMethod('sync_webshop.api.portal.create_subscription', { body: data, method: 'POST' });
-
-// SEO
-export const getProductSeo = (itemCode) => callMethod('sync_webshop.api.seo.get_product_seo', { params: { item_code: itemCode } });
-
-// Generic
-export const apiCall = (method, data) => callMethod(method, { body: data, method: 'POST' });
+export function getDynamicPageSettings() { return callMethod('sync_webshop.api.dynamic_pages.get_dynamic_page_settings') }
+export function getAboutPage() { return callMethod('sync_webshop.api.dynamic_pages.get_about_page') }
+export function getPolicyPage() { return callMethod('sync_webshop.api.dynamic_pages.get_policy_page') }
+export function getArticles() { return callMethod('sync_webshop.api.dynamic_pages.get_articles') }
+export function getArticle(route) { return callMethod('sync_webshop.api.dynamic_pages.get_article', { params: { route } }) }
+export function getQaItems() { return callMethod('sync_webshop.api.dynamic_pages.get_qa_items') }
+export function getLuxurySettings() { return callMethod('sync_webshop.api.luxury_tier.get_luxury_settings') }
+export function getLiveSessions() { return callMethod('sync_webshop.api.luxury_tier.get_live_sessions') }
+export function getSocialPulse() { return callMethod('sync_webshop.api.luxury_tier.get_social_pulse') }
+export function getCommunityWall() { return callMethod('sync_webshop.api.luxury_tier.get_community_wall') }
