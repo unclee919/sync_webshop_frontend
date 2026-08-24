@@ -39,6 +39,7 @@ export default function ProductList() {
   const [selectedAttrs, setSelectedAttrs] = useState({})
   const [quickViewCode, setQuickViewCode] = useState(null)
   const [styleProfile, setStyleProfile] = useState(() => { try { return JSON.parse(localStorage.getItem('sync_webshop_style_profile') || 'null') } catch { return null } })
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
 
   const isArabic = lang === 'ar'
   const t = (en, ar, fallback = '') => (isArabic ? (ar || en || fallback) : (en || ar || fallback))
@@ -124,7 +125,11 @@ export default function ProductList() {
   
       <div className="products-layout">
         {showSidebar && (
-          <aside className="products-sidebar" style={{ flex: `0 0 ${sidebarWidth}px` }}>
+          <aside className={`products-sidebar ${mobileFiltersOpen ? 'mobile-filters-open' : ''}`} style={{ flex: `0 0 ${sidebarWidth}px` }}>
+            <button type="button" className="mobile-filters-toggle" aria-expanded={mobileFiltersOpen} onClick={() => setMobileFiltersOpen((open) => !open)}>
+              <span>{t('Filters', 'الفلاتر')}</span><span aria-hidden="true">{mobileFiltersOpen ? '−' : '+'}</span>
+            </button>
+            <div className="mobile-filters-panel">
             <div className="sidebar-widget">
               <h3 className="widget-title">{t('Categories', 'الفئات')}</h3>
               <ul className="category-list">
@@ -157,6 +162,7 @@ export default function ProductList() {
                 </div>
               ))
             )}
+            </div>
           </aside>
         )}
 
