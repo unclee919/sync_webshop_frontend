@@ -1,11 +1,15 @@
 import { useState } from 'react'
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { useLanguage } from '../context/LanguageContext'
+import { useContent } from '../context/ContentContext'
 
 export default function StripePaymentForm({ onPaymentSuccess, amount, currency, customer }) {
   const stripe = useStripe()
   const elements = useElements()
   const { lang } = useLanguage()
+  const { content } = useContent()
+  const featureCopy = content?.copy?.feature || {}
+  const t = (key, en, ar) => lang === 'ar' ? (featureCopy[`${key}_ar`] || ar || en) : (featureCopy[`${key}_en`] || en || ar)
   const [error, setError] = useState(null)
   const [processing, setProcessing] = useState(false)
 
@@ -49,9 +53,7 @@ export default function StripePaymentForm({ onPaymentSuccess, amount, currency, 
       }} />
       {error && <div className="stripe-error">{error}</div>}
       <p className="stripe-hint">
-        {lang === 'ar' 
-          ? 'سيتم معالجة الدفع بأمان عبر Stripe' 
-          : 'Payment will be processed securely via Stripe'}
+        {t('stripe_secure_hint', 'Payment will be processed securely via Stripe', 'سيتم معالجة الدفع بأمان عبر Stripe')}
       </p>
       <button 
         type="button" 
@@ -59,9 +61,7 @@ export default function StripePaymentForm({ onPaymentSuccess, amount, currency, 
         disabled={processing || !stripe}
         onClick={handleSubmit}
       >
-        {processing 
-          ? (lang === 'ar' ? 'جاري المعالجة...' : 'Processing...') 
-          : (lang === 'ar' ? 'ادفع الآن' : 'Pay Now')}
+        {processing ? t('processing', 'Processing...', 'جاري المعالجة...') : t('pay_now', 'Pay Now', 'ادفع الآن')}
       </button>
     </div>
   )

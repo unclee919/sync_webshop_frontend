@@ -14,6 +14,8 @@ export default function Checkout() {
   const cart = useCart()
   const { lang } = useLanguage()
   const { content } = useContent()
+  const uiCopy = content?.copy?.ui || {}
+  const t = (key, en, ar) => lang === 'ar' ? (uiCopy[`${key}_ar`] || ar || en) : (uiCopy[`${key}_en`] || en || ar)
   const { items, total } = cart
   const navigate = useNavigate()
   const query = new URLSearchParams(useLocation().search)
@@ -122,9 +124,9 @@ export default function Checkout() {
       const data = await validateCoupon({ coupon_code: code, amount: total })
       if (data.valid) {
         setCoupon(data)
-        setCouponMessage({ type: 'success', text: lang === 'ar' ? 'تم تطبيق الكود بنجاح' : 'Coupon applied successfully' })
+        setCouponMessage({ type: 'success', text: t('coupon_applied', 'Coupon applied successfully', 'تم تطبيق الكود بنجاح') })
       } else {
-        setCouponMessage({ type: 'error', text: data.message || (lang === 'ar' ? 'كود غير صالح' : 'Invalid coupon code') })
+        setCouponMessage({ type: 'error', text: data.message || (t('invalid_coupon', 'Invalid coupon code', 'كود غير صالح')) })
       }
     } catch (err) {
       setCouponMessage({ type: 'error', text: err.message })
@@ -136,12 +138,12 @@ export default function Checkout() {
   async function handleConfirmOrder(stripePaymentIntent = null) {
     if (submitting) return
     if (!name || !email || !phone || (requireTerritory && (!governorate || !city)) || !address) {
-      setError(lang === 'ar' ? 'يرجى إكمال جميع الحقول المطلوبة' : 'Please complete all required fields')
+      setError(t('required_fields', 'Please complete all required fields', 'يرجى إكمال جميع الحقول المطلوبة'))
       window.scrollTo(0, 0)
       return
     }
     if (!emailIsValid || !phoneIsValid || !secondPhoneIsValid) {
-      setError(lang === 'ar' ? 'يرجى التأكد من صحة البيانات المدخلة' : 'Please ensure all entered data is valid')
+      setError(t('valid_fields', 'Please ensure all entered data is valid', 'يرجى التأكد من صحة البيانات المدخلة'))
       window.scrollTo(0, 0)
       return
     }
@@ -175,7 +177,7 @@ export default function Checkout() {
           customer: customerPayload()
         })
         if (!paymobResp.redirect_url) {
-          throw new Error(lang === 'ar' ? 'تعذر بدء عملية الدفع الإلكتروني.' : 'Unable to start the online payment.')
+          throw new Error(t('payment_start_error', 'Unable to start the online payment.', 'تعذر بدء عملية الدفع الإلكتروني.'))
         }
         window.location.assign(paymobResp.redirect_url)
         return
@@ -190,90 +192,90 @@ export default function Checkout() {
   }
 
   if (loading) return <div className="checkout-loading-screen"><div className="loader"></div></div>
-  if (settingsError) return <div className="checkout-error-screen"><p>{settingsError}</p><button onClick={() => window.location.reload()}>{lang === 'ar' ? 'إعادة المحاولة' : 'Retry'}</button></div>
+  if (settingsError) return <div className="checkout-error-screen"><p>{settingsError}</p><button onClick={() => window.location.reload()}>{t('retry', 'Retry', 'إعادة المحاولة')}</button></div>
 
   return (
     <div className={"checkout-page " + (lang === 'ar' ? 'rtl' : 'ltr')}>
       <div className="checkout-container">
         <div className="checkout-form-container">
-          <h1 className="checkout-title">{lang === 'ar' ? 'إتمام الطلب' : 'Checkout'}</h1>
+          <h1 className="checkout-title">{t('checkout_title', 'Checkout', 'إتمام الطلب')}</h1>
           {error && <div className="error-banner">{error}</div>}
 
           <form onSubmit={(e) => { e.preventDefault(); if (paymentMethod !== 'stripe') handleConfirmOrder() }}>
             <section className="checkout-section">
-              <h2 className="section-title-small">{lang === 'ar' ? 'معلومات الشحن' : 'Shipping Information'}</h2>
+              <h2 className="section-title-small">{t('shipping_information', 'Shipping Information', 'معلومات الشحن')}</h2>
               <div className="form-grid">
                 <div className="form-group">
-                  <label>{lang === 'ar' ? 'الاسم الكامل' : 'Full Name'}</label>
+                  <label>{t('full_name', 'Full Name', 'الاسم الكامل')}</label>
                   <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
                 </div>
                 <div className="form-group">
-                  <label>{lang === 'ar' ? 'البريد الإلكتروني' : 'Email'}</label>
+                  <label>{t('email', 'Email', 'البريد الإلكتروني')}</label>
                   <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
                 </div>
                 <div className="form-group">
-                  <label>{lang === 'ar' ? 'رقم الهاتف الأساسي' : 'Primary Phone'}</label>
+                  <label>{t('primary_phone', 'Primary Phone', 'رقم الهاتف الأساسي')}</label>
                   <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} required />
                 </div>
                 <div className="form-group">
-                  <label>{lang === 'ar' ? 'رقم هاتف ثانٍ *' : 'Second Phone Number *'}</label>
+                  <label>{`${t('second_phone', 'Second Phone Number', 'رقم هاتف ثانٍ')} *`}</label>
                   <input type="text" value={secondPhone} onChange={(e) => setSecondPhone(e.target.value)} required={requireSecondPhone} />
                 </div>
                 {requireTerritory && (
                   <>
                     <div className="form-group">
-                      <label>{lang === 'ar' ? 'المحافظة *' : 'Governorate *'}</label>
+                      <label>{`${t('governorate', 'Governorate', 'المحافظة')} *`}</label>
                       <select value={governorate} onChange={(e) => { setGovernorate(e.target.value); setCity('') }} required>
-                        <option value="">{lang === 'ar' ? 'اختر المحافظة' : 'Select governorate'}</option>
+                        <option value="">{t('select_governorate', 'Select governorate', 'اختر المحافظة')}</option>
                         {territories.map(t => <option key={t.governorate} value={t.governorate}>{t.governorate}</option>)}
                       </select>
                     </div>
                     <div className="form-group">
-                      <label>{lang === 'ar' ? 'المدينة *' : 'City *'}</label>
+                      <label>{`${t('city', 'City', 'المدينة')} *`}</label>
                       <select value={city} onChange={(e) => setCity(e.target.value)} required disabled={!governorate}>
-                        <option value="">{lang === 'ar' ? 'اختر المدينة' : 'Select city'}</option>
+                        <option value="">{t('select_city', 'Select city', 'اختر المدينة')}</option>
                         {cities.map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
                   </>
                 )}
                 <div className="form-group full-width">
-                  <label>{lang === 'ar' ? 'العنوان بالتفصيل' : 'Detailed Address'}</label>
+                  <label>{t('detailed_address', 'Detailed Address', 'العنوان بالتفصيل')}</label>
                   <textarea value={address} onChange={(e) => setAddress(e.target.value)} required></textarea>
                 </div>
                 <div className="form-group full-width">
-                  <label>{lang === 'ar' ? 'موقع اختياري' : 'Optional Location'}</label>
-                  <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder={lang === 'ar' ? 'رابط الخريطة أو علامة مميزة' : 'Map link or nearby landmark'} />
+                  <label>{t('optional_location', 'Optional Location', 'موقع اختياري')}</label>
+                  <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder={t('location_placeholder', 'Map link or nearby landmark', 'رابط الخريطة أو علامة مميزة')} />
                 </div>
               </div>
             </section>
 
             <section className="checkout-section">
-              <h2 className="section-title-small">{lang === 'ar' ? 'كود الخصم' : 'Coupon Code'}</h2>
+              <h2 className="section-title-small">{t('coupon_code', 'Coupon Code', 'كود الخصم')}</h2>
               <div className="coupon-input-group">
                 <input type="text" value={couponCode} onChange={(e) => setCouponCode(e.target.value)} placeholder={lang === 'ar' ? settings.coupon_placeholder_ar : settings.coupon_placeholder_en} disabled={!!coupon} />
-                <button type="button" onClick={handleApplyCoupon} disabled={couponLoading || !!coupon}>{couponLoading ? '...' : (lang === 'ar' ? 'تطبيق' : 'Apply')}</button>
+                <button type="button" onClick={handleApplyCoupon} disabled={couponLoading || !!coupon}>{couponLoading ? '...' : (t('apply', 'Apply', 'تطبيق'))}</button>
               </div>
               {couponMessage && <p className={"coupon-message " + couponMessage.type}>{couponMessage.text}</p>}
             </section>
 
             <section className="checkout-section">
-              <h2 className="section-title-small">{lang === 'ar' ? 'اجعلها هدية' : 'Make it a gift'}</h2>
+              <h2 className="section-title-small">{t('make_it_gift', 'Make it a gift', 'اجعلها هدية')}</h2>
               <label className="checkbox-label">
                 <input type="checkbox" checked={giftOptions.wrap} onChange={(e) => setGiftOptions({ ...giftOptions, wrap: e.target.checked })} />
-                <span>{lang === 'ar' ? 'إضافة تغليف هدايا' : 'Add gift wrapping'}</span>
+                <span>{t('add_gift_wrapping', 'Add gift wrapping', 'إضافة تغليف هدايا')}</span>
               </label>
               {giftOptions.wrap && (
-                <textarea className="gift-note" value={giftOptions.message} onChange={(e) => setGiftOptions({ ...giftOptions, message: e.target.value })} placeholder={lang === 'ar' ? 'أضف ملاحظة شخصية' : 'Add a personal note'}></textarea>
+                <textarea className="gift-note" value={giftOptions.message} onChange={(e) => setGiftOptions({ ...giftOptions, message: e.target.value })} placeholder={t('personal_note', 'Add a personal note', 'أضف ملاحظة شخصية')}></textarea>
               )}
             </section>
 
             <section className="checkout-section">
-              <h2 className="section-title-small">{lang === 'ar' ? 'التنفيذ' : 'Fulfillment'}</h2>
+              <h2 className="section-title-small">{t('fulfillment', 'Fulfillment', 'التنفيذ')}</h2>
               <div className="fulfillment-options">
                 <label className={"fulfillment-option " + (fulfillmentMethod === 'Delivery' ? 'active' : '')}>
                   <input type="radio" name="fulfillment" value="Delivery" checked={fulfillmentMethod === 'Delivery'} onChange={(e) => setFulfillmentMethod(e.target.value)} />
-                  <span>{lang === 'ar' ? 'توصيل' : 'Delivery'}</span>
+                  <span>{t('delivery', 'Delivery', 'توصيل')}</span>
                 </label>
                 {fulfillment.pickup_enabled && (
                   <label className={"fulfillment-option " + (fulfillmentMethod === 'Store Pickup' ? 'active' : '')}>
@@ -286,7 +288,7 @@ export default function Checkout() {
                 <div className="pickup-details">
                   <p className="form-hint">{lang === 'ar' ? fulfillment.pickup_note_ar : fulfillment.pickup_note_en}</p>
                   <select value={pickupWarehouse} onChange={(e) => setPickupWarehouse(e.target.value)} required>
-                    <option value="">{lang === 'ar' ? 'اختر المستودع' : 'Select warehouse'}</option>
+                    <option value="">{t('select_warehouse', 'Select warehouse', 'اختر المستودع')}</option>
                     {fulfillment.warehouses?.map(w => <option key={w.name} value={w.name}>{w.label}</option>)}
                   </select>
                 </div>
@@ -294,13 +296,13 @@ export default function Checkout() {
             </section>
 
             <section className="checkout-section">
-              <h2 className="section-title-small">{lang === 'ar' ? 'تاريخ التوصيل' : 'Delivery Date'}</h2>
+              <h2 className="section-title-small">{t('delivery_date', 'Delivery Date', 'تاريخ التوصيل')}</h2>
               <input type="date" value={deliveryDate} onChange={(e) => setDeliveryDate(e.target.value)} min={new Date().toISOString().split('T')[0]} required />
-              <p className="form-hint">{lang === 'ar' ? 'اختر موعد التوصيل المفضل لديك' : 'Select your preferred delivery date'}</p>
+              <p className="form-hint">{t('preferred_delivery_date', 'Select your preferred delivery date', 'اختر موعد التوصيل المفضل لديك')}</p>
             </section>
 
             <section className="checkout-section">
-              <h2 className="section-title-small">{lang === 'ar' ? 'طريقة الدفع' : 'Payment Method'}</h2>
+              <h2 className="section-title-small">{t('payment_method', 'Payment Method', 'طريقة الدفع')}</h2>
               <div className="payment-methods">
                 {gatewayList.map((gateway) => (
                   <div key={gateway.name} className="payment-gateway-container">
@@ -327,7 +329,7 @@ export default function Checkout() {
 
               {paymentMethod === 'paymob' && paymobGateway && (
                 <p className="form-hint">
-                  {lang === 'ar' ? (paymobGateway.note_ar || 'ادفع بأمان عبر Paymob') : (paymobGateway.note_en || 'Pay securely through Paymob')}
+                  {lang === 'ar' ? (paymobGateway.note_ar || t('paymob_secure_hint', 'Pay securely through Paymob', 'ادفع بأمان عبر Paymob')) : (paymobGateway.note_en || t('paymob_secure_hint', 'Pay securely through Paymob', 'ادفع بأمان عبر Paymob'))}
                 </p>
               )}
 
@@ -342,14 +344,14 @@ export default function Checkout() {
 
             {(paymentMethod === 'cod' || paymentMethod === 'paymob') && (
               <button type="submit" className="place-order-btn" disabled={submitting}>
-                {submitting ? (lang === 'ar' ? 'جاري المعالجة...' : 'Processing...') : (paymentMethod !== 'cod' ? (lang === 'ar' ? 'المتابعة إلى الدفع' : 'Continue to Payment') : (lang === 'ar' ? 'تأكيد الطلب' : 'Confirm Order'))}
+                {submitting ? (t('processing', 'Processing...', 'جاري المعالجة...')) : (paymentMethod !== 'cod' ? (t('continue_payment', 'Continue to Payment', 'المتابعة إلى الدفع')) : (t('confirm_order', 'Confirm Order', 'تأكيد الطلب')))}
               </button>
             )}
           </form>
         </div>
 
         <div className="checkout-summary-container">
-          <h2 className="section-title-small">{lang === 'ar' ? 'ملخص الطلب' : 'Order Summary'}</h2>
+          <h2 className="section-title-small">{t('order_summary', 'Order Summary', 'ملخص الطلب')}</h2>
           <div className="checkout-items">
             {items.map((item) => (
               <div key={item.item_code} className="checkout-item">
@@ -364,21 +366,21 @@ export default function Checkout() {
           </div>
           <div className="summary-footer">
             <div className="summary-row">
-              <span>{lang === 'ar' ? 'المجموع الفرعي' : 'Subtotal'}</span>
+              <span>{t('subtotal', 'Subtotal', 'المجموع الفرعي')}</span>
               <span>{formatStorefrontPrice(total, currency, content)}</span>
             </div>
             {discount > 0 && (
               <div className="summary-row discount-row">
-                <span>{lang === 'ar' ? 'الخصم' : 'Discount'}</span>
+                <span>{t('discount', 'Discount', 'الخصم')}</span>
                 <span>-{formatStorefrontPrice(discount, currency, content)}</span>
               </div>
             )}
             <div className="summary-row">
-              <span>{lang === 'ar' ? 'الشحن' : 'Shipping'}</span>
-              <span>{shippingCost > 0 ? formatStorefrontPrice(shippingCost, currency, content) : (lang === 'ar' ? 'مجاني' : 'Free')}</span>
+              <span>{t('shipping', 'Shipping', 'الشحن')}</span>
+              <span>{shippingCost > 0 ? formatStorefrontPrice(shippingCost, currency, content) : (t('free', 'Free', 'مجاني'))}</span>
             </div>
             <div className="summary-row total-row">
-              <span>{lang === 'ar' ? 'الإجمالي' : 'Total'}</span>
+              <span>{t('total', 'Total', 'الإجمالي')}</span>
               <span className="total-price">{formatStorefrontPrice(grandTotal, currency, content)}</span>
             </div>
           </div>
