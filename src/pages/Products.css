@@ -1,5 +1,5 @@
-.products-page { padding-top: 2.5rem; padding-bottom: 5rem; }
-.breadcrumb { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 2rem; color: var(--color-text-muted); font-size: 0.72rem; }
+.products-page { padding-top: 1.75rem; padding-bottom: 3.5rem; }
+.breadcrumb { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 1.15rem; color: var(--color-text-muted); font-size: 0.72rem; }
 .breadcrumb a:hover { color: var(--color-secondary); }
 .products-layout { display: grid; grid-template-columns: minmax(190px, 230px) minmax(0, 1fr); gap: clamp(1.25rem, 3vw, 2.5rem); align-items: start; }
 .products-sidebar { position: sticky; top: 1rem; width: auto !important; }
@@ -118,7 +118,7 @@
 }
 
 @media (max-width: 560px) {
-  .products-page { padding-top: 1.5rem; padding-bottom: 5.5rem; }
+  .products-page { padding-top: 1.15rem; padding-bottom: 4.5rem; }
   .mobile-sticky-buy { position: fixed; inset-inline: .65rem; bottom: .65rem; z-index: 45; display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .7rem .8rem .7rem 1rem; border: 1px solid color-mix(in srgb, var(--color-border) 76%, transparent); border-radius: var(--border-radius-lg); background: color-mix(in srgb, var(--header-bg) 93%, transparent); box-shadow: var(--shadow-lg); backdrop-filter: blur(14px); }
   .mobile-sticky-buy div { display: grid; gap: .1rem; }
   .mobile-sticky-buy strong { color: var(--color-primary); font-size: .86rem; }
