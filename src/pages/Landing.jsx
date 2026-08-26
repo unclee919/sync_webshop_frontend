@@ -30,6 +30,7 @@ function ProductCard({ item, content, lang, onAdd, onQuickView }) {
   const { activateProductPalette, beginSharedTransition, prefetchProduct } = useUltraExperience()
   const [hovering, setHovering] = useState(false)
   const t = (en, ar, fallback = '') => (isArabic ? (ar || en || fallback) : (en || ar || fallback))
+  const uiCopy = content?.copy?.ui || {}
   const oldPrice = Number(item.old_price || 0)
   const price = Number(item.price || 0)
   const isUnavailable = item.available === false || item.in_stock === false
@@ -69,10 +70,10 @@ function ProductCard({ item, content, lang, onAdd, onQuickView }) {
         <div className="product-rating"><span>★★★★★</span><small>({item.review_count || 0})</small></div>
         <div className="home-product-footer">
           <div className="home-product-price">
-            {price > 0 ? <><strong>{formatStorefrontPrice(price, undefined, content)}</strong>{oldPrice > price && <del>{formatStorefrontPrice(oldPrice, undefined, content)}</del>}</> : <strong>{t('On request', 'حسب الطلب')}</strong>}
+            {price > 0 ? <><strong>{formatStorefrontPrice(price, undefined, content)}</strong>{oldPrice > price && <del>{formatStorefrontPrice(oldPrice, undefined, content)}</del>}</> : <strong>{t(uiCopy.on_request_en, uiCopy.on_request_ar, 'On request')}</strong>}
           </div>
           <button type="button" className="add-product-button" onClick={() => onAdd(item)} disabled={isUnavailable}>
-            <PlusIcon /><span>{isUnavailable ? t('Unavailable', 'غير متوفر') : t(content.add_to_cart_text_en, content.add_to_cart_text_ar, 'Add')}</span>
+            <PlusIcon /><span>{isUnavailable ? t(uiCopy.unavailable_en, uiCopy.unavailable_ar, 'Unavailable') : t(content.add_to_cart_text_en, content.add_to_cart_text_ar, 'Add')}</span>
           </button>
         </div>
       </div>
@@ -179,7 +180,7 @@ export default function Landing() {
 
             {categories.length > 0 && <section className="home-section container">
         <div className="home-section-heading"><div><h2>{landingBuilder.enabled ? t(landingBuilder.featured_grid_title_en, landingBuilder.featured_grid_title_ar, t(content?.best_categories_text_en, content?.best_categories_text_ar, 'Best Categories')) : t(content?.best_categories_text_en, content?.best_categories_text_ar, 'Best Categories')}</h2></div><Link to="/products" className="section-view-all">{t(content?.view_all_text_en, content?.view_all_text_ar, 'View All')}<ArrowIcon /></Link></div>
-        <div className="category-rail">{categories.slice(0, 8).map((cat, i) => <Link key={i} to={`/products?category=${encodeURIComponent(cat.item_group)}`} className="category-tile"><div className="category-tile-image">{cat.image ? <img src={cat.image} alt="" loading="lazy" decoding="async" width="640" height="360" sizes="(max-width: 700px) 50vw, 25vw" /> : <span>{i+1}</span>}</div><div className="category-tile-copy"><h3>{t(cat.label_en, cat.label_ar, cat.item_group)}</h3><span>{t('Explore collection', 'استكشف المجموعة')} →</span></div></Link>)}</div>
+        <div className="category-rail">{categories.slice(0, 8).map((cat, i) => <Link key={i} to={`/products?category=${encodeURIComponent(cat.item_group)}`} className="category-tile"><div className="category-tile-image">{cat.image ? <img src={cat.image} alt="" loading="lazy" decoding="async" width="640" height="360" sizes="(max-width: 700px) 50vw, 25vw" /> : <span>{i+1}</span>}</div><div className="category-tile-copy"><h3>{t(cat.label_en, cat.label_ar, cat.item_group)}</h3><span>{t(content?.copy?.ui?.explore_collection_en, content?.copy?.ui?.explore_collection_ar, 'Explore collection')} →</span></div></Link>)}</div>
       </section>}
 
       {content?.recommendations_enabled !== 0 && content?.experience_settings?.curated_for_you_enabled !== 0 && recommendations.length > 0 && <section className="home-section smart-recommendations"><div className="container"><div className="home-section-heading"><div><span className="section-kicker">{t('Smart selection', 'اختيار ذكي')}</span><h2>{t(content?.experience_settings?.curated_for_you_title_en || content?.recommendations_title_en, content?.experience_settings?.curated_for_you_title_ar || content?.recommendations_title_ar, 'Picked for you')}</h2></div><Link to="/products" className="section-view-all">{t(content?.view_all_text_en, content?.view_all_text_ar, 'View All')}<ArrowIcon /></Link></div><div className="home-product-grid">{recommendations.map(item => <ProductCard key={item.item_code} item={item} content={content} lang={lang} onAdd={addItem} onQuickView={setQuickViewCode} />)}</div></div></section>}

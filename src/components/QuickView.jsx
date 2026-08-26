@@ -15,6 +15,7 @@ export default function QuickView({ itemCode, onClose }) {
   const { lang, isRtl } = useLanguage()
   const { content } = useContent()
   const isArabic = lang === 'ar'
+  const uiCopy = content?.copy?.ui || {}
   const t = (en, ar, fallback = '') => (isArabic ? (ar || en || fallback) : (en || ar || fallback))
 
   useEffect(() => {
@@ -26,7 +27,7 @@ export default function QuickView({ itemCode, onClose }) {
   return (
     <div className={`quick-view-overlay ${isRtl ? 'rtl' : 'ltr'}`} onClick={onClose}>
       <div className="quick-view-modal" onClick={(e) => e.stopPropagation()}>
-        <button type="button" className="close-button" onClick={onClose} aria-label={t('Close', 'إغلاق')}>×</button>
+        <button type="button" className="close-button" onClick={onClose} aria-label={t(uiCopy.close_en, uiCopy.close_ar, 'Close')}>×</button>
         {loading ? (
           <div className="quick-view-loading">
             <div className="shimmer shimmer-img" />
@@ -39,13 +40,13 @@ export default function QuickView({ itemCode, onClose }) {
         ) : item ? (
           <div className="quick-view-content">
             <div className="quick-view-gallery">
-              {item.image ? <img src={item.image} alt={item.item_name} /> : <div className="no-image-large">{t('No image', 'لا توجد صورة')}</div>}
+              {item.image ? <img src={item.image} alt={item.item_name} /> : <div className="no-image-large">{t(uiCopy.no_image_en, uiCopy.no_image_ar, 'No image')}</div>}
             </div>
             <div className="quick-view-info">
               <span className="product-cat">{item.item_group}</span>
               <h2>{item.item_name}</h2>
               <div className="detail-price">
-                {item.price ? <span className="current-price">{formatStorefrontPrice(item.price, item.currency, content)}</span> : <span className="price-empty">{t('Price on request', 'السعر عند الطلب')}</span>}
+                {item.price ? <span className="current-price">{formatStorefrontPrice(item.price, item.currency, content)}</span> : <span className="price-empty">{t(uiCopy.on_request_en, uiCopy.on_request_ar, 'Price on request')}</span>}
               </div>
               <div className="quick-view-description" dangerouslySetInnerHTML={{ __html: item.description?.slice(0, 250) + (item.description?.length > 250 ? '...' : '') }} />
               <div className="detail-actions">
@@ -59,7 +60,7 @@ export default function QuickView({ itemCode, onClose }) {
                 </button>
               </div>
               <Link to={`/products/${encodeURIComponent(item.item_code)}`} className="view-full-details">
-                {t('View full details', 'عرض التفاصيل الكاملة')} →
+                {t(uiCopy.view_details_en, uiCopy.view_details_ar, 'View full details')} →
               </Link>
             </div>
           </div>

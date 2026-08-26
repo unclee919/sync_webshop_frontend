@@ -8,6 +8,7 @@ export default function AiChatWidget() {
   const { lang, isRtl } = useLanguage()
   const { content } = useContent()
   const eliteNlp = content?.elite_settings?.ai_vision || {}
+  const featureCopy = content?.copy?.feature || {}
   const [settings, setSettings] = useState(null)
   const [open, setOpen] = useState(false)
   const [input, setInput] = useState('')
@@ -17,15 +18,15 @@ export default function AiChatWidget() {
 
   const isArabic = lang === 'ar'
   const copy = useMemo(() => ({
-    title: isArabic ? 'مساعد التسوق' : 'Shopping assistant',
-    placeholder: isArabic ? 'اكتب سؤالك هنا...' : 'Ask about products, orders, or delivery...',
-    send: isArabic ? 'إرسال' : 'Send',
-    close: isArabic ? 'إغلاق' : 'Close',
-    open: isArabic ? 'افتح المساعد' : 'Open assistant',
-    unavailable: isArabic ? 'المساعد غير متاح حالياً.' : 'The assistant is currently unavailable.',
-    fallback: isArabic ? 'تعذر الحصول على رد. حاول مرة أخرى.' : 'We could not get a response. Please try again.',
-    privacy: isArabic ? 'لأمانك، لا ترسل كلمات المرور أو بيانات البطاقات أو رموز التحقق أو أي بيانات خاصة.' : 'For your safety, do not share passwords, card details, OTPs, API keys, or private information.',
-  }), [isArabic])
+    title: isArabic ? (featureCopy.ai_chat_title_ar || 'مساعد التسوق') : (featureCopy.ai_chat_title_en || 'Shopping assistant'),
+    placeholder: isArabic ? (featureCopy.ai_chat_placeholder_ar || 'اكتب سؤالك هنا...') : (featureCopy.ai_chat_placeholder_en || 'Ask about products, orders, or delivery...'),
+    send: isArabic ? (featureCopy.ai_chat_send_ar || 'إرسال') : (featureCopy.ai_chat_send_en || 'Send'),
+    close: isArabic ? (featureCopy.ai_chat_close_ar || 'إغلاق') : (featureCopy.ai_chat_close_en || 'Close'),
+    open: isArabic ? (featureCopy.ai_chat_open_ar || 'افتح المساعد') : (featureCopy.ai_chat_open_en || 'Open assistant'),
+    unavailable: isArabic ? (featureCopy.ai_chat_unavailable_ar || 'المساعد غير متاح حالياً.') : (featureCopy.ai_chat_unavailable_en || 'The assistant is currently unavailable.'),
+    fallback: isArabic ? (featureCopy.ai_chat_error_ar || 'تعذر الحصول على رد. حاول مرة أخرى.') : (featureCopy.ai_chat_error_en || 'We could not get a response. Please try again.'),
+    privacy: isArabic ? (featureCopy.ai_chat_privacy_ar || 'لأمانك، لا ترسل كلمات المرور أو بيانات البطاقات أو رموز التحقق أو أي بيانات خاصة.') : (featureCopy.ai_chat_privacy_en || 'For your safety, do not share passwords, card details, OTPs, API keys, or private information.'),
+  }), [featureCopy, isArabic])
 
   useEffect(() => {
     function handleOpenRequest() { setOpen(true) }
@@ -64,10 +65,10 @@ export default function AiChatWidget() {
   return (
     <div className={`ai-chat-root ${isRtl ? 'rtl' : 'ltr'}`} style={{ '--ai-primary': settings.primary_color || '#10b981' }}>
       {open && <section className="ai-chat-panel" aria-label={copy.title}>
-        <header className="ai-chat-header"><div><strong>{copy.title}</strong><span>{isArabic ? 'متصل الآن' : 'Online now'}</span></div><button type="button" onClick={() => setOpen(false)} aria-label={copy.close}>×</button></header>
+        <header className="ai-chat-header"><div><strong>{copy.title}</strong><span>{isArabic ? (featureCopy.ai_chat_online_ar || 'متصل الآن') : (featureCopy.ai_chat_online_en || 'Online now')}</span></div><button type="button" onClick={() => setOpen(false)} aria-label={copy.close}>×</button></header>
         <div className="ai-chat-messages" aria-live="polite">
           {messages.map((row, index) => <div className={`ai-chat-message ${row.role}`} key={`${row.role}-${index}`}>{row.content}</div>)}
-          {sending && <div className="ai-chat-message assistant">{isArabic ? 'جارٍ التفكير...' : 'Thinking...'}</div>}
+          {sending && <div className="ai-chat-message assistant">{isArabic ? (featureCopy.ai_chat_thinking_ar || 'جارٍ التفكير...') : (featureCopy.ai_chat_thinking_en || 'Thinking...')}</div>}
           {error && <div className="ai-chat-error">{error}</div>}
         </div>
         {settings.prevent_sensitive_data !== false && <p className="ai-chat-privacy">{copy.privacy}</p>}

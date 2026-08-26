@@ -37,6 +37,7 @@ export default function Header({ onOpenCart }) {
   const masterTier = content?.master_tier || {}
   const ghostSearchEnabled = masterTier.ghost_search_enabled !== 0
   const dynamicPages = content?.dynamic_pages || {}
+  const uiCopy = content?.copy?.ui || {}
   const dynamicLinks = [
     { key: 'about', path: '/about-us', enabled: dynamicPages.about_enabled !== 0, show: dynamicPages.about_show_in_nav !== 0, en: dynamicPages.about_label_en, ar: dynamicPages.about_label_ar },
     { key: 'policy', path: '/our-policy', enabled: dynamicPages.policy_enabled !== 0, show: dynamicPages.policy_show_in_nav !== 0, en: dynamicPages.policy_label_en, ar: dynamicPages.policy_label_ar },
@@ -50,7 +51,7 @@ export default function Header({ onOpenCart }) {
     <div className={`mega-menu-category depth-${depth}`} key={cat.name}>
       <Link className={depth === 0 ? 'mega-category-card' : ''} to={`/products?category=${encodeURIComponent(cat.name)}`} onClick={() => setShowCategories(false)}>
         {depth === 0 && <span className="mega-category-image">{cat.image ? <img src={cat.image} alt="" loading="lazy" /> : <span>{cat.label?.slice(0, 1) || cat.name?.slice(0, 1)}</span>}</span>}
-        <span><strong>{cat.label || cat.name}</strong>{depth === 0 && <small>{t('Explore collection', 'استكشف المجموعة')}</small>}</span>
+        <span><strong>{cat.label || cat.name}</strong>{depth === 0 && <small>{t(uiCopy.explore_collection_en, uiCopy.explore_collection_ar, 'Explore collection')}</small>}</span>
       </Link>
       {cat.children?.length > 0 && <div className="mega-menu-children">{renderCategoryTree(cat.children, depth + 1)}</div>}
     </div>
@@ -127,7 +128,7 @@ export default function Header({ onOpenCart }) {
             <div className="utility-actions">
               {content.phone_number && <a href={`tel:${content.phone_number}`}>{t(content.need_help_text_en, content.need_help_text_ar, 'Need help?')} <strong>{content.phone_number}</strong></a>}
               <CurrencySwitcher />
-              <button type="button" className="language-switch" onClick={() => setLang(isArabic ? 'en' : 'ar')}>{isArabic ? 'English' : 'العربية'}</button>
+              <button type="button" className="language-switch" onClick={() => setLang(isArabic ? 'en' : 'ar')}>{t(uiCopy.language_switch_en, uiCopy.language_switch_ar, isArabic ? 'English' : 'العربية')}</button>
             </div>
           </div>
         </div>
@@ -153,11 +154,11 @@ export default function Header({ onOpenCart }) {
 	            </form>
             {showSuggestions && (suggestions.length > 0 || predictiveResult?.ghost) && (
               <div className="search-suggestions">
-                {predictiveResult?.ghost && <button type="button" className="search-ghost-result" onClick={() => { navigate(`/products/${encodeURIComponent(predictiveResult.ghost.item_code)}`); setSearch(''); setShowSuggestions(false) }}><span className="suggestion-image">{predictiveResult.ghost.image ? <img src={predictiveResult.ghost.image} alt="" /> : <span>⌕</span>}</span><span><strong>{predictiveResult.ghost.item_name}</strong><small>{t('Best match', 'أفضل تطابق')}{predictiveResult.ghost.price != null ? ` · ${formatStorefrontPrice(predictiveResult.ghost.price, predictiveResult.ghost.currency, content)}` : ''}</small></span></button>}
+                {predictiveResult?.ghost && <button type="button" className="search-ghost-result" onClick={() => { navigate(`/products/${encodeURIComponent(predictiveResult.ghost.item_code)}`); setSearch(''); setShowSuggestions(false) }}><span className="suggestion-image">{predictiveResult.ghost.image ? <img src={predictiveResult.ghost.image} alt="" /> : <span>⌕</span>}</span><span><strong>{predictiveResult.ghost.item_name}</strong><small>{t(uiCopy.best_match_en, uiCopy.best_match_ar, 'Best match')}{predictiveResult.ghost.price != null ? ` · ${formatStorefrontPrice(predictiveResult.ghost.price, predictiveResult.ghost.currency, content)}` : ''}</small></span></button>}
                 {suggestions.slice(0, 6).map((s, i) => (
                   <button key={i} type="button" onClick={() => { navigate(s.type === 'category' ? `/products?category=${encodeURIComponent(s.id)}` : `/products/${encodeURIComponent(s.id)}`); setSearch(''); setShowSuggestions(false) }}>
                     <span className="suggestion-image">{s.image ? <img src={s.image} alt="" /> : <span>⌕</span>}</span>
-                    <span><strong>{s.name}</strong><small>{s.type === 'category' ? t('Category', 'الفئة') : `${t('Product', 'المنتج')}${s.price != null ? ` · ${formatStorefrontPrice(s.price, s.currency, content)}` : ''}`}</small></span>
+                    <span><strong>{s.name}</strong><small>{s.type === 'category' ? t(uiCopy.search_result_category_en, uiCopy.search_result_category_ar, 'Category') : `${t(uiCopy.search_result_product_en, uiCopy.search_result_product_ar, 'Product')}${s.price != null ? ` · ${formatStorefrontPrice(s.price, s.currency, content)}` : ''}`}</small></span>
                   </button>
                 ))}
               </div>

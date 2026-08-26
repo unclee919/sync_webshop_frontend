@@ -36,6 +36,8 @@ export default function Footer() {
   const isArabic = lang === 'ar'
   const t = (en, ar, fallback = '') => (isArabic ? (ar || en || fallback) : (en || ar || fallback))
   const footer = content.footer_settings || {}
+  const footerCopy = content.copy?.footer || {}
+  const uiCopy = content.copy?.ui || {}
   const columns = footer.columns || []
   const socialLinks = content.social_links || []
   const dynamicPages = content.dynamic_pages || {}
@@ -58,29 +60,29 @@ export default function Footer() {
           {footer.footer_logo ? <img className="footer-logo" src={footer.footer_logo} alt={siteName} /> : <><BrandMark /><span className="footer-brand-name" id="footer-brand-title">{siteName}</span></>}
         </div>
         {footer.footer_logo && <span className="sr-only" id="footer-brand-title">{siteName}</span>}
-        <span className="footer-eyebrow">{t('The considered edit', 'اختيارات مدروسة')}</span>
+        <span className="footer-eyebrow">{t(footerCopy.footer_eyebrow_en, footerCopy.footer_eyebrow_ar, 'The considered edit')}</span>
         <p className="footer-brand-description">{footerDescription}</p>
-        <div className="footer-contact-heading">{t('Need help?', 'هل تحتاج إلى مساعدة؟')}</div>
+        <div className="footer-contact-heading">{t(footerCopy.footer_contact_heading_en, footerCopy.footer_contact_heading_ar, 'Need help?')}</div>
         <address className="footer-contact-list">
-          {content.phone_number && <a href={`tel:${content.phone_number}`} aria-label={`${t('Call', 'اتصل')} ${content.phone_number}`}><ContactIcon type="phone" /><span><small>{t('Phone', 'الهاتف')}</small><strong>{content.phone_number}</strong></span></a>}
-          {content.email_address && <a href={`mailto:${content.email_address}`} aria-label={`${t('Email', 'البريد الإلكتروني')} ${content.email_address}`}><ContactIcon type="email" /><span><small>{t('Email us', 'راسلنا')}</small><strong>{content.email_address}</strong></span></a>}
-          {(content.contact_address_en || content.contact_address_ar) && <span><ContactIcon type="location" /><span><small>{t('Visit the studio', 'زيارة المتجر')}</small><strong>{t(content.contact_address_en, content.contact_address_ar)}</strong></span></span>}
+          {content.phone_number && <a href={`tel:${content.phone_number}`} aria-label={`${t(footerCopy.footer_phone_label_en, footerCopy.footer_phone_label_ar, 'Phone')} ${content.phone_number}`}><ContactIcon type="phone" /><span><small>{t(footerCopy.footer_phone_label_en, footerCopy.footer_phone_label_ar, 'Phone')}</small><strong>{content.phone_number}</strong></span></a>}
+          {content.email_address && <a href={`mailto:${content.email_address}`} aria-label={`${t(footerCopy.footer_email_label_en, footerCopy.footer_email_label_ar, 'Email')} ${content.email_address}`}><ContactIcon type="email" /><span><small>{t(footerCopy.footer_email_label_en, footerCopy.footer_email_label_ar, 'Email us')}</small><strong>{content.email_address}</strong></span></a>}
+          {(content.contact_address_en || content.contact_address_ar) && <span><ContactIcon type="location" /><span><small>{t(footerCopy.footer_address_label_en, footerCopy.footer_address_label_ar, 'Visit the studio')}</small><strong>{t(content.contact_address_en, content.contact_address_ar)}</strong></span></span>}
         </address>
       </section>
 
-      <section className="footer-links-area" aria-label={t('Footer links and social media', 'روابط التذييل والتواصل الاجتماعي')}>
-        <nav className="footer-links-grid" aria-label={t('Footer navigation', 'التنقل في التذييل')}>
-          {columns.length > 0 ? columns.slice(0, 3).map((column, index) => <div className="footer-link-column" key={`${column.title_en}-${index}`}><h2>{t(column.title_en, column.title_ar)}</h2><ul>{(column.links || []).map((link, linkIndex) => <li key={`${link.link_url}-${linkIndex}`}>{link.is_external ? <a href={link.link_url} target="_blank" rel="noreferrer">{t(link.label_en, link.label_ar)} <ArrowIcon /></a> : <Link to={link.link_url}>{t(link.label_en, link.label_ar)} <ArrowIcon /></Link>}</li>)}</ul></div>) : <><div className="footer-link-column"><h2>{t('Explore', 'استكشف')}</h2><ul><li><Link to="/">{t('Home', 'الرئيسية')} <ArrowIcon /></Link></li><li><Link to="/products">{t('All products', 'كل المنتجات')} <ArrowIcon /></Link></li><li><Link to="/contact-us">{t('Contact us', 'تواصل معنا')} <ArrowIcon /></Link></li></ul></div><div className="footer-link-column"><h2>{t('Customer care', 'خدمة العملاء')}</h2><ul><li><Link to="/track">{t('Track order', 'تتبع الطلب')} <ArrowIcon /></Link></li><li><Link to="/wishlist">{t('Wishlist', 'المفضلة')} <ArrowIcon /></Link></li><li><Link to="/features">{t('Why shop with us', 'لماذا تتسوق معنا')} <ArrowIcon /></Link></li></ul></div></>}
-          {dynamicLinks.length > 0 && <div className="footer-link-column"><h2>{t('Information', 'معلومات')}</h2><ul>{dynamicLinks.map((link) => <li key={link.key}><Link to={link.path}>{t(link.en, link.ar)} <ArrowIcon /></Link></li>)}</ul></div>}
+      <section className="footer-links-area" aria-label={t(footerCopy.footer_links_aria_label_en, footerCopy.footer_links_aria_label_ar, 'Footer links and social media')}>
+        <nav className="footer-links-grid" aria-label={t(footerCopy.footer_navigation_aria_label_en, footerCopy.footer_navigation_aria_label_ar, 'Footer navigation')}>
+          {columns.length > 0 ? columns.slice(0, 3).map((column, index) => <div className="footer-link-column" key={`${column.title_en}-${index}`}><h2>{t(column.title_en, column.title_ar)}</h2><ul>{(column.links || []).map((link, linkIndex) => <li key={`${link.link_url}-${linkIndex}`}>{link.is_external ? <a href={link.link_url} target="_blank" rel="noreferrer">{t(link.label_en, link.label_ar)} <ArrowIcon /></a> : <Link to={link.link_url}>{t(link.label_en, link.label_ar)} <ArrowIcon /></Link>}</li>)}</ul></div>) : <><div className="footer-link-column"><h2>{t(footerCopy.footer_explore_title_en, footerCopy.footer_explore_title_ar, 'Explore')}</h2><ul><li><Link to="/">{t(content.home_text_en, content.home_text_ar, 'Home')} <ArrowIcon /></Link></li><li><Link to="/products">{t(content.all_products_text_en, content.all_products_text_ar, 'All products')} <ArrowIcon /></Link></li><li><Link to="/contact-us">{t(content.contact_us_text_en, content.contact_us_text_ar, 'Contact us')} <ArrowIcon /></Link></li></ul></div><div className="footer-link-column"><h2>{t(footerCopy.footer_customer_care_title_en, footerCopy.footer_customer_care_title_ar, 'Customer care')}</h2><ul><li><Link to="/track">{t(content.track_order_text_en, content.track_order_text_ar, 'Track order')} <ArrowIcon /></Link></li><li><Link to="/wishlist">{t(content.wishlist_text_en, content.wishlist_text_ar, 'Wishlist')} <ArrowIcon /></Link></li><li><Link to="/features">{t(content.why_us_text_en, content.why_us_text_ar, 'Why shop with us')} <ArrowIcon /></Link></li></ul></div></>}
+          {dynamicLinks.length > 0 && <div className="footer-link-column"><h2>{t(footerCopy.footer_information_title_en, footerCopy.footer_information_title_ar, 'Information')}</h2><ul>{dynamicLinks.map((link) => <li key={link.key}><Link to={link.path}>{t(link.en, link.ar)} <ArrowIcon /></Link></li>)}</ul></div>}
         </nav>
         <div className="footer-social-panel">
-          <div><span className="footer-eyebrow">{t('Stay in the loop', 'ابقَ على اطلاع')}</span><h2>{t('Follow along', 'تابعنا')}</h2></div>
-          <div className="footer-social-links" aria-label={t('Social media links', 'روابط التواصل الاجتماعي')}>
-            {socialLinks.length > 0 ? socialLinks.map((link, index) => <a key={`${link.platform}-${index}`} href={link.link_url} target="_blank" rel="noreferrer" aria-label={`${t('Visit us on', 'زرنا على')} ${link.platform}`}><SocialIcon platform={link.platform} /><span>{link.platform}</span><ArrowIcon /></a>) : <span className="footer-social-empty">{t('Social links can be managed from Frappe Desk.', 'يمكن إدارة روابط التواصل الاجتماعي من لوحة Frappe.')}</span>}
+          <div><span className="footer-eyebrow">{t(footerCopy.footer_social_eyebrow_en, footerCopy.footer_social_eyebrow_ar, 'Stay in the loop')}</span><h2>{t(footerCopy.footer_social_heading_en, footerCopy.footer_social_heading_ar, 'Follow along')}</h2></div>
+          <div className="footer-social-links" aria-label={t(footerCopy.footer_social_aria_label_en, footerCopy.footer_social_aria_label_ar, 'Social media links')}>
+            {socialLinks.length > 0 ? socialLinks.map((link, index) => <a key={`${link.platform}-${index}`} href={link.link_url} target="_blank" rel="noreferrer" aria-label={`${t(footerCopy.footer_visit_social_text_en, footerCopy.footer_visit_social_text_ar, 'Visit us on')} ${link.platform}`}><SocialIcon platform={link.platform} /><span>{link.platform}</span><ArrowIcon /></a>) : <span className="footer-social-empty">{t(footerCopy.footer_social_empty_en, footerCopy.footer_social_empty_ar, 'Social links can be managed from Frappe Desk.')}</span>}
           </div>
         </div>
       </section>
     </div>
-    <div className="footer-bottom"><div className="container footer-bottom-inner"><span>{footer.copyright_en || footer.copyright_ar || `© ${year} ${siteName}. ${t('All rights reserved.', 'جميع الحقوق محفوظة.')}`}</span><span>{t('Designed for a better shopping experience.', 'مصمم لتجربة تسوق أفضل.')}</span></div></div>
+    <div className="footer-bottom"><div className="container footer-bottom-inner"><span>{footer.copyright_en || footer.copyright_ar || `© ${year} ${siteName}. ${t(uiCopy.all_rights_reserved_en, uiCopy.all_rights_reserved_ar, 'All rights reserved.')}`}</span><span>{t(footerCopy.footer_design_credit_en, footerCopy.footer_design_credit_ar, 'Designed for a better shopping experience.')}</span></div></div>
   </footer>
 }

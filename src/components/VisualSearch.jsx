@@ -16,6 +16,8 @@ export default function VisualSearch() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const settings = content?.experience_settings || {}
+  const featureCopy = content?.copy?.feature || {}
+  const uiCopy = content?.copy?.ui || {}
   const aiVision = content?.elite_settings?.ai_vision || {}
   if (aiVision.visual_search_enabled === 0 || (settings.visual_search_enabled !== 1 && settings.visual_search_enabled !== true)) return null
   const isArabic = lang === 'ar'
@@ -37,7 +39,7 @@ export default function VisualSearch() {
         const response = await searchByImage({ imageData: data, filename: file.name })
         setResults(response?.items || [])
       } catch (err) {
-        setError(err.message || t('Visual search is unavailable right now.', 'البحث بالصورة غير متاح حالياً.'))
+        setError(err.message || t(featureCopy.visual_search_no_results_en || 'Visual search is unavailable right now.', featureCopy.visual_search_no_results_ar || 'البحث بالصورة غير متاح حالياً.'))
       } finally { setBusy(false) }
     }
     reader.readAsDataURL(file)
@@ -48,15 +50,15 @@ export default function VisualSearch() {
     <input ref={inputRef} type="file" accept="image/*" hidden onChange={(event) => chooseFile(event.target.files?.[0])} />
     {open && <div className="visual-search-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setOpen(false) }}>
       <section className={`visual-search-dialog ${isRtl ? 'rtl' : 'ltr'}`} role="dialog" aria-modal="true" aria-label={title}>
-        <button type="button" className="visual-search-close" onClick={() => setOpen(false)} aria-label={t('Close', 'إغلاق')}>×</button>
-        <p className="eyebrow">{t('INTELLIGENT DISCOVERY', 'اكتشاف ذكي')}</p>
+        <button type="button" className="visual-search-close" onClick={() => setOpen(false)} aria-label={t(uiCopy.close_en || 'Close', uiCopy.close_ar || 'إغلاق')}>×</button>
+        <p className="eyebrow">{t(featureCopy.visual_search_kicker_en || 'INTELLIGENT DISCOVERY', featureCopy.visual_search_kicker_ar || 'اكتشاف ذكي')}</p>
         <h2>{title}</h2>
         <p>{hint}</p>
-        {preview && <img className="visual-search-preview" src={preview} alt={t('Selected product', 'المنتج المحدد')} />}
-        {busy && <p className="visual-search-status" role="status">{t('Finding similar items…', 'جارٍ العثور على منتجات مشابهة…')}</p>}
+        {preview && <img className="visual-search-preview" src={preview} alt={t(uiCopy.selected_product_en || 'Selected product', uiCopy.selected_product_ar || 'المنتج المحدد')} />}
+        {busy && <p className="visual-search-status" role="status">{t(featureCopy.visual_search_loading_en || 'Finding similar items…', featureCopy.visual_search_loading_ar || 'جارٍ العثور على منتجات مشابهة…')}</p>}
         {error && <p className="visual-search-error" role="alert">{error}</p>}
-        {!busy && results.length > 0 && <div className="visual-search-results">{results.map((item) => <Link key={item.item_code} to={`/products/${encodeURIComponent(item.item_code)}`} onClick={() => setOpen(false)} className="visual-search-result"><img src={item.image} alt="" loading="lazy" /><span><strong>{item.item_name}</strong><small>{item.price != null ? formatStorefrontPrice(item.price, item.currency, content) : t('View product', 'عرض المنتج')}</small></span></Link>)}</div>}
-        {!busy && !error && preview && results.length === 0 && <p className="visual-search-status">{t('No close matches found. Try a clearer product photo.', 'لم نعثر على نتائج قريبة. جرّب صورة أوضح للمنتج.')}</p>}
+        {!busy && results.length > 0 && <div className="visual-search-results">{results.map((item) => <Link key={item.item_code} to={`/products/${encodeURIComponent(item.item_code)}`} onClick={() => setOpen(false)} className="visual-search-result"><img src={item.image} alt="" loading="lazy" /><span><strong>{item.item_name}</strong><small>{item.price != null ? formatStorefrontPrice(item.price, item.currency, content) : t(uiCopy.view_product_en || 'View product', uiCopy.view_product_ar || 'عرض المنتج')}</small></span></Link>)}</div>}
+        {!busy && !error && preview && results.length === 0 && <p className="visual-search-status">{t(featureCopy.visual_search_no_matches_en || 'No close matches found. Try a clearer product photo.', featureCopy.visual_search_no_matches_ar || 'لم نعثر على نتائج قريبة. جرّب صورة أوضح للمنتج.')}</p>}
       </section>
     </div>}
   </>
