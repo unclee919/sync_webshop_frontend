@@ -57,6 +57,16 @@ export default function Header({ onOpenCart }) {
     </div>
   ))
   const siteName = t(content?.site_name_en, content?.site_name_ar, content?.site_name || 'Sync Webshop')
+  const isAllProductsActive = location.pathname === '/products' && !new URLSearchParams(location.search).has('category')
+  const isCmsNavLinkActive = (link) => {
+    if (link.is_external || !link.link_url) return false
+    try {
+      const target = new URL(link.link_url, window.location.origin)
+      return target.pathname === location.pathname && target.search === location.search
+    } catch {
+      return false
+    }
+  }
 
   useEffect(() => {
     getCategories().then((result) => setCategories(Array.isArray(result) ? result : [])).catch(() => {})
@@ -198,10 +208,10 @@ export default function Header({ onOpenCart }) {
           </div>}
           <div className="nav-links">
             <Link to="/" className={location.pathname === '/' ? 'active' : ''}>{t(content?.home_text_en, content?.home_text_ar, 'Home')}</Link>
-            <Link to="/products" className={location.pathname.startsWith('/products') ? 'active' : ''}>{t(content?.all_products_text_en, content?.all_products_text_ar, 'All products')}</Link>
+            <Link to="/products" className={isAllProductsActive ? 'active' : ''}>{t(content?.all_products_text_en, content?.all_products_text_ar, 'All products')}</Link>
             <Link to="/features" className={location.pathname === '/features' ? 'active' : ''}>{t(content?.why_us_text_en, content?.why_us_text_ar, 'Why shop with us')}</Link>
             {dynamicLinks.map((link) => <Link key={link.key} to={link.path} className={location.pathname === link.path || (link.key === 'articles' && location.pathname.startsWith('/articles/')) ? 'active' : ''}>{t(link.en, link.ar)}</Link>)}
-            {navLinks.map((link, i) => link.is_external ? <a key={i} href={link.link_url} target="_blank" rel="noreferrer">{t(link.label_en, link.label_ar)}</a> : <Link key={i} to={link.link_url}>{t(link.label_en, link.label_ar)}</Link>)}
+            {navLinks.map((link, i) => link.is_external ? <a key={i} href={link.link_url} target="_blank" rel="noreferrer">{t(link.label_en, link.label_ar)}</a> : <Link key={i} to={link.link_url} className={isCmsNavLinkActive(link) ? 'active' : ''}>{t(link.label_en, link.label_ar)}</Link>)}
           </div>
           {content.phone_number && <a className="support-pill" href={`tel:${content.phone_number}`}><span className="support-dot" />{t(content.support_center_text_en, content.support_center_text_ar, 'Support')} <strong>{content.phone_number}</strong></a>}
         </div>
