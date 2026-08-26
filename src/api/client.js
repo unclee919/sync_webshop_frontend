@@ -67,6 +67,7 @@ export function getCatalog({ itemGroup, search, page = 1, pageSize = 20, minPric
 }
 export function getCategories() { return callMethod('sync_webshop.api.catalog.get_categories') }
 export function getSearchSuggestions(search) { return callMethod('sync_webshop.api.catalog.get_search_suggestions', { params: { search } }) }
+export function getUnifiedSearch(search = '', limit = 5) { return callMethod('sync_webshop.api.catalog.get_unified_search', { params: { search, limit } }) }
 export function getItem(itemCode) { return callMethod('sync_webshop.api.catalog.get_item', { params: { item_code: itemCode } }) }
 export function getStock(itemCode) { return callMethod('sync_webshop.api.catalog.get_stock', { params: { item_code: itemCode } }) }
 export function getRecommendations({ itemCode, itemGroup, limit = 8 } = {}) {

@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useContent } from '../context/ContentContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useCart } from '../context/CartContext'
-import { getCategories, getItem, getSearchSuggestions, getPredictiveSearch, sendVoiceAction } from '../api/client'
+import { getCategories, getItem, getSearchSuggestions, getPredictiveSearch, getUnifiedSearch, sendVoiceAction } from '../api/client'
 import VoiceSearch from './VoiceSearch'
 import VisualSearch from './VisualSearch'
 import BrandSwitcher from './BrandSwitcher'
@@ -26,6 +26,11 @@ export default function Header({ onOpenCart }) {
   const [search, setSearch] = useState('')
   const [suggestions, setSuggestions] = useState([])
   const [predictiveResult, setPredictiveResult] = useState(null)
+  const [unifiedSearch, setUnifiedSearch] = useState({ autocomplete: [], recommendations: { items: [], categories: [] }, results: [] })
+  const [searchLoading, setSearchLoading] = useState(false)
+  const [searchHistory, setSearchHistory] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('sync_webshop_search_history') || '[]').filter(Boolean).slice(0, 3) } catch { return [] }
+  })
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [showCategories, setShowCategories] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -73,11 +78,20 @@ export default function Header({ onOpenCart }) {
   }, [])
 
   useEffect(() => {
-    if (search.trim().length < 2) { setSuggestions([]); return }
-    const timer = setTimeout(() => {
-      getSearchSuggestions(search.trim()).then((result) => setSuggestions(Array.isArray(result) ? result : [])).catch(() => setSuggestions([]))
-    }, 260)
-    return () => clearTimeout(timer)
+    let active = true
+    const term = search.trim()
+    const timer = setTimeout(async () => {
+      setSearchLoading(true)
+      try {
+        const result = await getUnifiedSearch(term, 5)
+        if (active) setUnifiedSearch(result || { autocomplete: [], recommendations: { items: [], categories: [] }, results: [] })
+      } catch {
+        if (active) setUnifiedSearch({ autocomplete: [], recommendations: { items: [], categories: [] }, results: [] })
+      } finally {
+        if (active) setSearchLoading(false)
+      }
+    }, term ? 180 : 0)
+    return () => { active = false; clearTimeout(timer) }
   }, [search])
 
   useEffect(() => {
@@ -117,12 +131,50 @@ export default function Header({ onOpenCart }) {
     setShowSuggestions(false)
   }
 
+  const rememberSearch = (value) => {
+    const term = String(value || '').trim()
+    if (!term) return
+    setSearchHistory((previous) => {
+      const next = [term, ...previous.filter((entry) => entry.casefold() !== term.casefold())].slice(0, 3)
+      try { localStorage.setItem('sync_webshop_search_history', JSON.stringify(next)) } catch {}
+      return next
+    })
+  }
+
   const handleSearch = (event) => {
     event.preventDefault()
-    if (!search.trim()) { navigate('/products'); return }
-    navigate(`/products?search=${encodeURIComponent(search.trim())}`)
+    const term = search.trim()
+    if (!term) { navigate('/products'); setShowSuggestions(false); return }
+    rememberSearch(term)
+    navigate(`/products?search=${encodeURIComponent(term)}`)
     setShowSuggestions(false)
   }
+
+  const handleSearchEntry = (entry) => {
+    if (!entry?.href) return
+    if (search.trim()) rememberSearch(search)
+    navigate(entry.href)
+    setSearch('')
+    setShowSuggestions(false)
+  }
+
+  const handleSearchHistory = (term) => {
+    setSearch(term)
+    setShowSuggestions(true)
+  }
+
+  const recommendationEntries = [
+    ...(unifiedSearch.recommendations?.items || []),
+    ...(unifiedSearch.recommendations?.categories || []),
+  ].slice(0, 5)
+  const liveSearchEntries = (unifiedSearch.results || []).slice(0, 12)
+  const autocompleteEntries = (unifiedSearch.autocomplete || []).slice(0, 6)
+  const renderSearchEntry = (entry, index) => (
+    <button key={`${entry.type}-${entry.id}-${index}`} type="button" className="search-result-entry" onClick={() => handleSearchEntry(entry)} role="option">
+      <span className="suggestion-image">{entry.image ? <img src={entry.image} alt="" /> : <span>{entry.type === 'category' ? '◈' : entry.type === 'page' ? '↗' : '⌕'}</span>}</span>
+      <span><strong>{t(entry.title_en, entry.title_ar, entry.id)}</strong><small>{t(entry.subtitle_en, entry.subtitle_ar, entry.type === 'category' ? 'Category' : entry.type === 'page' ? 'Page' : 'Product')}{entry.price != null ? ` · ${formatStorefrontPrice(entry.price, entry.currency, content)}` : ''}</small></span>
+    </button>
+  )
 
   return (
     <header className={`site-header ${isRtl ? 'rtl' : 'ltr'}`}>
@@ -157,20 +209,29 @@ export default function Header({ onOpenCart }) {
           <div className="header-search" ref={searchRef}>
             <form className="search-form" onSubmit={handleSearch}>
               <span className="search-leading"><SearchIcon /></span>
-<input value={search} onChange={(e) => { setSearch(e.target.value); setShowSuggestions(true) }} onFocus={() => setShowSuggestions(true)} placeholder={t(content.search_placeholder_en, content.search_placeholder_ar, 'Search products, categories and more')} />
+<input value={search} onChange={(e) => { setSearch(e.target.value); setShowSuggestions(true) }} onFocus={() => setShowSuggestions(true)} placeholder={t(content.search_placeholder_en, content.search_placeholder_ar, 'Search products, categories and more')} aria-autocomplete="list" aria-controls="storefront-search-results" />
 	              <VoiceSearch onResult={handleVoiceResult} />
                       <VisualSearch />
 	              <button type="submit">{t(content?.search_button_text_en, content?.search_button_text_ar, 'Search')}</button>
 	            </form>
-            {showSuggestions && (suggestions.length > 0 || predictiveResult?.ghost) && (
-              <div className="search-suggestions">
-                {predictiveResult?.ghost && <button type="button" className="search-ghost-result" onClick={() => { navigate(`/products/${encodeURIComponent(predictiveResult.ghost.item_code)}`); setSearch(''); setShowSuggestions(false) }}><span className="suggestion-image">{predictiveResult.ghost.image ? <img src={predictiveResult.ghost.image} alt="" /> : <span>⌕</span>}</span><span><strong>{predictiveResult.ghost.item_name}</strong><small>{t(uiCopy.best_match_en, uiCopy.best_match_ar, 'Best match')}{predictiveResult.ghost.price != null ? ` · ${formatStorefrontPrice(predictiveResult.ghost.price, predictiveResult.ghost.currency, content)}` : ''}</small></span></button>}
-                {suggestions.slice(0, 6).map((s, i) => (
-                  <button key={i} type="button" onClick={() => { navigate(s.type === 'category' ? `/products?category=${encodeURIComponent(s.id)}` : `/products/${encodeURIComponent(s.id)}`); setSearch(''); setShowSuggestions(false) }}>
-                    <span className="suggestion-image">{s.image ? <img src={s.image} alt="" /> : <span>⌕</span>}</span>
-                    <span><strong>{s.name}</strong><small>{s.type === 'category' ? t(uiCopy.search_result_category_en, uiCopy.search_result_category_ar, 'Category') : `${t(uiCopy.search_result_product_en, uiCopy.search_result_product_ar, 'Product')}${s.price != null ? ` · ${formatStorefrontPrice(s.price, s.currency, content)}` : ''}`}</small></span>
-                  </button>
-                ))}
+            {showSuggestions && (
+              <div id="storefront-search-results" className="search-suggestions" role="listbox">
+                {!search.trim() ? (<>
+                  <div className="search-suggestion-group">
+                    <div className="search-suggestion-heading">{t(uiCopy.search_recommended_title_en, uiCopy.search_recommended_title_ar, 'Recommended for you')}</div>
+                    {searchLoading && <div className="search-suggestion-status">{t(uiCopy.loading_en, uiCopy.loading_ar, 'Loading…')}</div>}
+                    {!searchLoading && recommendationEntries.map(renderSearchEntry)}
+                    {!searchLoading && recommendationEntries.length === 0 && <div className="search-suggestion-status">{t(uiCopy.search_no_recommendations_en, uiCopy.search_no_recommendations_ar, 'Start typing to search the store')}</div>}
+                  </div>
+                  {searchHistory.length > 0 && <div className="search-suggestion-group search-history-group">
+                    <div className="search-suggestion-heading">{t(uiCopy.search_history_title_en, uiCopy.search_history_title_ar, 'Recent searches')}</div>
+                    {searchHistory.map((term) => <button key={term} type="button" className="search-history-entry" onClick={() => handleSearchHistory(term)} role="option"><span>◷</span><strong>{term}</strong></button>)}
+                  </div>}
+                </>) : (<>
+                  {predictiveResult?.ghost && <button type="button" className="search-ghost-result" onClick={() => handleSearchEntry({ type: 'item', id: predictiveResult.ghost.item_code, href: `/products/${encodeURIComponent(predictiveResult.ghost.item_code)}`, title_en: predictiveResult.ghost.item_name, title_ar: predictiveResult.ghost.item_name, image: predictiveResult.ghost.image, price: predictiveResult.ghost.price, currency: predictiveResult.ghost.currency })}><span className="suggestion-image">{predictiveResult.ghost.image ? <img src={predictiveResult.ghost.image} alt="" /> : <span>⌕</span>}</span><span><strong>{predictiveResult.ghost.item_name}</strong><small>{t(uiCopy.best_match_en, uiCopy.best_match_ar, 'Best match')}{predictiveResult.ghost.price != null ? ` · ${formatStorefrontPrice(predictiveResult.ghost.price, predictiveResult.ghost.currency, content)}` : ''}</small></span></button>}
+                  {autocompleteEntries.length > 0 && <div className="search-suggestion-group"><div className="search-suggestion-heading">{t(uiCopy.search_autocomplete_title_en, uiCopy.search_autocomplete_title_ar, 'Complete your search')}</div>{autocompleteEntries.map((entry, index) => <button key={`${entry.value_en}-${index}`} type="button" className="search-autocomplete-entry" onClick={() => { setSearch(t(entry.value_en, entry.value_ar)); setShowSuggestions(true) }} role="option"><span>↳</span><strong>{t(entry.value_en, entry.value_ar)}</strong></button>)}</div>}
+                  <div className="search-suggestion-group"><div className="search-suggestion-heading">{t(uiCopy.search_results_title_en, uiCopy.search_results_title_ar, 'Search results')}</div>{searchLoading && <div className="search-suggestion-status">{t(uiCopy.search_searching_en, uiCopy.search_searching_ar, 'Searching…')}</div>}{!searchLoading && liveSearchEntries.map(renderSearchEntry)}{!searchLoading && liveSearchEntries.length === 0 && <div className="search-suggestion-status">{t(uiCopy.search_no_results_en, uiCopy.search_no_results_ar, 'No matching products, categories, or pages')}</div>}</div>
+                </>)}
               </div>
             )}
           </div>
