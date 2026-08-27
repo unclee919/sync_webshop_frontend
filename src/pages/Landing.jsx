@@ -143,8 +143,8 @@ export default function Landing() {
 
   const sections = useMemo(() => configuredSections.length ? configuredSections : (fallbackItems.length ? [{ title_en: 'New arrivals', title_ar: 'وصل حديثاً', items: fallbackItems }] : []), [configuredSections, fallbackItems])
   const hero = banners[currentSlide]
-  const heroTitle = hero ? t(hero.title, hero.title_ar) : (landingBuilder.enabled ? t(landingBuilder.hero_heading_en, landingBuilder.hero_heading_ar, t(content?.hero_quote_en, content?.hero_quote_ar, 'Sync Webshop, made for everyday living.')) : t(content?.hero_quote_en, content?.hero_quote_ar, 'Sync Webshop, made for everyday living.'))
-  const heroSubtitle = hero ? t(hero.subtitle, hero.subtitle_ar) : t(content?.tagline_en, content?.tagline_ar, 'Everyday essentials, thoughtfully selected.')
+  const heroTitle = hero ? t(hero.title, hero.title_ar || content?.hero_quote_ar, landingBuilder.enabled ? t(landingBuilder.hero_heading_en, landingBuilder.hero_heading_ar, content?.hero_quote_en || 'Sync Webshop, made for everyday living.') : t(content?.hero_quote_en, content?.hero_quote_ar, 'Sync Webshop, made for everyday living.')) : (landingBuilder.enabled ? t(landingBuilder.hero_heading_en, landingBuilder.hero_heading_ar, t(content?.hero_quote_en, content?.hero_quote_ar, 'Sync Webshop, made for everyday living.')) : t(content?.hero_quote_en, content?.hero_quote_ar, 'Sync Webshop, made for everyday living.'))
+  const heroSubtitle = hero ? t(hero.subtitle, hero.subtitle_ar || content?.tagline_ar, content?.tagline_en || 'Everyday essentials, thoughtfully selected.') : t(content?.tagline_en, content?.tagline_ar, 'Everyday essentials, thoughtfully selected.')
 
   if (loading && !content) return <div className="landing-loading"><div className="loading-block loading-hero" /><div className="container loading-line" /><div className="container loading-grid" /></div>
 
