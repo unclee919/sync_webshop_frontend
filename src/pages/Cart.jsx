@@ -11,6 +11,27 @@ export default function Cart() {
   const { items, setQty, removeItem, total } = useCart()
   const { lang, isRtl } = useLanguage()
   const { content } = useContent()
+  const uiCopy = content?.copy?.ui || {}
+  const t = (key, en, ar) => lang === 'ar' ? (uiCopy[`${key}_ar`] || ar || en) : (uiCopy[`${key}_en`] || en || ar)
+  const text = {
+    title: t('cart_title', 'Shopping Cart', 'سلة التسوق'),
+    empty: t('cart_empty', 'Your cart is empty.', 'سلتك فارغة حالياً.'),
+    browse: t('browse_products', 'Browse products', 'تصفح المنتجات'),
+    unlocked: t('free_shipping_unlocked', 'You unlocked free shipping.', 'تهانينا! حصلت على الشحن المجاني.'),
+    away: t('free_shipping_away', 'away from free shipping', 'متبقي'),
+    product: t('search_result_product', 'Product', 'المنتج'),
+    // Price has no existing UI-label field yet; keep the current fallback until a reviewed field is added.
+    price: lang === 'ar' ? 'السعر' : 'Price',
+    quantity: t('quantity', 'Quantity', 'الكمية'),
+    total: t('total', 'Total', 'الإجمالي'),
+    remove: t('remove', 'Remove', 'حذف'),
+    summary: t('order_summary', 'Order Summary', 'ملخص الطلب'),
+    subtotal: t('subtotal', 'Subtotal', 'المجموع الفرعي'),
+    shipping: t('shipping', 'Shipping', 'الشحن'),
+    free: t('free', 'Free', 'مجاني'),
+    calculated: lang === 'ar' ? 'يُحسب عند الدفع' : 'Calculated at checkout',
+    checkout: t('checkout', 'Checkout', 'إتمام الطلب'),
+  }
   const [shippingRule, setShippingRule] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -26,11 +47,11 @@ export default function Cart() {
   if (!items.length) {
     return (
       <div className={`cart-page container ${isRtl ? 'rtl' : 'ltr'}`}>
-        <h1 className="page-title">{lang === 'ar' ? 'سلة التسوق' : 'Shopping Cart'}</h1>
+        <h1 className="page-title">{text.title}</h1>
         <div className="cart-empty-state">
-          <p>{lang === 'ar' ? 'سلة التسوق الخاصة بك فارغة.' : 'Your cart is empty.'}</p>
+          <p>{text.empty}</p>
           <Link to="/products" className="btn-primary">
-            {lang === 'ar' ? 'تصفح المنتجات ←' : 'Browse products →'}
+            {text.browse} →
           </Link>
         </div>
       </div>
@@ -44,18 +65,18 @@ export default function Cart() {
 
   return (
     <div className={`cart-page container ${isRtl ? 'rtl' : 'ltr'}`}>
-      <h1 className="page-title">{lang === 'ar' ? 'سلة التسوق' : 'Shopping Cart'}</h1>
+      <h1 className="page-title">{text.title}</h1>
       
       {threshold > 0 && (
         <div className="shipping-progress-container">
           <div className="shipping-progress-text">
             {total >= threshold ? (
-              <span>{lang === 'ar' ? 'مبروك! لقد حصلت على شحن مجاني' : 'Congratulations! You have free shipping'}</span>
+              <span>{text.unlocked}</span>
             ) : (
               <span>
-                {lang === 'ar' 
-                  ? `بقي ${formatStorefrontPrice(remaining, currency, content)} للحصول على شحن مجاني`
-                  : `You're ${formatStorefrontPrice(remaining, currency, content)} away from free shipping`}
+                {lang === 'ar'
+                  ? `${formatStorefrontPrice(remaining, currency, content)} ${text.away} للحصول على شحن مجاني`
+                  : `${formatStorefrontPrice(remaining, currency, content)} ${text.away}`}
               </span>
             )}
           </div>
@@ -68,10 +89,10 @@ export default function Cart() {
       <div className="cart-container">
         <div className="cart-main">
           <div className="cart-header">
-            <span className="col-product">{lang === 'ar' ? 'المنتج' : 'Product'}</span>
-            <span className="col-price">{lang === 'ar' ? 'السعر' : 'Price'}</span>
-            <span className="col-qty">{lang === 'ar' ? 'الكمية' : 'Quantity'}</span>
-            <span className="col-total">{lang === 'ar' ? 'المجموع' : 'Total'}</span>
+            <span className="col-product">{text.product}</span>
+            <span className="col-price">{text.price}</span>
+            <span className="col-qty">{text.quantity}</span>
+            <span className="col-total">{text.total}</span>
           </div>
 
           <div className="cart-items">
@@ -86,7 +107,7 @@ export default function Cart() {
                       {item.item_name}
                     </Link>
                     <button className="remove-btn" onClick={() => removeItem(item.item_code)}>
-                      {lang === 'ar' ? 'إزالة' : 'Remove'}
+                      {text.remove}
                     </button>
                   </div>
                 </div>
@@ -117,29 +138,29 @@ export default function Cart() {
 
         <div className="cart-sidebar">
           <div className="summary-card">
-            <h2 className="summary-title">{lang === 'ar' ? 'ملخص الطلب' : 'Order Summary'}</h2>
+            <h2 className="summary-title">{text.summary}</h2>
             <div className="summary-row">
-              <span>{lang === 'ar' ? 'المجموع الفرعي' : 'Subtotal'}</span>
+              <span>{text.subtotal}</span>
               <span>{formatStorefrontPrice(total, currency, content)}</span>
             </div>
             <div className="summary-row">
-              <span>{lang === 'ar' ? 'الشحن' : 'Shipping'}</span>
+              <span>{text.shipping}</span>
               <span>
                 {shippingRule ? (
-                  total >= threshold ? (lang === 'ar' ? 'مجاني' : 'Free') : formatStorefrontPrice(shippingRule.shipping_cost, currency, content)
+                  total >= threshold ? text.free : formatStorefrontPrice(shippingRule.shipping_cost, currency, content)
                 ) : (
-                  lang === 'ar' ? 'محسوب عند الدفع' : 'Calculated at checkout'
+                  text.calculated
                 )}
               </span>
             </div>
             <div className="summary-total">
-              <span>{lang === 'ar' ? 'الإجمالي' : 'Total'}</span>
+              <span>{text.total}</span>
               <span>
                 {formatStorefrontPrice(total + (shippingRule && total < threshold ? shippingRule.shipping_cost : 0), currency, content)}
               </span>
             </div>
             <Link to="/checkout" className="checkout-btn">
-              {lang === 'ar' ? 'إتمام الشراء' : 'Proceed to Checkout'}
+              {text.checkout}
             </Link>
           </div>
         </div>

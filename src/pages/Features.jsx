@@ -1,51 +1,49 @@
+import { Link } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
+import { useContent } from '../context/ContentContext'
 import './Features.css'
 
 export default function Features() {
   const { lang, isRtl } = useLanguage()
-
-  const features = [
-    {
-      title: lang === 'ar' ? 'تفاعلات دقيقة عند الإضافة للسلة' : 'Micro-interactions on Add to Cart',
-      description: lang === 'ar' 
-        ? 'عند إضافة منتج، يظهر تنبيه فوري (Toast) يؤكد العملية، مع تأثيرات حركية لزر الإضافة.'
-        : 'When adding a product, an instant toast notification appears, along with animation effects on the button.',
-      icon: '🛒'
-    },
-    {
-      title: lang === 'ar' ? 'نظام تقييم المنتجات' : 'Product Rating System',
-      description: lang === 'ar'
-        ? 'يمكن الآن التحكم في تقييمات المنتجات مباشرة من لوحة تحكم ERPNext دون الحاجة لكود.'
-        : 'Product ratings can now be controlled directly from the ERPNext dashboard without any code.',
-      icon: '⭐'
-    },
-    {
-      title: lang === 'ar' ? 'شريط رأس نحيف وعصري' : 'Slim & Modern Header',
-      description: lang === 'ar'
-        ? 'تم تصغير شريط الرأس العلوي لتوفير مساحة أكبر للمحتوى وتجربة تصفح أفضل.'
-        : 'The top bar has been minimized to provide more space for content and a better browsing experience.',
-      icon: '📏'
-    },
-    {
-      title: lang === 'ar' ? 'تحريك تلقائي للصور' : 'Automatic Hero Slider',
-      description: lang === 'ar'
-        ? 'تتنقل صور الواجهة الرئيسية تلقائياً كل 5 ثوانٍ لجذب انتباه الزوار.'
-        : 'Hero section images navigate automatically every 5 seconds to capture visitor attention.',
-      icon: '🖼️'
-    }
-  ]
+  const { content, loading } = useContent()
+  const isArabic = lang === 'ar'
+  const trustBadges = (content?.trust_badges || []).slice(0, 8)
+  const pageTitle = isArabic ? (content?.why_us_text_ar || 'لماذا نحن') : (content?.why_us_text_en || 'Why shop with us')
+  const kicker = isArabic ? 'تجربة تسوق بثقة' : 'A considered experience'
+  const intro = isArabic
+    ? 'اكتشف الأسباب التي تجعل كل طلب من سينك أكثر وضوحاً وراحة واهتماماً.'
+    : 'Discover the thoughtful details that make every Sync order clearer, easier, and more reassuring.'
+  const shopLabel = isArabic ? (content?.shop_now_text_ar || 'تسوق الآن') : (content?.shop_now_text_en || 'Shop now')
 
   return (
     <div className={`features-page container ${isRtl ? 'rtl' : 'ltr'}`}>
-      <h1 className="page-title">{lang === 'ar' ? 'تحديثات تجربة المستخدم' : 'UX Updates'}</h1>
-      <div className="features-grid">
-        {features.map((f, i) => (
-          <div key={i} className="feature-card">
-            <div className="feature-icon">{f.icon}</div>
-            <h3>{f.title}</h3>
-            <p>{f.description}</p>
-          </div>
+      <header className="features-hero">
+        <span className="features-kicker">{kicker}</span>
+        <h1>{pageTitle}</h1>
+        <p className="features-intro">{intro}</p>
+      </header>
+
+      <section className="features-grid" aria-label={pageTitle}>
+        {trustBadges.map((badge, index) => (
+          <article className="feature-card" key={`${badge.label_en || badge.label_ar || 'trust'}-${index}`}>
+            <div className="feature-card-topline">
+              <span className="feature-order">{String(index + 1).padStart(2, '0')}</span>
+              <div className="feature-icon" aria-hidden="true" dangerouslySetInnerHTML={{ __html: badge.icon || '' }} />
+            </div>
+            <div className="feature-card-copy">
+              <h2>{isArabic ? (badge.label_ar || badge.label_en) : (badge.label_en || badge.label_ar)}</h2>
+              <p>{isArabic ? (badge.description_ar || badge.description_en) : (badge.description_en || badge.description_ar)}</p>
+            </div>
+          </article>
         ))}
+      </section>
+
+      {!loading && trustBadges.length === 0 && (
+        <p className="features-empty">{isArabic ? 'سيتم تحديث مزايا المتجر قريباً.' : 'Our store benefits will be updated soon.'}</p>
+      )}
+
+      <div className="features-cta-wrap">
+        <Link className="features-cta" to="/products">{shopLabel}<span aria-hidden="true">→</span></Link>
       </div>
     </div>
   )
