@@ -11,11 +11,9 @@ import { useUltraExperience } from '../context/UltraExperienceContext'
 const QuickView = lazy(() => import('../components/QuickView'))
 const SocialProof = lazy(() => import('../components/SocialProof'))
 const EliteStories = lazy(() => import('../components/EliteStories'))
-const EditorialCollectionRail = lazy(() => import('../components/EditorialCollectionRail'))
 const StyleQuiz = lazy(() => import('../components/StyleQuiz'))
 const MasterTierHotspots = lazy(() => import('../components/MasterTierHotspots'))
 const EnterpriseExperience = lazy(() => import('../components/EnterpriseExperience'))
-const AutonomousEcosystem = lazy(() => import('../components/AutonomousEcosystem'))
 const LuxuryLiveSocial = lazy(() => import('../components/LuxuryLiveSocial'))
 import './Landing.css'
 import { formatStorefrontPrice } from '../utils/currency'
@@ -170,11 +168,9 @@ export default function Landing() {
 
       {belowFoldReady && <Suspense fallback={null}>
         <EliteStories content={content} />
-        <EditorialCollectionRail collections={content?.editorial_collections || []} />
         <StyleQuiz />
         <MasterTierHotspots />
         <EnterpriseExperience />
-        <AutonomousEcosystem />
         <LuxuryLiveSocial />
       </Suspense>}
 

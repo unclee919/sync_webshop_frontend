@@ -54,7 +54,6 @@ REQUIRED_SOURCE_PATHS = [
     "src/components/EliteStories.jsx",
     "src/pages/CollectionStoryteller.jsx",
     "src/components/EnterpriseExperience.jsx",
-    "src/components/AutonomousEcosystem.jsx",
     "src/components/MasterTierHub.jsx",
     "src/components/MasterTierHotspots.jsx",
     "src/components/MaterialStudio.jsx",
