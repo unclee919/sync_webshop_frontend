@@ -1,5 +1,30 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 
+let csrfToken = null
+let csrfTokenPromise = null
+
+async function getCsrfToken() {
+  if (csrfToken) return csrfToken
+  if (!csrfTokenPromise) {
+    csrfTokenPromise = fetch(`${API_BASE_URL}/api/method/sync_webshop.api.auth.get_csrf_token`, {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+      credentials: 'include',
+    })
+      .then(async (response) => {
+        const data = await response.json().catch(() => null)
+        const token = data?.message?.csrf_token
+        if (!response.ok || !token) throw new Error('Unable to initialize secure checkout. Please refresh and try again.')
+        csrfToken = token
+        return token
+      })
+      .finally(() => {
+        csrfTokenPromise = null
+      })
+  }
+  return csrfTokenPromise
+}
+
 async function callMethod(path, { method = 'GET', params, body, apiKey, apiSecret } = {}) {
   let url = `${API_BASE_URL}/api/method/${path}`
   if (params) {
@@ -12,16 +37,32 @@ async function callMethod(path, { method = 'GET', params, body, apiKey, apiSecre
     const queryString = query.toString()
     if (queryString) url += `?${queryString}`
   }
-  const headers = { Accept: 'application/json' }
-  if (body) headers['Content-Type'] = 'application/json'
-  if (apiKey && apiSecret) headers.Authorization = `token ${apiKey}:${apiSecret}`
-  const response = await fetch(url, {
-    method,
-    headers,
-    credentials: 'include',
-    body: body ? JSON.stringify(body) : undefined,
-  })
-  const data = await response.json().catch(() => null)
+
+  const upperMethod = method.toUpperCase()
+  const baseHeaders = { Accept: 'application/json' }
+  if (body) baseHeaders['Content-Type'] = 'application/json'
+  if (apiKey && apiSecret) baseHeaders.Authorization = `token ${apiKey}:${apiSecret}`
+
+  async function sendRequest() {
+    const headers = { ...baseHeaders }
+    if (upperMethod !== 'GET') headers['X-Frappe-CSRF-Token'] = await getCsrfToken()
+    return fetch(url, {
+      method: upperMethod,
+      headers,
+      credentials: 'include',
+      body: body ? JSON.stringify(body) : undefined,
+    })
+  }
+
+  let response = await sendRequest()
+  let data = await response.json().catch(() => null)
+
+  if (upperMethod !== 'GET' && data?.exc_type === 'CSRFTokenError') {
+    csrfToken = null
+    response = await sendRequest()
+    data = await response.json().catch(() => null)
+  }
+
   if (!response.ok) {
     const message = data?.message || data?.exception || `Request failed (${response.status})`
     throw new Error(message)
