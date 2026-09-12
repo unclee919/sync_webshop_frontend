@@ -170,9 +170,10 @@ export function validateCoupon({ coupon_code, couponCode, total_amount, totalAmo
     },
   })
 }
-export function createOrder({ customer, items, payment_method, stripe_payment_intent, delivery_date, coupon_code, governorate, city, location, second_phone, gift_message, gift_wrap, fulfillment_method, pickup_warehouse, submit = false }) {
+export function createOrder({ customer, items, payment_method, stripe_payment_intent, delivery_date, coupon_code, governorate, city, location, second_phone, gift_message, gift_wrap, fulfillment_method, pickup_warehouse, submit = false, checkout_request_id }) {
+  const requestId = checkout_request_id || crypto.randomUUID()
   return callMethod('sync_webshop.api.checkout.create_order', {
-    method: 'POST', body: { customer, items, payment_method, stripe_payment_intent, delivery_date, coupon_code, governorate, city, location, second_phone, gift_message, gift_wrap, fulfillment_method, pickup_warehouse, submit },
+    method: 'POST', body: { customer, items, payment_method, stripe_payment_intent, delivery_date, coupon_code, governorate, city, location, second_phone, gift_message, gift_wrap, fulfillment_method, pickup_warehouse, submit, checkout_request_id: requestId },
   })
 }
 export function createPaymentIntent(amount, currency = 'gbp') {
